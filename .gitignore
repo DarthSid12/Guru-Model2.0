@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+data/
+processed_data/
+runs/
+*.pth
+*.zip
+*.tar.gz
+.DS_Store

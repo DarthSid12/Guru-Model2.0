@@ -1,0 +1,9 @@
+torch==2.5.1
+torchvision==0.20.1
+numpy==2.2.6
+pandas==2.3.3
+pillow==12.1.1
+opencv-python==4.13.0.92
+matplotlib==3.10.9
+tqdm==4.68.3
+gdown
