@@ -7,3 +7,4 @@ runs/
 *.zip
 *.tar.gz
 .DS_Store
+house_data_local.py
