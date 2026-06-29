@@ -36,11 +36,11 @@ DATASETS = {
         "ImageNet_objects.zip",
         "data/ImageNet_objects",
     ),
-    # "houses": (
-    #     "<google-drive-share-url-here>",
-    #     "houses.zip",
-    #     "data/houses",
-    # ),
+    "houses": (
+        "https://drive.google.com/drive/folders/1GY3yPoQWg-8Dlw5YQ2n0dB8IhNQP-lAE?usp=sharing",
+        "houses.zip",
+        "data/houses",
+    ),
 }
 
 
