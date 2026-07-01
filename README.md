@@ -14,8 +14,7 @@ binary code `h`; the classifier head is only the training signal.
   object categories + house classes), one global label space.
 - **Folder = class** (faces = person identities, ImageNet objects = object categories).
 - **Use all available classes** per category (configurable via CLI).
-- **Categories are configurable** — runs today with `faces objects`; houses drop in
-  once sourced (add a URL in `download.py` and `--categories ... houses`).
+- **Categories are configurable** — runs today with `faces objects houses`.
 - **Fixations** are chosen by bottom-up **Gabor-variance saliency** (V1-like), which is
   category-agnostic — the same fixation mechanism is used for all three categories.
 - All raw images are resized + center-cropped to a square `--input-size` (default 224)
@@ -60,9 +59,6 @@ python download.py faces objects
 # or a single category
 python download.py faces
 ```
-
-Houses have no source yet — see "Adding houses" below. `download.py` skips any
-download/extraction that's already present, so it's safe to re-run.
 
 ### 2. Preprocess into fixation crops
 
@@ -142,7 +138,4 @@ to calibrate noise against).
 | `simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |
 
 ## Adding houses
-1. Source a houses dataset laid out as `<split>/<class>/<images>` (train/valid/test).
-2. Add its Drive URL to `DATASETS["houses"]` in `download.py` (or place it under
-   `data/houses`).
-3. Run `preprocess.py` and `train.py` with `--categories faces houses objects`.
+1. Dataset added - first run of `preprocess.py` and `train.py` with `--categories faces houses objects` pending.
