@@ -161,6 +161,9 @@ def main():
     set_seed(args.seed)
     device = torch.device(args.device)
 
+    # shuffle all_classes when studying for fair representation?
+    shuffle_classes = True
+
     if args.label_map:
         with open(args.label_map) as f:
             num_classes = len(json.load(f))
@@ -179,6 +182,11 @@ def main():
     if len(all_classes) < need:
         raise SystemExit(f"Category '{args.category}' has {len(all_classes)} classes; "
                          f"need >= {need} (num_study + num_test).")
+
+    # pick study and unknown classes (with a random shuffle, depending on shuffle_classes)
+    if shuffle_classes:
+        random.shuffle(all_classes)
+
     study_classes = all_classes[:args.num_study]
     unknown_classes = all_classes[args.num_study:need]
 
