@@ -118,11 +118,23 @@ python simulate_yin1969.py --category faces --variant lp \
 python simulate_yin1969.py --category objects --variant lp \
     --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
     --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
+
+python simulate_yin1969.py --category houses --variant lp \
+    --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
+    --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
 ```
 
 Key flags: `--num-study`, `--num-test`, `--study-fixations`, `--test-fixations`,
 `--sigma` (NIMBLE kernel bandwidth), `--calib-target` (upright-upright accuracy
 to calibrate noise against).
+
+### 5. Run the Thatcher Effect experiment (currently only supports category faces)
+
+```bash
+python simulate_thatcher.py --category faces --variant lp \
+    --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
+    --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
+```
 
 ## Files
 | file | purpose |
@@ -136,6 +148,7 @@ to calibrate noise against).
 | `preprocess.py` | raw → lp/cnn fixation crops |
 | `train.py` | joint training (`--lr`, `--categories`, `--variant`, …) |
 | `simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |
+| `simulate_thatcher.py` | tests whether Thatcher effect emerges from Model 2.0 training |
 
 ## Adding houses
 1. Dataset added - first run of `preprocess.py` and `train.py` with `--categories faces houses objects` pending.
