@@ -40,7 +40,7 @@ DATASETS = {
         "https://drive.google.com/drive/folders/1GY3yPoQWg-8Dlw5YQ2n0dB8IhNQP-lAE?usp=sharing",
         "houses.zip",
         "data/houses",
-    ),
+    )
 }
 
 
