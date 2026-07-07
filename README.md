@@ -131,6 +131,12 @@ to calibrate noise against).
 ### 5. Run the Thatcher Effect experiment (currently only supports category faces)
 
 ```bash
+# preprocess data for the experiment
+python thatcher_download.py --source data/faces_cleaned \
+    --dest data/thatcher_data/faces \
+    --split valid
+
+# run experiment
 python simulate_thatcher.py --category faces --variant lp \
     --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
     --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
@@ -149,6 +155,8 @@ python simulate_thatcher.py --category faces --variant lp \
 | `train.py` | joint training (`--lr`, `--categories`, `--variant`, …) |
 | `simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |
 | `simulate_thatcher.py` | tests whether Thatcher effect emerges from Model 2.0 training |
+| `thatcherize.py` | applies the thatcher effect to an upright, non-log polarized image of a face |
+| `thatcher_download.py` | processes a raw dataset of faces (could do non-faces in the future if a category-agnostic "thatcherization" model is implemented - unlikely we do this) and formats it for the simulate_thatcher experiment script |
 
 ## Adding houses
 1. Dataset added - first run of `preprocess.py` and `train.py` with `--categories faces houses objects` pending.

@@ -37,44 +37,90 @@ def set_seed(seed=42):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
+NUM_STUDY_IMAGES = 2 # number of images per person (identity) that go into model memory
+NUM_PROBE_IMAGES = 2
+
 # ==================================================
-# Helpers (TODO: add to utils ?
+# Helpers (TODO: add to utils ?)
 # ==================================================
 
 # --------------------------------------------------
 # Data
 # --------------------------------------------------
 
-# TODO: Implement actual Thatcherization load - right now image_type doesn't do anything yet
-def load_trial_data(processed_root, category, variant, image_type, split, classes,
-                    num_fixations, offset=0):
-    """Return {class: tensor(num_fixations, C, H, W)} for the requested classes,
-    using one base image's first `num_fixations` proc crops (after `offset`)."""
-    split_dir = os.path.join(processed_root, category, variant, split)
+"""
+Loads:
+data/thatcher_data/<upright|inverted>/<normal|thatcher>/<identity>/*.png
+"""
+def load_trial_data(processed_root, category, variant, image_type, split, classes, num_images, offset):
     samples = {}
-    for cls in classes:
-        cls_dir = os.path.join(split_dir, cls)
-        if not os.path.isdir(cls_dir):
-            continue
-        base_dict = {}
-        for fname in sorted(os.listdir(cls_dir)):
-            if fname.endswith(".png") and "_proc" in fname:
-                base = fname.split("_proc")[0]
-                base_dict.setdefault(base, []).append(os.path.join(cls_dir, fname))
-        if not base_dict:
-            continue
-        proc_list = sorted(base_dict[sorted(base_dict)[0]])
-        chosen = proc_list[offset: offset + num_fixations]
-        if len(chosen) < num_fixations:
-            continue
-        imgs = torch.stack([TF.to_tensor(Image.open(p).convert("RGB")) for p in chosen], dim=0)
-        samples[cls] = imgs
-    return samples
 
+    base_dir = os.path.join(processed_root, category, variant)
+    orient_dir = os.path.join(base_dir, image_type)   # upright / inverted
+    split_dir = os.path.join(orient_dir, split)       # normal / thatcher
+
+    for cls in classes:
+
+        #print(cls)
+
+        cls_dir = os.path.join(split_dir, cls)
+
+        if not os.path.isdir(cls_dir):
+            print(f"{cls_dir} not a valid directory!")
+            continue
+
+        # collect images from identity folder, DEPENDING ON VARIANT
+        if variant == "cnn":
+            files = sorted([
+                os.path.join(cls_dir, f)
+                for f in os.listdir(cls_dir)
+                if f.lower().endswith(".png")
+            ])
+
+            chosen = files[offset: offset + num_images]
+    
+            imgs = torch.stack([
+                TF.to_tensor(Image.open(p).convert("RGB"))
+                for p in chosen
+            ], dim=0)
+
+        else: # "lp" case
+            base_dict = {}
+
+            for fname in sorted(os.listdir(cls_dir)):
+                if fname.endswith(".png") and "_proc" in fname:
+                    base = fname.split("_proc")[0]
+                    base_dict.setdefault(base, []).append(
+                        os.path.join(cls_dir, fname)
+                    )
+
+            base_names = sorted(base_dict)
+
+            chosen_bases = base_names[offset: offset + num_images]
+
+            imgs = []
+
+            for base in chosen_bases:
+                proc_list = sorted(base_dict[base])
+
+                imgs.extend([
+                    TF.to_tensor(Image.open(p).convert("RGB"))
+                    for p in proc_list
+                ])
+
+            imgs = torch.stack(imgs, dim=0)           
+
+        samples[cls] = imgs            
+
+    return samples
 
 def list_classes(processed_root, category, variant, split):
     d = os.path.join(processed_root, category, variant, split)
-    return sorted(c for c in os.listdir(d) if os.path.isdir(os.path.join(d, c)))
+    classes = sorted(c for c in os.listdir(d) if os.path.isdir(os.path.join(d, c)))
+
+    #print("classes[0]:", classes[0])
+
+    return classes
 
 
 def apply_binomial_noise(binary_tensor, p_noise):
@@ -117,15 +163,15 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--category", required=True, help="faces | houses | objects")
     ap.add_argument("--variant", choices=["lp", "cnn"], default="lp")
-    ap.add_argument("--processed-root", default="processed_data")
+    ap.add_argument("--processed-root", default="data/thatcher_data")
     ap.add_argument("--checkpoint", required=True)
     ap.add_argument("--label-map", default=None, help="label_map.json from the run (sets num_classes)")
     ap.add_argument("--num-classes", type=int, default=None, help="used if --label-map absent")
     ap.add_argument("--temperature", type=float, default=2.0)
-    ap.add_argument("--num-study", type=int, default=40)
-    ap.add_argument("--num-test", type=int, default=24)
-    ap.add_argument("--study-fixations", type=int, default=10)
-    ap.add_argument("--test-fixations", type=int, default=32)
+    ap.add_argument("--num-study", type=int, default=125)
+    ap.add_argument("--num-test", type=int, default=125)
+    ap.add_argument("--study-images", type=int, default=NUM_STUDY_IMAGES)
+    ap.add_argument("--probe-images", type=int, default=NUM_PROBE_IMAGES)
     ap.add_argument("--sigma", type=float, default=2.0)
     ap.add_argument("--calib-target", type=float, default=0.96,
                     help="upright-upright accuracy to match when calibrating noise")
@@ -135,6 +181,63 @@ def parse_args():
     ap.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--noise", type=float, default=0.25)
     return ap.parse_args()
+
+# ==================================================
+# DEBUG OUTPUT HELPERS
+# ==================================================
+
+import matplotlib.pyplot as plt
+
+"""
+To check whether study and probe are indeed paired by the same identity
+"""
+def show_example_pairs(processed_root, category, classes,
+                       study_orientation="upright",
+                       study_type="normal",
+                       probe_orientation="upright",
+                       probe_type="thatcher",
+                       study_offset=0,
+                       probe_offset=4,
+                       num_examples=5):
+
+    base = os.path.join(processed_root, category)
+
+    for cls in classes[:num_examples]:
+
+        study_dir = os.path.join(base, study_orientation, study_type, cls)
+        probe_dir = os.path.join(base, probe_orientation, probe_type, cls)
+
+        study_files = sorted(
+            f for f in os.listdir(study_dir)
+            if f.lower().endswith(".png")
+        )
+
+        probe_files = sorted(
+            f for f in os.listdir(probe_dir)
+            if f.lower().endswith(".png")
+        )
+
+        study_img = Image.open(
+            os.path.join(study_dir, study_files[study_offset])
+        )
+
+        probe_img = Image.open(
+            os.path.join(probe_dir, probe_files[probe_offset])
+        )
+
+        fig, ax = plt.subplots(1, 2, figsize=(6,3))
+
+        ax[0].imshow(study_img)
+        ax[0].set_title(f"{cls}\nStudy")
+
+        ax[1].imshow(probe_img)
+        ax[1].set_title(f"{cls}\nProbe")
+
+        for a in ax:
+            a.axis("off")
+
+        plt.tight_layout()
+        plt.show()
 
 # ==================================================
 # THATCHER EXPERIMENT
@@ -157,6 +260,10 @@ B-KDE familiarity score
 
 def familiarity(model, device, args, study_classes, p_noise, condition):
 
+    # apply noise to simulate imperfect human vision?
+    noisy_study = False
+    noisy_probe = False
+
     orientation, thatcher = condition
 
     set_seed(args.seed)
@@ -168,10 +275,10 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
         args.processed_root,
         args.category,
         args.variant,
-        image_type="normal",
-        split="valid",
+        image_type="upright",
+        split="normal",
         classes=study_classes,
-        num_fixations=args.study_fixations,
+        num_images=args.study_images,
         offset=0,
     )
 
@@ -179,11 +286,11 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
         args.processed_root,
         args.category,
         args.variant,
-        image_type="thatcher" if thatcher else "normal",
-        split = "valid" if orientation == "Upright" else "test",
+        image_type = orientation,
+        split = thatcher,
         classes=study_classes,
-        num_fixations=args.test_fixations,
-        offset=0,
+        num_images=args.probe_images,
+        offset=args.study_images, # so the images are new
     )
 
     with torch.no_grad():
@@ -201,10 +308,13 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
                 return_rep=True
             )
 
-            memory_bank[cls] = apply_binomial_noise(
-                h.cpu(),
-                p_noise
-            )
+            if noisy_study:
+                memory_bank[cls] = apply_binomial_noise(
+                    h.cpu(),
+                    p_noise
+                )
+            else:
+                memory_bank[cls] = h.cpu()
 
         # identities present in both memory and probe
         probe_items = sorted(
@@ -215,16 +325,15 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
         if len(probe_items) == 0: # hopefully not ...
             raise RuntimeError("No identities shared between study and probe data.")
 
+        probe_items = sorted(probe_items)
+
         if args.num_test is not None:
-            probe_items = random.sample(
-                probe_items,
-                min(args.num_test, len(probe_items))
-            )
+            probe_items = probe_items[:min(args.num_test, len(probe_items))]
 
         # --------------------------------------------------
         # Familiarity calculation
         # --------------------------------------------------
-        familiarity_scores = []
+        familiarity_scores = {}
 
         for cls in probe_items:
 
@@ -235,10 +344,13 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
                 return_rep=True
             )
 
-            h_probe = apply_binomial_noise(
-                h_probe.cpu(),
-                p_noise
-            )
+            if noisy_probe:
+                h_probe = apply_binomial_noise(
+                    h_probe.cpu(),
+                    p_noise
+                )
+            else:
+                h_probe = h_probe.cpu()
 
             familiarity = compute_familiarity_score(
                 h_probe,
@@ -246,9 +358,10 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
                 args.sigma
             )
 
-            familiarity_scores.append(familiarity)
+            familiarity_scores[cls] = familiarity
 
-    return float(np.mean(familiarity_scores))
+    return familiarity_scores, float(np.mean(list(familiarity_scores.values()))) 
+    # returns both for statistical inference purposes
 
 """
 Helper method to return a good "difference" between two statistics
@@ -258,6 +371,19 @@ As of yet we simply return an ACTUAL difference - I'm just concerned this may no
 def diff(stat_a, stat_b):
     return stat_a - stat_b
 
+# assume same keys for both maps; same value types
+# recursive in case of nested maps
+def diff_map(map_a, map_b):
+    if not isinstance(map_a, dict):
+        return diff(map_a, map_b)
+
+    result = {}
+    for k in map_a.keys():
+        result[k] = diff_map(map_a[k], map_b[k])
+
+    return result
+    
+
 """
 Runs above function on both upright and inverted faces, with both normal and "thatcherized" data
 
@@ -265,7 +391,10 @@ Compares diff(familiarity(upright, normal), familiarity(upright, thatcher)) to t
 OUR HYPOTHESIS: higher in upright case
 """
 
-def main():
+def main(debug=False):
+
+    # This is just for me in case I don't have GPU access to train --David
+    pretrain = False
 
     # --------------------------------------------------
     # Setup
@@ -285,12 +414,15 @@ def main():
     else:
         raise SystemExit("Provide --label-map or --num-classes to size the model head.")
 
-    model = Model(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
-    model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
+    model = Model(size=180, num_classes=num_classes, pretrained=pretrain, T=args.temperature).to(device)
+
+    if not pretrain:
+        model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
+
     model.eval()
 
     # disjoint study / unknown class sets within the category
-    all_classes = list_classes(args.processed_root, args.category, args.variant, "valid")
+    all_classes = list_classes(args.processed_root, args.category, args.variant, "upright/normal")
     if len(all_classes) < args.num_study:
         raise SystemExit(f"Category '{args.category}' has {len(all_classes)} classes; "
                          f"need >= {args.num_study} study identities.")
@@ -300,6 +432,20 @@ def main():
         random.shuffle(all_classes)
 
     study_classes = all_classes[:args.num_study]
+
+    if debug:
+        show_example_pairs(
+            args.processed_root,
+            args.category,
+            study_classes,
+            study_orientation="upright",
+            study_type="normal",
+            probe_orientation="upright", # or "inverted"
+            probe_type="normal", # or "thatcher"
+            study_offset=0,
+            probe_offset=args.study_images,
+            num_examples=5
+        )
 
     """
     Without a run condition this doesn't work anymore
@@ -326,42 +472,71 @@ def main():
     # Get familiarity for each condition
     # -------------------------------------------------- 
     conditions = (
-        ("Upright", False),
-        ("Upright", True),
-        ("Inverted", False),
-        ("Inverted", True),       
-    )   
+        ("upright", "normal"),
+        ("upright", "thatcher"),
+        ("inverted", "normal"),
+        ("inverted", "thatcher"),       
+    )  
 
-    fam = [familiarity(model, device, args, study_classes, ideal_noise, c) for c in conditions]
+    # get scores and whole dicts for statistical inference
+    fam_scores = {}
+    fam_dicts = {}
+
+    for c in conditions:
+        fam_dicts[c], fam_scores[c] = familiarity(model, device, args, study_classes, ideal_noise, c)
 
     # --------------------------------------------------
     # Compare thatcher effect for upright vs inverted
     # --------------------------------------------------     
-    upright_thatcher_effect = diff(fam[0], fam[1])
-    inverted_thatcher_effect = diff(fam[2], fam[3])
+    E_u = diff(fam_scores[conditions[0]], fam_scores[conditions[1]]) # upright effect
+    E_i = diff(fam_scores[conditions[2]], fam_scores[conditions[3]]) # inverted effect
 
-    # debug output
+    # output
 
-    print(f"Upright Normal: {fam[0]}")
-    print(f"Upright Thatcher: {fam[1]}")
-
-    print()
-
-    print(f"Inverted Normal: {fam[2]}")
-    print(f"Inverted Thatcher: {fam[3]}")
+    print(f"Upright Normal: {fam_scores[conditions[0]]}")
+    print(f"Upright Thatcher: {fam_scores[conditions[1]]}")
 
     print()
 
-    print(f"Upright Thatcher Effect: {upright_thatcher_effect}")
-    print(f"Inverted Thatcher Effect: {inverted_thatcher_effect}")
+    print(f"Inverted Normal: {fam_scores[conditions[2]]}")
+    print(f"Inverted Thatcher: {fam_scores[conditions[3]]}")
 
     print()
 
-    # and now for the big one
-    if upright_thatcher_effect > inverted_thatcher_effect:
-        print("Observed Thatcher effect!")
+    print(f"Upright Thatcher Effect: {E_u}")
+    print(f"Inverted Thatcher Effect: {E_i}")
+
+    print()
+
+    # and now for the big one:
+
+    PVALUE = 0.05
+    stat_results = stat_sig_thatcher_effect(fam_dicts, conditions)
+    print("statistical test of results yields:")
+    print(stat_results)
+
+    if stat_results.pvalue < PVALUE:
+        if E_u > E_i:
+            print("Observed Thatcher effect!")
+        else:
+            print("Observed opposite of Thatcher effect ...")
     else:
         print("Did not observe Thatcher effect.")
+
+"""
+This function runs a t-test over identities on the results of the experimental run
+to determine if we saw a statistically significant thatcher effect.
+"""
+def stat_sig_thatcher_effect(fam_dicts, conditions):
+
+    from scipy.stats import ttest_1samp
+
+    Emap_u = diff_map(fam_dicts[conditions[0]], fam_dicts[conditions[1]]) # map with keys as identities
+    Emap_i = diff_map(fam_dicts[conditions[2]], fam_dicts[conditions[3]]) # also map with keys as identities
+
+    Dmap = diff_map(Emap_u, Emap_i) # D for difference
+
+    return ttest_1samp(list(Dmap.values()), 0.0)
 
 if __name__ == "__main__":
     main()
