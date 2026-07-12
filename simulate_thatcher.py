@@ -361,7 +361,6 @@ def familiarity(model, device, args, study_classes, p_noise, condition):
             familiarity_scores[cls] = familiarity
 
     return familiarity_scores, float(np.mean(list(familiarity_scores.values()))) 
-    # returns both for statistical inference purposes
 
 """
 Helper method to return a good "difference" between two statistics

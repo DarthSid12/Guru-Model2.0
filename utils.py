@@ -59,10 +59,13 @@ def list_classes(split_dir):
     """Return the sorted list of class (folder) names under a split directory."""
     if not os.path.isdir(split_dir):
         raise ValueError(f"Directory not found: {split_dir!r}")
-    return sorted(
+    result = sorted(
         d for d in os.listdir(split_dir)
         if os.path.isdir(os.path.join(split_dir, d))
     )
+
+    #print(result)
+    return result
 
 
 def build_global_label_map(processed_root, categories, variant="lp", split="train"):
@@ -86,6 +89,8 @@ def build_global_label_map(processed_root, categories, variant="lp", split="trai
     idx = 0
     for category in categories:
         split_dir = os.path.join(processed_root, category, variant, split)
+        #print("split_dir:", split_dir)
+
         for cls_name in list_classes(split_dir):
             mapping[f"{category}/{cls_name}"] = idx
             idx += 1
