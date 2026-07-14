@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torchvision.models import resnet18, ResNet18_Weights, resnet50
+from torchvision.models import resnet18, ResNet18_Weights
 
 class Model(nn.Module):
     def __init__(self, num_classes=128, pretrained=False, size=180, T=16.0):

@@ -18,7 +18,6 @@ import cv2
 import torch
 import torch.nn.functional as F
 import torchvision.transforms as T
-import torchvision.transforms.functional as TF
 import numpy as np
 
 class RandomCrop(torch.nn.Module):
@@ -222,8 +221,6 @@ class LogPolar(torch.nn.Module):
         return (points[0][0], points[1][0])
     
     def compute_map(self, input_shape, output_shape):
-        input_shape_x, input_shape_y = input_shape
-        
         if self.position == 'circumscribed':
             MAX_R = torch.log(torch.tensor(input_shape,device=self.device).float().norm() / 2 * self.log_polar_distance)
         else:
@@ -234,8 +231,6 @@ class LogPolar(torch.nn.Module):
         r = r.float()
         X = (torch.exp(r * MAX_R / self.output_shape[1])) * torch.cos(theta * 2 * torch.pi / self.output_shape[0])
         Y = (torch.exp(r * MAX_R / self.output_shape[1])) * torch.sin(theta * 2 * torch.pi / self.output_shape[0])
-
-        mask = (0 <= X) & (X < input_shape_x) & (0 <= Y) & (Y < input_shape_y)
 
         return X, Y
 

@@ -176,3 +176,41 @@ class SaliencePipeline(torch.nn.Module):
         transformed_imgs_cnn = transformed_imgs_cnn.unflatten(0, (B, self.num_salient_points))
 
         return transformed_imgs, transformed_imgs_cnn  # lp, cnn
+
+
+class OnTheFlyTransform(torch.nn.Module):
+    """The tail of SaliencePipeline (rotate -> foveate -> [logpolar]), applied
+    batched on the GPU at train time to raw 180x180 fixation crops produced by
+    datasets.make_packed_datasets. Replaces reading pre-rendered crop PNGs.
+
+    Args:
+        type (str): 'train' -> random-rotation augmentation (fresh every epoch,
+                    unlike the baked-in rotation of preprocess.py)
+                    'test' / 'inverted' -> 180-degree rotation
+                    anything else -> upright
+        variant (str): 'lp' applies the log-polar transform, 'cnn' skips it
+    """
+
+    def __init__(self, type='train', variant='lp', device='cpu',
+                 crop_size=180, output_shape=(180, 180)):
+        super().__init__()
+        self.variant = variant
+        if type == 'train':
+            self.rotate = Rotate()
+        elif type in ('test', 'inverted'):
+            self.rotate = Rotate(invert=True)
+        else:
+            self.rotate = torch.nn.Identity()
+        self.foveate = Foveate(crop_size=crop_size)
+        self.logpolar = LogPolar(input_shape=(crop_size, crop_size),
+                                 output_shape=output_shape, device=device)
+
+    def forward(self, crops):
+        """crops: (B, C, H, W) uint8 [0,255] or float [0,1] -> float (B, C, H, W)."""
+        if crops.dtype == torch.uint8:
+            crops = crops.float().div_(255.0)
+        crops = self.rotate(crops)
+        crops = self.foveate(crops)
+        if self.variant == 'lp':
+            crops = self.logpolar(crops)
+        return crops

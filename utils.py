@@ -1,58 +1,6 @@
-import math
 import os
-import matplotlib.pyplot as plt
 import torch
-import numpy as np
 import torch.nn.functional as F
-
-
-def show_images(imgs, cols=3, figsize=None):
-    """Display one or more images (tensors or array-likes) in a grid."""
-    if isinstance(imgs, torch.Tensor):
-        if imgs.ndim == 2 or imgs.ndim == 3:
-            imgs = [imgs]
-        elif imgs.ndim == 4:
-            imgs = list(imgs)
-        else:
-            raise ValueError(f"Tensor of unsupported shape {imgs.shape}")
-    else:
-        imgs = list(imgs)
-
-    np_imgs = []
-    for img in imgs:
-        if isinstance(img, torch.Tensor):
-            t = img.detach().cpu()
-            if t.ndim == 3:
-                t = t.permute(1, 2, 0)
-            elif t.ndim != 2:
-                raise ValueError(f"Tensor of unsupported shape {img.shape}")
-            arr = t.numpy()
-            if np.issubdtype(arr.dtype, np.floating):
-                arr = np.clip(arr, 0.0, 1.0)
-            np_imgs.append(arr)
-        else:
-            arr = np.asarray(img)
-            if arr.ndim not in (2, 3):
-                raise ValueError(f"Array of unsupported shape {arr.shape}")
-            np_imgs.append(arr)
-
-    n = len(np_imgs)
-    if n == 0:
-        return
-
-    rows = math.ceil(n / cols)
-    if figsize is None:
-        figsize = (cols * 2, rows * 2)
-
-    fig, axes = plt.subplots(rows, cols, figsize=figsize)
-    axes = np.array(axes).reshape(-1)
-    for ax, im in zip(axes, np_imgs):
-        ax.imshow(im, interpolation='nearest')
-        ax.axis('off')
-    for ax in axes[n:]:
-        ax.axis('off')
-    plt.tight_layout()
-    plt.show()
 
 
 def list_classes(split_dir):

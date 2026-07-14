@@ -4,145 +4,158 @@ A single log-polar / foveated ResNet18 trained jointly on **faces + houses + obj
 used to replicate Yin's (1969) face-inversion effect (and the same test for houses
 and objects) via a Barrington-NIMBLE KDE memory model.
 
-The model (`model.py`) is unchanged from `TheModel2.0` `familiar-faces` branch:
+The model (`model.py`) comes from the `TheModel2.0` `familiar-faces` branch:
 ResNet18 backbone → `fc1` (512→256) → temperature-scaled sigmoid → Bernoulli binary
-code `h` → `fc2` classifier. The NIMBLE/Yin simulation operates on the shared 256-d
+code `h` → `fc2` classifier. The Yin/NIMBLE simulation operates on the shared 256-d
 binary code `h`; the classifier head is only the training signal.
 
-## Design decisions
-- **Single unified softmax** over every class of every category (faces identities +
-  object categories + house classes), one global label space.
-- **Folder = class** (faces = person identities, ImageNet objects = object categories).
-- **Use all available classes** per category (configurable via CLI).
-- **Categories are configurable** — runs today with `faces objects`; houses drop in
-  once sourced (add a URL in `download.py` and `--categories ... houses`).
-- **Fixations** are chosen by bottom-up **Gabor-variance saliency** (V1-like), which is
-  category-agnostic — the same fixation mechanism is used for all three categories.
-- All raw images are resized + center-cropped to a square `--input-size` (default 224)
-  so every category is fed to the pipeline on equal footing.
+Key design points:
+- One unified softmax over every class of every category (face identities +
+  object categories + a single generic `house` class).
+- Fixations come from bottom-up Gabor-variance saliency (V1-like), the same
+  mechanism for all categories.
+- All raw images are resized + center-cropped to a square `--input-size`
+  (default 224).
 
-## Environment setup (conda)
+## Setup (conda)
 
-Requires a CUDA-capable GPU for practical training speed (CPU works for testing).
-This recipe matches the CUDA 12.1 build used elsewhere in the project.
+Requires a CUDA-capable GPU for practical training speed.
 
 ```bash
-# 1. create and activate the environment
 conda create -y -n lpnet python=3.10
 conda activate lpnet
-
-# 2. install torch/torchvision against CUDA 12.1 wheels
 pip install --index-url https://download.pytorch.org/whl/cu121 \
     torch==2.5.1 torchvision==0.20.1
-
-# 3. install the rest of the pinned dependencies
 pip install -r requirements.txt
-```
 
-Verify the install:
-
-```bash
+# verify
 python -c "import torch, cv2; print(torch.__version__, 'cuda:', torch.cuda.is_available())"
 ```
 
-To remove the environment later: `conda env remove -n lpnet`.
-
 ## Pipeline
 
-All commands below assume `conda activate lpnet`.
+Run each step yourself, in order. Do **not** point at anyone else's
+pre-built `data/` / `fixation_data/` — the steps below are cheap enough to
+run fresh and guarantee your data matches your code version.
 
 ### 1. Download raw data
 
 ```bash
-# faces + objects (the two categories currently sourced)
-python download.py faces objects
-
-# or a single category
-python download.py faces
+python download.py faces objects houses
 ```
 
-Houses have no source yet — see "Adding houses" below. `download.py` skips any
-download/extraction that's already present, so it's safe to re-run.
+Faces/objects come from Google Drive archives; houses from the public
+[emanhamed/Houses-dataset](https://github.com/emanhamed/Houses-dataset) repo
+(frontal photos only, pooled into one generic `house` class). Re-running skips
+anything already present.
 
-### 2. Preprocess into fixation crops
-
-Produces both log-polar (`lp`) and plain-crop (`cnn`) variants under
-`processed_data/<category>/<lp|cnn>/<split>/<class>/`.
-`train` gets random-rotation augmentation, `valid` is upright, `test` is
-inverted (180°) — `valid`/`test` are what the Yin simulation compares.
+### 2. Preprocess into packed fixation data
 
 ```bash
-python preprocess.py \
-    --categories faces objects \
-    --num-fixations 32 \
-    --input-size 224
+python preprocess_fixations.py \
+    --categories faces objects houses \
+    --num-coords 32 \
+    --devices cuda:0 cuda:1
 ```
 
-Useful flags:
-- `--categories <names>` — which categories to preprocess (default: `faces objects`)
-- `--num-fixations N` — fixations per base image (default 32)
-- `--input-size N` — square resize/crop applied before fixation sampling (default 224)
-- `--splits train valid test` — restrict to specific splits
-- `--limit-per-class N` — cap base images per class, useful for a quick dry run
-- `--device cuda:0|cpu` — defaults to GPU if available
+This stores only the expensive-to-compute Gabor-saliency fixation
+*coordinates* plus the resized raw images as a few large memory-mappable
+arrays (`fixation_data/<category>/<split>/{images.npy, coords.npy, meta.json}`,
+~25 GB total). Cropping, rotation, foveation and the log-polar transform then
+happen on the fly on the GPU at train time — ~22 min/epoch vs ~3 h/epoch for
+the old pre-rendered-PNG path, and numerically identical output.
 
-### 3. Train the single network
+`--num-coords 32` lets training use any `--num-fixations <= 32`. Re-runs skip
+already-packed `(category, split)` units (`--force` to re-pack).
 
-The learning rate (and everything else) is a CLI flag:
+<details>
+<summary>Legacy PNG path (not recommended)</summary>
+
+`preprocess.py` pre-renders every fixation crop to disk under
+`processed_data/<category>/<lp|cnn>/<split>/<class>/` (~246 GB, ~6M PNGs,
+I/O-bound training). Only use it if you specifically need the rendered crops:
+
+```bash
+python preprocess.py --categories faces objects houses \
+    --num-fixations 16 --input-size 224 --devices cuda:0
+```
+</details>
+
+### 3. Train
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python train.py \
-    --categories faces objects \
+    --categories faces objects houses \
     --variant lp \
     --lr 1e-3 \
     --epochs 50 \
     --batch-size 256 \
-    --num-fixations 32
+    --num-fixations 16
 ```
 
 Key flags:
-- `--lr` — learning rate (required tunable; no fixed default to rely on blindly)
-- `--categories` — which categories to train jointly, e.g. `faces objects` or `faces objects houses`
-- `--variant lp|cnn` — log-polar/foveated vs. plain-crop control condition
+- `--lr` — learning rate (required tunable)
+- `--categories` — which categories to train jointly
+- `--variant lp|cnn` — log-polar/foveated vs. plain-crop control
+- `--data-mode auto|packed|png` — `auto` (default) picks `packed` when
+  `fixation_data/` exists
 - `--epochs`, `--batch-size`, `--num-fixations`, `--patience`, `--temperature`
-- `--pretrained-path PATH` — warm-start from an existing checkpoint (loaded `strict=False`)
-- `--output-dir DIR` — override the auto-named `runs/...` directory
+- `--pretrained-path PATH` — warm-start from a checkpoint
+- `--device auto|cuda:N|cpu`
 
-Each run writes `best_model.pth`, a final checkpoint, `label_map.json` (the
-global class→index mapping needed by the Yin simulation), a training-history
-CSV, and an accuracy plot into its output directory.
+Each run writes `config.json`, `summary.json` (accuracies, wall time),
+`best_model.pth`, `label_map.json` (needed by the Yin simulation), a history
+CSV, and an accuracy plot into its `runs/...` directory.
 
-### 4. Run the Yin (1969) simulation per category
+### 3b. Run several experiments at once — `run_experiments.py`
+
+`run_experiments.py` is a parallel experiment launcher: it takes a list of
+`train.py` argument strings and runs them simultaneously, **one per free GPU**
+(auto-detected via nvidia-smi, or pinned with `--gpus 0 1 2`). Extra runs
+queue and start as GPUs free up. Everything lands under an auto-named
+`runs/exp_<timestamp>/` folder — one subfolder per run (`config.json`,
+`summary.json`, `train.log`) plus a `manifest.json` index — and a cross-run
+accuracy table is printed at the end.
+
+```bash
+python run_experiments.py \
+    --base "--categories faces objects houses --variant lp --epochs 50" \
+    --run "--lr 1e-3" --run "--lr 3e-4" --run "--lr 1e-4 --variant cnn"
+
+# or keep the grid in a file (one train.py arg-string per line, '#' comments)
+python run_experiments.py --gpus 0 1 2 --runs-file my_grid.txt
+```
+
+### 4. Run the Yin (1969) simulation
+
+Once per category, pointing at the trained checkpoint:
 
 ```bash
 python simulate_yin1969.py --category faces --variant lp \
-    --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
-    --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
-
-python simulate_yin1969.py --category objects --variant lp \
-    --checkpoint runs/faces_objects_lp_32fix_lr0.001/best_model.pth \
-    --label-map  runs/faces_objects_lp_32fix_lr0.001/label_map.json
+    --checkpoint runs/<run>/best_model.pth \
+    --label-map  runs/<run>/label_map.json
 ```
 
-Key flags: `--num-study`, `--num-test`, `--study-fixations`, `--test-fixations`,
-`--sigma` (NIMBLE kernel bandwidth), `--calib-target` (upright-upright accuracy
-to calibrate noise against).
+Repeat with `--category objects` and `--category houses`. Key flags:
+`--num-study`, `--num-test`, `--study-fixations`, `--test-fixations`,
+`--sigma` (NIMBLE kernel bandwidth), `--calib-target`.
+
+Note on houses: there is no per-house identity, so an "item" is an individual
+photo drawn from a shared valid/test "Yin pool" built by `download.py`
+(default 100 photos, same photo upright vs. inverted). This is a stopgap
+until a set of ~40 houses with 2 photos each is sourced.
 
 ## Files
 | file | purpose |
 |------|---------|
-| `model.py` | ResNet18 + binary-code head (verbatim from `familiar-faces`) |
-| `trans.py` | Rotate / Foveate / LogPolar / Pipeline transforms (verbatim) |
-| `salience_trans.py` | Gabor-saliency fixation pipeline (MediaPipe code removed) |
+| `model.py` | ResNet18 + binary-code head (from `familiar-faces`) |
+| `trans.py` | Rotate / Foveate / LogPolar / Pipeline transforms (from `familiar-faces`) |
+| `salience_trans.py` | Gabor-saliency fixation pipeline |
 | `datasets.py` | combined multi-category datasets, one global label space |
 | `utils.py` | global label map + helpers |
 | `download.py` | fetch raw data per category |
-| `preprocess.py` | raw → lp/cnn fixation crops |
-| `train.py` | joint training (`--lr`, `--categories`, `--variant`, …) |
+| `preprocess_fixations.py` | raw → packed images + saliency coords (fast path) |
+| `preprocess.py` | raw → pre-rendered lp/cnn fixation crop PNGs (legacy path) |
+| `train.py` | joint training |
+| `run_experiments.py` | parallel multi-GPU experiment launcher |
 | `simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |
-
-## Adding houses
-1. Source a houses dataset laid out as `<split>/<class>/<images>` (train/valid/test).
-2. Add its Drive URL to `DATASETS["houses"]` in `download.py` (or place it under
-   `data/houses`).
-3. Run `preprocess.py` and `train.py` with `--categories faces houses objects`.

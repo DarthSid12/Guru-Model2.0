@@ -7,3 +7,4 @@ runs/
 *.zip
 *.tar.gz
 .DS_Store
+fixation_data/
