@@ -74,6 +74,15 @@ def parse_args():
                          "--max-images-per-class objects=200 (train split only; "
                          "valid/test are unaffected)")
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--lr-schedule", choices=["none", "cosine"], default="none",
+                    help="cosine = CosineAnnealingLR decaying to 0 over --epochs")
+    ap.add_argument("--weight-decay", type=float, default=0.0,
+                    help="AdamW weight decay (0 = plain Adam behaviour)")
+    ap.add_argument("--label-smoothing", type=float, default=0.0)
+    ap.add_argument("--amp", action=argparse.BooleanOptionalAction, default=True,
+                    help="bf16 autocast for model forward/backward (--no-amp to disable)")
+    ap.add_argument("--channels-last", action=argparse.BooleanOptionalAction, default=True,
+                    help="channels_last memory format for model + inputs")
     ap.add_argument("--epochs", type=int, default=50)
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--num-workers", type=int, default=8)
@@ -110,7 +119,7 @@ def pick_free_device():
 
 
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None):
+def evaluate(model, loader, device, transform=None, amp=False, channels_last=False):
     """Sum per-fixation logits over a base image's fixations, then argmax."""
     model.eval()
     accs = []
@@ -121,8 +130,11 @@ def evaluate(model, loader, device, transform=None):
         inputs = inputs.reshape(-1, C, H, W)
         if transform is not None:
             inputs = transform(inputs)
-        logits = model(inputs)
-        logits = logits.reshape(B, n, -1).sum(dim=1)
+        if channels_last:
+            inputs = inputs.contiguous(memory_format=torch.channels_last)
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
+            logits = model(inputs)
+        logits = logits.float().reshape(B, n, -1).sum(dim=1)
         preds = logits.argmax(dim=1)
         accs.append((preds == label_ids).float().mean().item())
     return float(np.mean(accs)), float(np.std(accs))
@@ -152,6 +164,9 @@ def main():
     np.random.seed(args.seed)
 
     device = torch.device(args.device)
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True   # fixed 180x180 input -> autotune kernels
+        torch.set_float32_matmul_precision("high")  # TF32 matmuls on Ampere+
     max_images_per_class = {}
     for spec in args.max_images_per_class:
         category, _, n = spec.partition("=")
@@ -213,14 +228,20 @@ def main():
 
     # ----------------------------- Model ----------------------------
     model = Model(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    if args.channels_last:
+        model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
         state = torch.load(args.pretrained_path, map_location=device)
         missing = model.load_state_dict(state, strict=False)
         print(f"Warm-started from {args.pretrained_path} ({missing})")
     model.stochastic = False  # deterministic expectation during training
 
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr)
-    ce_criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
+                                  lr=args.lr, weight_decay=args.weight_decay)
+    scheduler = (torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+                 if args.lr_schedule == "cosine" else None)
+    ce_criterion = torch.nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
+    use_amp = args.amp and device.type == "cuda"
 
     best_val = -1.0
     best_epoch = 0
@@ -241,11 +262,14 @@ def main():
             if transforms["train"] is not None:
                 with torch.no_grad():
                     inputs = transforms["train"](inputs)
+            if args.channels_last:
+                inputs = inputs.contiguous(memory_format=torch.channels_last)
             label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
 
             optimizer.zero_grad()
-            logits = model(inputs)
-            loss = ce_criterion(logits, label_ids)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
+                logits = model(inputs)
+                loss = ce_criterion(logits, label_ids)
             loss.backward()
             optimizer.step()
 
@@ -258,12 +282,19 @@ def main():
 
         train_acc = correct / max(total, 1)
         train_loss = float(np.mean(epoch_losses))
-        valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"])
-        test_acc, test_std = evaluate(model, test_loader, device, transforms["test"])
+        valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
+                                        amp=use_amp, channels_last=args.channels_last)
+        test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
+                                      amp=use_amp, channels_last=args.channels_last)
+        cur_lr = optimizer.param_groups[0]["lr"]
+        if scheduler is not None:
+            scheduler.step()
         print(f"-> Epoch {epoch}: train {train_acc*100:.2f}% | "
-              f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | loss {train_loss:.4f}")
+              f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | "
+              f"loss {train_loss:.4f} | lr {cur_lr:.2e}")
 
-        history.append({"epoch": epoch, "train_acc": train_acc, "train_loss": train_loss,
+        history.append({"epoch": epoch, "lr": cur_lr,
+                        "train_acc": train_acc, "train_loss": train_loss,
                         "valid_acc": valid_acc, "valid_std": valid_std,
                         "test_acc": test_acc, "test_std": test_std,
                         "elapsed_sec": round(time.time() - t_start, 1)})
