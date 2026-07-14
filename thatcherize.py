@@ -134,3 +134,34 @@ def thatcherize(img):
     rgb = flip_region(rgb, mouth)
 
     return Image.fromarray(rgb)
+
+# ==================================================
+# TESTING
+# ==================================================
+def test_thatcherize(img_path):
+    img = Image.open(img_path).convert("RGB")
+    out = thatcherize(img)
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+
+    ax[0].imshow(img)
+    ax[0].set_title("Original")
+    ax[0].axis("off")
+
+    ax[1].imshow(out)
+    ax[1].set_title("Thatcherized")
+    ax[1].axis("off")
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) != 2:
+        print("Usage: python thatcherize.py path/to/image.jpg")
+        sys.exit(1)
+
+    test_thatcherize(sys.argv[1])
