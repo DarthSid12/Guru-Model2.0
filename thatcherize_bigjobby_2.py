@@ -7,6 +7,10 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
+"""
+Credit to https://bigjobby.com/optical/Thatcher/ for inspiring this script!
+"""
+
 from PIL import Image
 
 # ============================================================
@@ -29,7 +33,7 @@ landmarker = vision.FaceLandmarker.create_from_options(
 )
 
 # ============================================================
-# BigJobby parameters
+# Params
 # ============================================================
 
 EYE_PAD = 0.45
@@ -174,24 +178,6 @@ def composite_rotated_old(
         patch,
         angle):
 
-    """
-    Exact equivalent of:
-
-        thatcherCtx.save();
-
-        thatcherCtx.translate(W/2,H/2);
-        thatcherCtx.rotate(rollAngle);
-        thatcherCtx.drawImage(
-            patch,
-            -dW/2,
-            -dH/2
-        );
-
-        thatcherCtx.restore();
-
-    """
-
-
     H,W = dst.shape[:2]
 
     h,w = patch.shape[:2]
@@ -261,14 +247,6 @@ def transform_landmarks(
         newW,
         newH):
 
-    """
-    Exact equivalent of:
-
-    const cos = Math.cos(-rollAngle)
-    const sin = Math.sin(-rollAngle)
-
-    """
-
     cosA = math.cos(angle)
     sinA = math.sin(angle)
 
@@ -322,14 +300,6 @@ def transform_landmarks(
     return transformed
 
 def rotate_image(img, angle_deg):
-    """
-    Canvas-equivalent rotation:
-        translate(newW/2,newH/2)
-        rotate(angle)
-        drawImage(img,-W/2,-H/2)
-
-    Uses OpenCV only for bilinear pixel sampling.
-    """
 
     H, W = img.shape[:2]
 
@@ -377,14 +347,6 @@ def rotate_image(img, angle_deg):
     return rotated
 
 def rotate_image_old(img, angle_deg):
-    """
-    Exact equivalent of:
-
-        ctx.translate(newW/2,newH/2)
-        ctx.rotate(angle)
-        ctx.drawImage(img,-W/2,-H/2)
-
-    """
 
     H, W = img.shape[:2]
 
@@ -456,9 +418,6 @@ def rotate_image_old(img, angle_deg):
     return output
 
 def landmark_center(landmarks, indices, W, H):
-    """
-    Equivalent of BigJobby's lmCentre()
-    """
 
     sx = 0
     sy = 0
@@ -474,29 +433,7 @@ def landmark_center(landmarks, indices, W, H):
         sy / len(indices)
     )
 
-"""
-function getRegionBBox(landmarks, indices, imgW, imgH, padFrac) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const i of indices) {
-    const lm = landmarks[i];
-    const x = lm.x * imgW, y = lm.y * imgH;
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  }
-  const pw = (maxX - minX) * padFrac;
-  const ph = (maxY - minY) * padFrac;
-  return {
-    x: Math.max(0,       Math.floor(minX - pw)),
-    y: Math.max(0,       Math.floor(minY - ph)),
-    x2: Math.min(imgW-1, Math.ceil(maxX + pw)),
-    y2: Math.min(imgH-1, Math.ceil(maxY + ph)),
-    get w() { return this.x2 - this.x; },
-    get h() { return this.y2 - this.y; },
-  };
-}
-"""
+
 def get_region_bbox(landmarks, indices, imgW, imgH, padFrac):
     minX = float("inf")
     minY = float("inf")
@@ -536,84 +473,10 @@ def get_region_bbox(landmarks, indices, imgW, imgH, padFrac):
 
     return bbox
 
-"""
-// ── Feathered composite of flipped region ────────────────────────────
-function blitFlippedRegion(srcCanvas, dstCtx, bbox, featherFrac, opacity) {
-  const { x, y, w, h } = bbox;
-  if (w <= 0 || h <= 0) return;
 
-  // --- Grab source pixels ---
-  const tmp = document.createElement('canvas');
-  tmp.width = w; tmp.height = h;
-  const tCtx = tmp.getContext('2d');
-  tCtx.drawImage(srcCanvas, x, y, w, h, 0, 0, w, h);
-
-  // --- Flip vertically ---
-  const flipped = document.createElement('canvas');
-  flipped.width = w; flipped.height = h;
-  const fCtx = flipped.getContext('2d');
-  fCtx.translate(0, h);
-  fCtx.scale(1, -1);
-  fCtx.drawImage(tmp, 0, 0);
-  fCtx.setTransform(1,0,0,1,0,0);
-
-  // --- Build elliptical feather mask ---
-  const masked = document.createElement('canvas');
-  masked.width = w; masked.height = h;
-  const mCtx = masked.getContext('2d');
-
-  // Draw flipped content
-  mCtx.drawImage(flipped, 0, 0);
-
-  // Apply elliptical feather mask via destination-in.
-  // Strategy: keep a FULLY OPAQUE core over the feature itself,
-  // feather only the outer border ring (width = featherFrac of radius).
-  // This ensures the inverted eye/mouth pixels are completely replaced
-  // in the centre — no bleed-through of the original orientation.
-  const cx = w / 2, cy = h / 2;
-  const rx = w / 2, ry = h / 2;
-
-  const gradCanvas = document.createElement('canvas');
-  gradCanvas.width = w; gradCanvas.height = h;
-  const gCtx = gradCanvas.getContext('2d');
-
-  // Scale space to a circle so we can use a simple radial gradient,
-  // then scale back to the real ellipse.
-  const rMin = Math.min(rx, ry);
-  const scaleX = rx / rMin, scaleY = ry / rMin;
-
-  gCtx.save();
-  gCtx.translate(cx, cy);
-  gCtx.scale(scaleX, scaleY);
-
-  // coreStop: fraction of rMin at which full opacity ends and fade begins.
-  // featherFrac=0 → instant hard edge; featherFrac=1 → fades from centre.
-  const coreStop = Math.max(0, 1 - featherFrac);
-
-  const grad = gCtx.createRadialGradient(0, 0, 0, 0, 0, rMin);
-  grad.addColorStop(0,         `rgba(0,0,0,${opacity})`); // fully opaque centre
-  grad.addColorStop(coreStop,  `rgba(0,0,0,${opacity})`); // hold opaque to core edge
-  grad.addColorStop(1,         'rgba(0,0,0,0)');           // fade to transparent at rim
-
-  gCtx.fillStyle = grad;
-  gCtx.beginPath();
-  gCtx.arc(0, 0, rMin, 0, Math.PI * 2);
-  gCtx.fill();
-  gCtx.restore();
-
-  mCtx.globalCompositeOperation = 'destination-in';
-  mCtx.drawImage(gradCanvas, 0, 0);
-  mCtx.globalCompositeOperation = 'source-over';
-
-  // --- Blit onto destination ---
-  dstCtx.drawImage(masked, x, y);
-}
-"""
 
 def blit_flipped_region(src_img, dst_img, bbox, featherFrac, opacity):
     """
-    Faithful port of BigJobby's JS blitFlippedRegion().
-
     src_img : source image (numpy array)
     dst_img : destination image (modified in-place)
     bbox    : dictionary returned by get_region_bbox()
@@ -777,14 +640,6 @@ def blit_flipped_region(src_img, dst_img, bbox, featherFrac, opacity):
 
 def process_image(image, faces):
     H, W = image.shape[:2]
-
-    # ----------------------------------------------------
-    # This is the equivalent of:
-    #
-    # const thatcherCanvas = document.createElement('canvas');
-    # thatcherCtx.drawImage(work,0,0);
-    # ----------------------------------------------------
-
     thatcher = image.copy()
 
     # ----------------------------------------------------
