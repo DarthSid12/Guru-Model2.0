@@ -52,7 +52,7 @@ anything already present.
 ### 2. Preprocess into packed fixation data
 
 ```bash
-python preprocess_fixations.py \
+python preprocess_fixations_coords.py \
     --categories faces objects houses \
     --num-coords 32 \
     --devices cuda:0 cuda:1
@@ -84,7 +84,7 @@ python preprocess.py --categories faces objects houses \
 ### 3. Train
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python train.py \
+CUDA_VISIBLE_DEVICES=0 python train_coords.py \
     --categories faces objects houses \
     --variant lp \
     --lr 1e-3 \
