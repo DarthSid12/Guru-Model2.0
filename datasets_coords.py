@@ -234,7 +234,7 @@ class PackedFixationTrainDataset(Dataset):
             y / sp.images.shape[1],   # height (224)
         ], dtype=torch.float32)
 
-        return crops, coord, one_hot
+        return crop, coord, one_hot
 
 
 class PackedFixationEvalDataset(Dataset):
