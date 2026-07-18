@@ -41,7 +41,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from model import Model
+from model import Model, BACKBONES
 from datasets import make_datasets, make_packed_datasets
 from salience_trans import OnTheFlyTransform
 
@@ -76,8 +76,9 @@ def parse_args():
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--lr-schedule", choices=["none", "cosine"], default="none",
                     help="cosine = CosineAnnealingLR decaying to 0 over --epochs")
-    ap.add_argument("--weight-decay", type=float, default=0.0,
-                    help="AdamW weight decay (0 = plain Adam behaviour)")
+    ap.add_argument("--weight-decay", type=float, default=5e-2,
+                    help="AdamW weight decay, applied to conv/linear weights only "
+                         "(biases and norm params are excluded); 0 = plain Adam behaviour")
     ap.add_argument("--label-smoothing", type=float, default=0.0)
     ap.add_argument("--amp", action=argparse.BooleanOptionalAction, default=True,
                     help="bf16 autocast for model forward/backward (--no-amp to disable)")
@@ -87,8 +88,24 @@ def parse_args():
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--num-workers", type=int, default=8)
     ap.add_argument("--temperature", type=float, default=2.0)
+    ap.add_argument("--dropout", type=float, default=0.3,
+                    help="dropout applied to the binary code h before fc2 (0 = off)")
+    ap.add_argument("--aug", action=argparse.BooleanOptionalAction, default=True,
+                    help="ImageNet-recipe train augmentation (random resized crop, "
+                         "color jitter, random erasing); packed data mode only. "
+                         "--no-aug to disable")
+    ap.add_argument("--hflip-p", type=float, default=0.5,
+                    help="probability of a random horizontal flip at train time "
+                         "(0 = off; never applied vertically, which would fake inversion)")
     ap.add_argument("--patience", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--backbone", default="resnet18",
+                    choices=list(BACKBONES),
+                    help="conv feature extractor (small->large): mobilenet_v3_small, "
+                         "resnet18 (default), resnet34, resnet50, convnext_tiny")
+    ap.add_argument("--pretrained", action="store_true",
+                    help="initialise the backbone from ImageNet weights. NOTE: breaks the "
+                         "'purely log-polar trained' assumption; diagnostic use only.")
     ap.add_argument("--pretrained-path", default=None,
                     help="optional checkpoint to warm-start from (loaded strict=False)")
     ap.add_argument("--output-dir", default=None)
@@ -119,10 +136,16 @@ def pick_free_device():
 
 
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None, amp=False, channels_last=False):
-    """Sum per-fixation logits over a base image's fixations, then argmax."""
+def evaluate(model, loader, device, num_classes, transform=None, amp=False, channels_last=False):
+    """Sum per-fixation logits over a base image's fixations, then argmax.
+
+    Returns (mean_batch_acc, std_batch_acc, correct_per_class, total_per_class),
+    the last two as LongTensors of shape [num_classes] for error analysis.
+    """
     model.eval()
     accs = []
+    correct_per_class = torch.zeros(num_classes, dtype=torch.long)
+    total_per_class = torch.zeros(num_classes, dtype=torch.long)
     for inputs, labels in loader:
         inputs, labels = inputs.to(device), labels.to(device)
         label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
@@ -136,8 +159,22 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
             logits = model(inputs)
         logits = logits.float().reshape(B, n, -1).sum(dim=1)
         preds = logits.argmax(dim=1)
-        accs.append((preds == label_ids).float().mean().item())
-    return float(np.mean(accs)), float(np.std(accs))
+        hits = preds == label_ids
+        accs.append(hits.float().mean().item())
+        lids = label_ids.cpu()
+        total_per_class += torch.bincount(lids, minlength=num_classes)
+        correct_per_class += torch.bincount(lids[hits.cpu()], minlength=num_classes)
+    return (float(np.mean(accs)), float(np.std(accs)),
+            correct_per_class, total_per_class)
+
+
+def per_category_accuracy(correct, total, id_to_category):
+    """Aggregate per-class correct/total counts up to category level."""
+    agg = {}
+    for i, cat in enumerate(id_to_category):
+        c, t = agg.get(cat, (0, 0))
+        agg[cat] = (c + int(correct[i]), t + int(total[i]))
+    return {cat: (c / t if t else float("nan")) for cat, (c, t) in agg.items()}
 
 
 def resolve_root(explicit, local_default, dhoni_fallback):
@@ -178,7 +215,8 @@ def main():
 
     out_dir = args.output_dir or (
         f"runs/{'_'.join(args.categories)}_{args.variant}_"
-        f"{args.num_fixations}fix_lr{args.lr}"
+        f"{args.num_fixations}fix_lr{args.lr}_{args.backbone}"
+        + ("_pt" if args.pretrained else "")
         + ("_" + "_".join(f"{c}{n}img" for c, n in sorted(max_images_per_class.items()))
            if max_images_per_class else "")
         + (f"_{args.run_tag}" if args.run_tag else "")
@@ -198,7 +236,8 @@ def main():
             max_images_per_class=max_images_per_class,
         )
         transforms = {
-            "train": OnTheFlyTransform("train", args.variant, device).to(device),
+            "train": OnTheFlyTransform("train", args.variant, device, hflip_p=args.hflip_p,
+                                       imagenet_aug=args.aug).to(device),
             "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
             "test": OnTheFlyTransform("test", args.variant, device).to(device),
         }
@@ -217,6 +256,12 @@ def main():
     with open(os.path.join(out_dir, "label_map.json"), "w") as f:
         json.dump(label_map, f, indent=2)
 
+    # id -> "category/ClassName" and id -> "category", for error analysis
+    id_to_name = [None] * num_classes
+    for name, i in label_map.items():
+        id_to_name[i] = name
+    id_to_category = [n.split("/")[0] for n in id_to_name]
+
     valid_batch_size = max(1, args.batch_size // args.num_fixations)
     train_loader = DataLoader(datasets["train"], batch_size=args.batch_size,
                               shuffle=True, num_workers=args.num_workers, pin_memory=True,
@@ -227,7 +272,11 @@ def main():
                              shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # ----------------------------- Model ----------------------------
-    model = Model(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    model = Model(size=180, num_classes=num_classes, pretrained=args.pretrained,
+                  T=args.temperature, dropout=args.dropout, backbone=args.backbone).to(device)
+    n_params = sum(p.numel() for p in model.parameters())
+    print(f"Backbone: {args.backbone} (feat dim {model.in_size}, {n_params/1e6:.1f}M params)"
+          + (" [ImageNet-pretrained]" if args.pretrained else " [from scratch]"))
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
@@ -236,8 +285,16 @@ def main():
         print(f"Warm-started from {args.pretrained_path} ({missing})")
     model.stochastic = False  # deterministic expectation during training
 
-    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
-                                  lr=args.lr, weight_decay=args.weight_decay)
+    # standard ImageNet practice: no weight decay on biases / norm params
+    decay_params, no_decay_params = [], []
+    for p in model.parameters():
+        if not p.requires_grad:
+            continue
+        (no_decay_params if p.ndim <= 1 else decay_params).append(p)
+    optimizer = torch.optim.AdamW(
+        [{"params": decay_params, "weight_decay": args.weight_decay},
+         {"params": no_decay_params, "weight_decay": 0.0}],
+        lr=args.lr)
     scheduler = (torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
                  if args.lr_schedule == "cosine" else None)
     ce_criterion = torch.nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
@@ -282,21 +339,28 @@ def main():
 
         train_acc = correct / max(total, 1)
         train_loss = float(np.mean(epoch_losses))
-        valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
-                                        amp=use_amp, channels_last=args.channels_last)
-        test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
-                                      amp=use_amp, channels_last=args.channels_last)
+        valid_acc, valid_std, v_corr, v_tot = evaluate(
+            model, valid_loader, device, num_classes, transforms["valid"],
+            amp=use_amp, channels_last=args.channels_last)
+        test_acc, test_std, t_corr, t_tot = evaluate(
+            model, test_loader, device, num_classes, transforms["test"],
+            amp=use_amp, channels_last=args.channels_last)
+        valid_by_cat = per_category_accuracy(v_corr, v_tot, id_to_category)
+        test_by_cat = per_category_accuracy(t_corr, t_tot, id_to_category)
         cur_lr = optimizer.param_groups[0]["lr"]
         if scheduler is not None:
             scheduler.step()
+        cat_str = " ".join(f"{c} {a*100:.1f}%" for c, a in sorted(valid_by_cat.items()))
         print(f"-> Epoch {epoch}: train {train_acc*100:.2f}% | "
               f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | "
-              f"loss {train_loss:.4f} | lr {cur_lr:.2e}")
+              f"loss {train_loss:.4f} | lr {cur_lr:.2e} | valid by cat: {cat_str}")
 
         history.append({"epoch": epoch, "lr": cur_lr,
                         "train_acc": train_acc, "train_loss": train_loss,
                         "valid_acc": valid_acc, "valid_std": valid_std,
                         "test_acc": test_acc, "test_std": test_std,
+                        **{f"valid_acc_{c}": a for c, a in valid_by_cat.items()},
+                        **{f"test_acc_{c}": a for c, a in test_by_cat.items()},
                         "elapsed_sec": round(time.time() - t_start, 1)})
 
         if valid_acc > best_val:
@@ -317,6 +381,42 @@ def main():
     hist_csv = os.path.join(out_dir, f"training_history_{ts}.csv")
     pd.DataFrame(history).to_csv(hist_csv, index=False)
     torch.save(model.state_dict(), os.path.join(out_dir, f"final_model_{ts}.pth"))
+
+    # ------------------- Error analysis (best ckpt) ------------------
+    # Where is the accuracy going: specific classes, or a whole category?
+    if os.path.exists(best_path):
+        model.load_state_dict(torch.load(best_path, map_location=device))
+    _, _, v_corr, v_tot = evaluate(model, valid_loader, device, num_classes,
+                                   transforms["valid"], amp=use_amp,
+                                   channels_last=args.channels_last)
+    _, _, t_corr, t_tot = evaluate(model, test_loader, device, num_classes,
+                                   transforms["test"], amp=use_amp,
+                                   channels_last=args.channels_last)
+    per_class = pd.DataFrame({
+        "class_id": range(num_classes),
+        "class_name": id_to_name,
+        "category": id_to_category,
+        "valid_n": v_tot.tolist(),
+        "valid_correct": v_corr.tolist(),
+        "test_n": t_tot.tolist(),
+        "test_correct": t_corr.tolist(),
+    })
+    per_class["valid_acc"] = per_class.valid_correct / per_class.valid_n.clip(lower=1)
+    per_class["test_acc"] = per_class.test_correct / per_class.test_n.clip(lower=1)
+    per_class = per_class.sort_values("valid_acc")
+    per_class_csv = os.path.join(out_dir, "per_class_accuracy.csv")
+    per_class.to_csv(per_class_csv, index=False)
+
+    valid_by_cat = per_category_accuracy(v_corr, v_tot, id_to_category)
+    test_by_cat = per_category_accuracy(t_corr, t_tot, id_to_category)
+    print("\nPer-category accuracy (best checkpoint):")
+    for cat in sorted(valid_by_cat):
+        print(f"  {cat:<10} valid {valid_by_cat[cat]*100:5.1f}% | "
+              f"test(inv) {test_by_cat[cat]*100:5.1f}%")
+    print("\nWorst 15 classes by valid accuracy (full list in per_class_accuracy.csv):")
+    for _, r in per_class.head(15).iterrows():
+        print(f"  {r.class_name:<45} valid {r.valid_acc*100:5.1f}% (n={r.valid_n}) | "
+              f"test(inv) {r.test_acc*100:5.1f}%")
 
     epochs = [h["epoch"] for h in history]
     plt.figure()
@@ -340,6 +440,8 @@ def main():
             "final_train_acc": history[-1]["train_acc"] if history else None,
             "final_valid_acc": history[-1]["valid_acc"] if history else None,
             "final_test_acc": history[-1]["test_acc"] if history else None,
+            "valid_acc_by_category": valid_by_cat,
+            "test_acc_by_category": test_by_cat,
             "wall_time_sec": round(time.time() - t_start, 1),
             "sec_per_epoch": round((time.time() - t_start) / max(len(history), 1), 1),
         },
@@ -347,6 +449,7 @@ def main():
             "best_model": best_path,
             "history_csv": hist_csv,
             "label_map": os.path.join(out_dir, "label_map.json"),
+            "per_class_csv": per_class_csv,
         },
         "finished": datetime.datetime.now().isoformat(timespec="seconds"),
     }

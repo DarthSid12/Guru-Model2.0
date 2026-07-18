@@ -126,6 +126,21 @@ python run_experiments.py \
 python run_experiments.py --gpus 0 1 2 --runs-file my_grid.txt
 ```
 
+**Watching logs live:** each run writes its full stdout/stderr to
+`train.log` inside its `runs/.../<run_name>/` directory. Tail it to follow
+progress in real time:
+
+```bash
+tail -f runs/exp_<timestamp>/<run_name>/train.log
+
+# tail every run in an experiment at once
+tail -f runs/exp_<timestamp>/*/train.log
+```
+
+`-f` keeps following as new lines are written; `Ctrl+C` to stop. Use
+`tail -n 100 train.log` instead if you just want the last 100 lines without
+following.
+
 ### 4. Run the Yin (1969) simulation
 
 Once per category, pointing at the trained checkpoint:

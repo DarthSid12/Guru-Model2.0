@@ -9,22 +9,36 @@ Design (per the report):
   - study : 40 items, first 10 fixations each -> noisy memory bank
   - test  : 24 OLD (subset of studied) vs 24 NEW (never-studied distractors),
             32 fixations each, retrieval noise applied, 2AFC familiarity decision
-  - orientation conditions select the preprocessed split:
-        upright  -> "valid"            (preprocessed upright)
-        inverted -> "valid_inverted"   (same photos as "valid", 180-deg
-                                         inverted -- NOT the raw "test" split,
-                                         which holds different photos)
+  - orientation conditions are now applied ON THE FLY (packed pipeline):
+        upright  -> OnTheFlyTransform("valid")  (identity rotation)
+        inverted -> OnTheFlyTransform("test")   (180-degree rotation)
+    There is no longer a separate "valid_inverted" split; both orientations are
+    rendered from the same packed 'valid' images.
 
-"Items" are class folders for multi-class categories (faces identities,
-object categories) — one representative base image per class, same as
-before. For single-class categories (houses: one generic "house" class,
-many photos), items are instead individual photos within that class, since
-each photo is its own memory item to recognize.
+"Items" are drawn from the packed 'valid' split of the category. For multi-class
+categories (faces identities, object categories) items are classes — one
+representative image per class. For single-class categories (houses: one generic
+"house" class, many photos) items are individual photos, since each photo is its
+own memory item to recognize.
 
-Example:
-    python simulate_yin1969.py --category faces --variant lp \
-        --checkpoint runs/faces_objects_lp_16fix_lr0.001/best_model.pth \
-        --label-map  runs/faces_objects_lp_16fix_lr0.001/label_map.json
+Data now comes from the packed fixation store produced by
+preprocess_fixations.py:
+
+    fixation_data/<category>/<split>/{images.npy, coords.npy, meta.json}
+
+rather than the retired PNG pipeline (processed_data/.../*_proc<n>.png). All
+rotate/foveate/log-polar rendering is done on the GPU on the fly, exactly as at
+train time (salience_trans.OnTheFlyTransform).
+
+Example (point --run-dir at a training run to auto-load its config, checkpoint
+and label map):
+    python simulate_yin1969.py --category faces \
+        --run-dir runs/faces_objects_houses_lp_16fix_lr0.001_resnet34_r3_pruned_60ep
+
+or spell the pieces out explicitly:
+    python simulate_yin1969.py --category faces --variant lp --backbone resnet34 \
+        --checkpoint runs/<run>/best_model.pth \
+        --label-map  runs/<run>/label_map.json
 """
 
 import argparse
@@ -35,10 +49,10 @@ import random
 import numpy as np
 import pandas as pd
 import torch
-import torchvision.transforms.functional as TF
-from PIL import Image
 
+from datasets import _PackedSplit, _crop_at
 from model import Model
+from salience_trans import OnTheFlyTransform
 
 
 def set_seed(seed=42):
@@ -50,81 +64,45 @@ def set_seed(seed=42):
 
 
 # ----------------------------- data -----------------------------
-def list_classes(processed_root, category, variant, split):
-    d = os.path.join(processed_root, category, variant, split)
-    return sorted(c for c in os.listdir(d) if os.path.isdir(os.path.join(d, c)))
-
-
-def _base_stems(cls_dir):
-    """Sorted base-image stems (filenames before '_proc<n>.png') in a class dir."""
-    stems = set()
-    for fname in os.listdir(cls_dir):
-        if fname.endswith(".png") and "_proc" in fname:
-            stems.add(fname.split("_proc")[0])
-    return sorted(stems)
-
-
-def list_items(processed_root, category, variant, split):
-    """Return the study/test "items" for a category as a list of (class, base_stem).
+def build_items(sp):
+    """Return the study/test "items" for a packed split as a list of
+    (img_idx, item_id).
 
     Multi-class categories (faces identities, object categories): one item per
-    class, using that class's first available base image — matches the
-    original per-class behaviour.
+    class, using that class's first packed image -- matches the original
+    per-class behaviour.
 
     Single-class categories (houses: one generic "house" class with many
-    photos): one item per individual photo, since each photo is the thing to
-    be recognized.
+    photos): one item per individual photo, since each photo is the thing to be
+    recognized.
     """
-    split_dir = os.path.join(processed_root, category, variant, split)
-    classes = list_classes(processed_root, category, variant, split)
+    labels = list(sp.labels)
     items = []
-    if len(classes) == 1:
-        cls = classes[0]
-        for stem in _base_stems(os.path.join(split_dir, cls)):
-            items.append((cls, stem))
+    if len(sp.classes) == 1:
+        for i in range(len(labels)):
+            items.append((i, f"{sp.classes[0]}/{sp.stems[i]}"))
     else:
-        for cls in classes:
-            stems = _base_stems(os.path.join(split_dir, cls))
-            if stems:
-                items.append((cls, stems[0]))
+        seen = set()
+        for i, ci in enumerate(labels):
+            if ci in seen:
+                continue
+            seen.add(ci)
+            items.append((i, sp.classes[ci]))
     return items
 
 
-def item_id(item):
-    cls, stem = item
-    return f"{cls}/{stem}"
-
-
-def load_item_fixations(processed_root, category, variant, split, item,
-                        num_fixations, offset=0):
-    """Return tensor(num_fixations, C, H, W) of `item`'s proc crops (after
-    `offset`), or None if that item/split doesn't have enough fixations."""
-    cls, stem = item
-    cls_dir = os.path.join(processed_root, category, variant, split, cls)
-    if not os.path.isdir(cls_dir):
+def load_item_fixations(sp, img_idx, num_fixations, offset=0, crop_size=180):
+    """Return uint8 tensor(num_fixations, 3, crop_size, crop_size) of `img_idx`'s
+    fixation crops (after `offset`), or None if that image lacks enough packed
+    coords. Crops are raw; the caller applies OnTheFlyTransform on the GPU."""
+    if offset + num_fixations > sp.num_coords:
         return None
-    proc_list = sorted(
-        f for f in os.listdir(cls_dir)
-        if f.startswith(stem + "_proc") and f.endswith(".png")
-    )
-    chosen = proc_list[offset: offset + num_fixations]
-    if len(chosen) < num_fixations:
-        return None
-    return torch.stack(
-        [TF.to_tensor(Image.open(os.path.join(cls_dir, p)).convert("RGB")) for p in chosen], dim=0
-    )
-
-
-def load_trial_data(processed_root, category, variant, split, items,
-                    num_fixations, offset=0):
-    """Return {item_id: tensor(num_fixations, C, H, W)} for the requested items."""
-    samples = {}
-    for item in items:
-        imgs = load_item_fixations(processed_root, category, variant, split, item,
-                                   num_fixations, offset=offset)
-        if imgs is not None:
-            samples[item_id(item)] = imgs
-    return samples
+    img = sp.images[img_idx]
+    crops = []
+    for j in range(offset, offset + num_fixations):
+        x, y = sp.coords[img_idx, j]
+        crops.append(_crop_at(img, x, y, crop_size))
+    return torch.stack(crops, dim=0)
 
 
 def apply_binomial_noise(binary_tensor, p_noise):
@@ -132,6 +110,14 @@ def apply_binomial_noise(binary_tensor, p_noise):
         return binary_tensor
     mask = torch.rand_like(binary_tensor) < p_noise
     return torch.logical_xor(binary_tensor.bool(), mask).float()
+
+
+def encode(model, transform, crops, device, p_noise):
+    """Raw uint8 fixation crops -> noisy stochastic code h (on CPU)."""
+    x = transform(crops.to(device))
+    model.stochastic = True
+    _, h, _ = model(x, return_rep=True)
+    return apply_binomial_noise(h.cpu(), p_noise)
 
 
 # ----------------------- Barrington KDE -------------------------
@@ -151,36 +137,43 @@ def compute_familiarity_score(F_test, memory_bank, sigma):
 
 
 # ----------------------- Yin condition --------------------------
-def run_condition(model, device, args, study_items, unknown_items,
-                  study_split, test_split, p_noise):
+def run_condition(model, device, args, sp, study_items, unknown_items,
+                  study_tf, test_tf, p_noise):
+    """One Yin 2AFC condition. `study_tf`/`test_tf` are OnTheFlyTransforms that
+    fix the orientation (upright vs inverted) of the study and test phases."""
     set_seed(args.seed)
-    study_data = load_trial_data(args.processed_root, args.category, args.variant,
-                                 study_split, study_items, args.study_fixations, offset=0)
-    test_old_all = load_trial_data(args.processed_root, args.category, args.variant,
-                                   test_split, study_items, args.test_fixations, offset=0)
-    unknown_data = load_trial_data(args.processed_root, args.category, args.variant,
-                                   test_split, unknown_items, args.test_fixations, offset=0)
 
     memory_bank = {}
+    test_old_idx = {}
     with torch.no_grad():
-        for item_key, imgs in study_data.items():
-            model.stochastic = True
-            _, h, _ = model(imgs.to(device), return_rep=True)
-            memory_bank[item_key] = apply_binomial_noise(h.cpu(), p_noise)
+        # ---- study phase: build the noisy memory bank ----
+        for img_idx, iid in study_items:
+            study_crops = load_item_fixations(sp, img_idx, args.study_fixations, offset=0)
+            test_crops = load_item_fixations(sp, img_idx, args.test_fixations, offset=0)
+            if study_crops is None or test_crops is None:
+                continue
+            memory_bank[iid] = encode(model, study_tf, study_crops, device, p_noise)
+            test_old_idx[iid] = img_idx
 
-        old_pool = [k for k in study_data if k in test_old_all]
-        new_pool = list(unknown_data.keys())
+        # ---- new (never-studied) distractor pool ----
+        unknown_idx = {}
+        for img_idx, iid in unknown_items:
+            if load_item_fixations(sp, img_idx, args.test_fixations, offset=0) is not None:
+                unknown_idx[iid] = img_idx
+
+        old_pool = list(test_old_idx.keys())
+        new_pool = list(unknown_idx.keys())
         n_pairs = min(args.num_test, len(old_pool), len(new_pool))
         old_items = random.sample(old_pool, n_pairs)
         new_items = random.sample(new_pool, n_pairs)
 
+        # ---- test phase: 2AFC familiarity decision ----
         correct = 0
         for i in range(n_pairs):
-            model.stochastic = True
-            _, h_old, _ = model(test_old_all[old_items[i]].to(device), return_rep=True)
-            _, h_new, _ = model(unknown_data[new_items[i]].to(device), return_rep=True)
-            h_old = apply_binomial_noise(h_old.cpu(), p_noise)
-            h_new = apply_binomial_noise(h_new.cpu(), p_noise)
+            old_crops = load_item_fixations(sp, test_old_idx[old_items[i]], args.test_fixations, offset=0)
+            new_crops = load_item_fixations(sp, unknown_idx[new_items[i]], args.test_fixations, offset=0)
+            h_old = encode(model, test_tf, old_crops, device, p_noise)
+            h_new = encode(model, test_tf, new_crops, device, p_noise)
             if compute_familiarity_score(h_old, memory_bank, args.sigma) > \
                compute_familiarity_score(h_new, memory_bank, args.sigma):
                 correct += 1
@@ -190,12 +183,17 @@ def run_condition(model, device, args, study_items, unknown_items,
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--category", required=True, help="faces | houses | objects")
-    ap.add_argument("--variant", choices=["lp", "cnn"], default="lp")
-    ap.add_argument("--processed-root", default="processed_data")
-    ap.add_argument("--checkpoint", required=True)
+    ap.add_argument("--run-dir", default=None,
+                    help="training run dir; auto-loads config.json (variant, backbone, "
+                         "temperature), best_model.pth and label_map.json unless the "
+                         "matching flag is given explicitly")
+    ap.add_argument("--variant", choices=["lp", "cnn"], default=None)
+    ap.add_argument("--backbone", default=None, help="must match the trained checkpoint")
+    ap.add_argument("--packed-root", default="fixation_data")
+    ap.add_argument("--checkpoint", default=None)
     ap.add_argument("--label-map", default=None, help="label_map.json from the run (sets num_classes)")
     ap.add_argument("--num-classes", type=int, default=None, help="used if --label-map absent")
-    ap.add_argument("--temperature", type=float, default=2.0)
+    ap.add_argument("--temperature", type=float, default=None)
     ap.add_argument("--num-study", type=int, default=40)
     ap.add_argument("--num-test", type=int, default=24)
     ap.add_argument("--study-fixations", type=int, default=10)
@@ -212,8 +210,44 @@ def parse_args():
     return ap.parse_args()
 
 
+def resolve_from_run_dir(args):
+    """Fill in checkpoint / label-map / variant / backbone / temperature from a
+    training run dir, without overriding anything passed explicitly."""
+    if not args.run_dir:
+        return
+    cfg_path = os.path.join(args.run_dir, "config.json")
+    cfg = {}
+    if os.path.isfile(cfg_path):
+        with open(cfg_path) as f:
+            cfg = json.load(f)
+    if args.checkpoint is None:
+        args.checkpoint = os.path.join(args.run_dir, "best_model.pth")
+    if args.label_map is None:
+        lm = os.path.join(args.run_dir, "label_map.json")
+        if os.path.isfile(lm):
+            args.label_map = lm
+    if args.variant is None:
+        args.variant = cfg.get("variant", "lp")
+    if args.backbone is None:
+        args.backbone = cfg.get("backbone", "resnet18")
+    if args.temperature is None:
+        args.temperature = cfg.get("temperature", 2.0)
+
+
 def main():
     args = parse_args()
+    resolve_from_run_dir(args)
+
+    # defaults for anything still unset (no --run-dir given)
+    if args.variant is None:
+        args.variant = "lp"
+    if args.backbone is None:
+        args.backbone = "resnet18"
+    if args.temperature is None:
+        args.temperature = 2.0
+    if args.checkpoint is None:
+        raise SystemExit("Provide --checkpoint or --run-dir.")
+
     set_seed(args.seed)
     device = torch.device(args.device)
 
@@ -223,15 +257,23 @@ def main():
     elif args.num_classes:
         num_classes = args.num_classes
     else:
-        raise SystemExit("Provide --label-map or --num-classes to size the model head.")
+        raise SystemExit("Provide --label-map (or --run-dir) or --num-classes to size the model head.")
 
-    model = Model(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    model = Model(size=180, num_classes=num_classes, pretrained=False,
+                  T=args.temperature, backbone=args.backbone).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
     model.eval()
 
-    # disjoint study / unknown items within the category (class-level for
-    # faces/objects, individual photos for single-class categories like houses)
-    all_items = list_items(args.processed_root, args.category, args.variant, "valid")
+    # orientation transforms, applied on the GPU on the fly (packed pipeline)
+    upright_tf = OnTheFlyTransform("valid", args.variant, device).to(device)
+    inverted_tf = OnTheFlyTransform("test", args.variant, device).to(device)
+
+    # packed 'valid' split for this category; disjoint study / unknown items
+    sp = _PackedSplit(args.packed_root, args.category, "valid")
+    if args.test_fixations > sp.num_coords or args.study_fixations > sp.num_coords:
+        raise SystemExit(f"{args.category}/valid packed with {sp.num_coords} coords, but need "
+                         f"study={args.study_fixations}, test={args.test_fixations}.")
+    all_items = build_items(sp)
     need = args.num_study + args.num_test
     if len(all_items) < need:
         raise SystemExit(f"Category '{args.category}' has {len(all_items)} usable items; "
@@ -247,7 +289,8 @@ def main():
         print(f"--- Calibrating noise on {args.category} (upright-upright) ---")
         ideal_noise = None
         for p in np.arange(0.0, args.calib_max, args.calib_step):
-            acc = run_condition(model, device, args, study_items, unknown_items, "valid", "valid", p)
+            acc = run_condition(model, device, args, sp, study_items, unknown_items,
+                                upright_tf, upright_tf, p)
             print(f"  noise {p:.2f} -> {acc*100:.2f}%")
             if acc <= args.calib_target and ideal_noise is None:
                 ideal_noise = p
@@ -256,16 +299,17 @@ def main():
             ideal_noise = 0.25
         print(f"[!] Using noise p={ideal_noise:.2f}\n")
 
-    # 2) all 4 Yin conditions
+    # 2) all 4 Yin conditions (orientation now set by the on-the-fly transform)
     conditions = [
-        ("Upright", "Upright", "valid", "valid"),
-        ("Inverted", "Inverted", "valid_inverted", "valid_inverted"),
-        ("Upright", "Inverted", "valid", "valid_inverted"),
-        ("Inverted", "Upright", "valid_inverted", "valid"),
+        ("Upright", "Upright", upright_tf, upright_tf),
+        ("Inverted", "Inverted", inverted_tf, inverted_tf),
+        ("Upright", "Inverted", upright_tf, inverted_tf),
+        ("Inverted", "Upright", inverted_tf, upright_tf),
     ]
     rows = []
-    for s_cond, t_cond, s_split, t_split in conditions:
-        acc = run_condition(model, device, args, study_items, unknown_items, s_split, t_split, ideal_noise)
+    for s_cond, t_cond, s_tf, t_tf in conditions:
+        acc = run_condition(model, device, args, sp, study_items, unknown_items,
+                            s_tf, t_tf, ideal_noise)
         rows.append({"Study": s_cond, "Test": t_cond, "Model Accuracy": f"{acc*100:.2f}%"})
 
     print("=====================================================")

@@ -178,6 +178,87 @@ class SaliencePipeline(torch.nn.Module):
         return transformed_imgs, transformed_imgs_cnn  # lp, cnn
 
 
+class ImageNetAugment(torch.nn.Module):
+    """Standard ImageNet-recipe augmentations — random resized crop (scale
+    jitter), color jitter, random erasing — implemented batched with
+    per-sample parameters so they run on the GPU inside OnTheFlyTransform.
+
+    Applied to the raw fixation crop BEFORE rotation/foveation/log-polar, so
+    the same augmentations serve both the lp and cnn variants. Expects float
+    crops in [0, 1], shape (B, C, H, W). hflip lives in OnTheFlyTransform.
+    """
+
+    def __init__(self, scale=(0.6, 1.0), brightness=0.4, contrast=0.4,
+                 saturation=0.4, erase_p=0.25, erase_scale=(0.02, 0.15),
+                 erase_ratio=(0.3, 3.3)):
+        super().__init__()
+        self.scale = scale
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.erase_p = erase_p
+        self.erase_scale = erase_scale
+        self.erase_ratio = erase_ratio
+
+    def _random_resized_crop(self, x):
+        # per-sample zoom + shift via a batched affine grid (the fixation
+        # crop is already a "crop", so the scale range is gentler than the
+        # torchvision default of (0.08, 1.0))
+        B = x.size(0)
+        dev = x.device
+        side = torch.empty(B, device=dev).uniform_(*self.scale).sqrt()
+        tx = (1 - side) * (torch.rand(B, device=dev) * 2 - 1)
+        ty = (1 - side) * (torch.rand(B, device=dev) * 2 - 1)
+        theta = torch.zeros(B, 2, 3, device=dev, dtype=x.dtype)
+        theta[:, 0, 0] = side
+        theta[:, 1, 1] = side
+        theta[:, 0, 2] = tx
+        theta[:, 1, 2] = ty
+        grid = torch.nn.functional.affine_grid(theta, list(x.shape), align_corners=False)
+        return torch.nn.functional.grid_sample(x, grid, mode='bilinear',
+                                               padding_mode='reflection',
+                                               align_corners=False)
+
+    def _color_jitter(self, x):
+        shape = (x.size(0), 1, 1, 1)
+        dev = x.device
+        if self.brightness > 0:
+            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.brightness
+            x = x * f
+        if self.contrast > 0:
+            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.contrast
+            mean = TF.rgb_to_grayscale(x).mean(dim=(2, 3), keepdim=True)
+            x = (x - mean) * f + mean
+        if self.saturation > 0:
+            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.saturation
+            gray = TF.rgb_to_grayscale(x)
+            x = (x - gray) * f + gray
+        return x.clamp_(0, 1)
+
+    def _random_erase(self, x):
+        B, C, H, W = x.shape
+        hit = torch.rand(B, device=x.device) < self.erase_p
+        for b in hit.nonzero(as_tuple=True)[0].tolist():
+            area = np.random.uniform(*self.erase_scale) * H * W
+            log_ratio = np.random.uniform(np.log(self.erase_ratio[0]),
+                                          np.log(self.erase_ratio[1]))
+            ratio = np.exp(log_ratio)
+            eh = int(round(np.sqrt(area * ratio)))
+            ew = int(round(np.sqrt(area / ratio)))
+            if 0 < eh < H and 0 < ew < W:
+                top = np.random.randint(0, H - eh)
+                left = np.random.randint(0, W - ew)
+                x[b, :, top:top + eh, left:left + ew] = torch.rand(
+                    C, eh, ew, device=x.device)
+        return x
+
+    def forward(self, x):
+        x = self._random_resized_crop(x)
+        x = self._color_jitter(x)
+        x = self._random_erase(x)
+        return x
+
+
 class OnTheFlyTransform(torch.nn.Module):
     """The tail of SaliencePipeline (rotate -> foveate -> [logpolar]), applied
     batched on the GPU at train time to raw 180x180 fixation crops produced by
@@ -192,9 +273,16 @@ class OnTheFlyTransform(torch.nn.Module):
     """
 
     def __init__(self, type='train', variant='lp', device='cpu',
-                 crop_size=180, output_shape=(180, 180)):
+                 crop_size=180, output_shape=(180, 180), hflip_p=0.5,
+                 imagenet_aug=False):
         super().__init__()
         self.variant = variant
+        self.augment = ImageNetAugment() if (type == 'train' and imagenet_aug) else None
+        # horizontal (left-right) flip only, and only at train time: faces/objects
+        # are ~bilaterally symmetric so this is a free augmentation, but a
+        # vertical flip would fake the inversion manipulation the whole
+        # pipeline exists to test, so it is never applied here.
+        self.hflip_p = hflip_p if type == 'train' else 0.0
         if type == 'train':
             self.rotate = Rotate()
         elif type in ('test', 'inverted'):
@@ -209,6 +297,13 @@ class OnTheFlyTransform(torch.nn.Module):
         """crops: (B, C, H, W) uint8 [0,255] or float [0,1] -> float (B, C, H, W)."""
         if crops.dtype == torch.uint8:
             crops = crops.float().div_(255.0)
+        if self.hflip_p > 0:
+            flip_mask = torch.rand(crops.size(0), device=crops.device) < self.hflip_p
+            if flip_mask.any():
+                crops = crops.clone()
+                crops[flip_mask] = crops[flip_mask].flip(-1)
+        if self.augment is not None:
+            crops = self.augment(crops)
         crops = self.rotate(crops)
         crops = self.foveate(crops)
         if self.variant == 'lp':
