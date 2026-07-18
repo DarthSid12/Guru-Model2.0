@@ -237,7 +237,14 @@ class PackedFixationTrainDataset(Dataset):
         crop = _crop_at(sp.images[i], x, y, self.crop_size)
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
-        return crop, one_hot
+
+        # return fixation crop coord too
+        coord = torch.tensor([
+            x / sp.images.shape[2],   # width (224)
+            y / sp.images.shape[1],   # height (224)
+        ], dtype=torch.float32)
+
+        return crops, coord, one_hot
 
 
 class PackedFixationEvalDataset(Dataset):
@@ -274,8 +281,16 @@ class PackedFixationEvalDataset(Dataset):
             for j in range(self.num_salient_points)], dim=0)
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
-        return crops, one_hot
 
+        coords = torch.tensor(
+            sp.coords[i, :self.num_salient_points],
+            dtype=torch.float32,
+        )
+
+        coords[:,0] /= sp.images.shape[2]
+        coords[:,1] /= sp.images.shape[1]
+
+        return crops, coords, one_hot
 
 def make_packed_datasets(categories, packed_root="fixation_data",
                          num_salient_points=16, label_map=None,

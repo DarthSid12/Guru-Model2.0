@@ -96,6 +96,10 @@ def parse_args():
                     help="suffix appended to the auto-named output dir (used by run_experiments.py)")
     ap.add_argument("--device", default="auto",
                     help="cuda:N | cpu | auto (auto picks the CUDA device with the most free memory)")
+
+    ap.add_argument("--cnn-full-image", action="store_true", help="train fully classical cnn without fixations")
+    # this is useful for the thatcherization experiment, but less so for yin
+
     return ap.parse_args()
 
 
@@ -120,11 +124,19 @@ def pick_free_device():
 
 @torch.no_grad()
 def evaluate(model, loader, device, transform=None, amp=False, channels_last=False):
-    """Sum per-fixation logits over a base image's fixations, then argmax."""
+
+    """
+    Sum per-fixation logits over a base image's fixations, then argmax, while
+    passing each fixation's normalized image coordinate alongside its crop.
+    """
+
     model.eval()
     accs = []
-    for inputs, labels in loader:
-        inputs, labels = inputs.to(device), labels.to(device)
+    for inputs, coords, labels in loader:
+        inputs, coords, labels = inputs.to(device), coords.to(device), labels.to(device)
+
+        coords = coords.reshape(-1, 2)
+
         label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
         B, n, C, H, W = inputs.shape
         inputs = inputs.reshape(-1, C, H, W)
@@ -133,7 +145,7 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
         if channels_last:
             inputs = inputs.contiguous(memory_format=torch.channels_last)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
-            logits = model(inputs)
+            logits = model(inputs, coords)
         logits = logits.float().reshape(B, n, -1).sum(dim=1)
         preds = logits.argmax(dim=1)
         accs.append((preds == label_ids).float().mean().item())
@@ -197,11 +209,20 @@ def main():
             num_salient_points=args.num_fixations,
             max_images_per_class=max_images_per_class,
         )
-        transforms = {
-            "train": OnTheFlyTransform("train", args.variant, device).to(device),
-            "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
-            "test": OnTheFlyTransform("test", args.variant, device).to(device),
-        }
+
+        # in case we don't want cnn fixations
+        if args.variant == "cnn" and args.cnn_full_image:
+            transforms = {
+                "train": None,
+                "valid": None,
+                "test": None,
+            }
+        else:
+            transforms = {
+                "train": OnTheFlyTransform("train", args.variant, device).to(device),
+                "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
+                "test": OnTheFlyTransform("test", args.variant, device).to(device),
+            }
     else:
         datasets, label_map = make_datasets(
             categories=args.categories,
@@ -256,8 +277,9 @@ def main():
         correct = total = 0
         epoch_losses = []
         pbar = tqdm(total=len(train_loader.dataset), desc=f"Epoch {epoch}/{args.epochs}", unit="img")
-        for inputs, labels in train_loader:
+        for inputs, coords, labels in train_loader:
             inputs = inputs.to(device, non_blocking=True)
+            coords = coords.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
             if transforms["train"] is not None:
                 with torch.no_grad():
@@ -268,7 +290,7 @@ def main():
 
             optimizer.zero_grad()
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
-                logits = model(inputs)
+                logits = model(inputs, coords)
                 loss = ce_criterion(logits, label_ids)
             loss.backward()
             optimizer.step()

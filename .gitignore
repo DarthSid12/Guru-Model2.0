@@ -8,3 +8,8 @@ runs/
 *.tar.gz
 .DS_Store
 fixation_data/
+d1deutsch@dhoni.ucsd.edu/
+my_download.py
+house_data_local.py
+face_landmarker.task
+

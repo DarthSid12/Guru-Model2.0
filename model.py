@@ -24,19 +24,42 @@ class Model(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         # --------- Classification head --------- ResNet18
-        self.fc1 = nn.Linear(self.in_size, 256)
+
+        # add coordinates of fixation crop as input!
+        self.coord_embed = nn.Sequential(
+            nn.Linear(2, 32),
+            nn.ReLU(),
+        )
+
+        self.fc1 = nn.Linear(self.in_size + 32, 256)
         self.fc2 = nn.Linear(256, num_classes)
     
-    def forward(self, x, return_rep=False):
+    def forward(self, x, coords=None, return_rep=False):
         """
         Args:
-            x : (B, 3, H, W)
+            x: (B,3,H,W)
+            coords: (B,2), normalized fixation coordinates (x,y) in [0,1]
         """
+
         feat_map = self.backbone(x)
         pooled = self.avgpool(feat_map)
-        feat = pooled.view(pooled.size(0), -1)  # [B, 512] if resnet18, [B, 2048] if resnet50
-        # logistic units with temperature
+
+        feat = pooled.view(pooled.size(0), -1)
+
+        # in case no fixation crop given for convolutional case; otherwise we pass in the fixation crop coords to forward
+        if coords is None:
+            coords = torch.zeros(
+                feat.size(0),
+                2,
+                device=feat.device,
+                dtype=feat.dtype,
+            )
+
+        coord_feat = self.coord_embed(coords)
+        feat = torch.cat([feat, coord_feat], dim=1)
         logits_z = self.fc1(feat)
+
+        # logistic units with temperature        
         probs = torch.sigmoid(logits_z / self.temperature)
 
         # ---------- stochastic vs deterministic ----------
