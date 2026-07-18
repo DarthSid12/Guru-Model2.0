@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision.models import resnet18, ResNet18_Weights
 
-class Model(nn.Module):
+class ModelCoords(nn.Module):
     def __init__(self, num_classes=128, pretrained=False, size=180, T=16.0):
         """
         ResNet18 backbone with two heads:

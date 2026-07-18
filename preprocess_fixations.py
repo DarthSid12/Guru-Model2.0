@@ -183,7 +183,7 @@ def main():
     ap.add_argument("--limit-per-class", type=int, default=None)
     ap.add_argument("--force", action="store_true", help="re-pack even if output exists")
     ap.add_argument("--raw-root", action="append", default=[],
-                    help="override raw root, e.g. --raw-root objects=/path/to/objects")
+                    help="override raw root, e.g. --raw-root objects=/path/to/objects"   
     args = ap.parse_args()
 
     raw_roots = dict(RAW_ROOTS)

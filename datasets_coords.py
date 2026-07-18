@@ -1,17 +1,7 @@
 """
-datasets.py
+datasets_coords.py
 
-Combined multi-category datasets for training a single network on faces +
-houses + objects. Every class of every category lives in one unified label
-space (see utils.build_global_label_map), so the model has a single softmax
-head over all exemplars across categories.
-
-Processed data layout (produced by preprocess.py):
-    processed_data/<category>/<variant>/<split>/<class>/<img>_proc<n>.png
-where:
-    <category> in {faces, houses, objects, ...}
-    <variant>  in {lp, cnn}
-    <split>    in {train, valid, test}
+Like datasets, but modified to save fixation crop coordinates
 """
 
 import json

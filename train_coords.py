@@ -1,29 +1,7 @@
 """
-train.py
+train_coords.py
 
-Train a single network (model.py, unchanged from the familiar-faces branch) on
-the combined faces + houses + objects data under one unified softmax head.
-
-Two data modes:
-  - packed (default when ./fixation_data exists): raw images + precomputed
-    Gabor-saliency fixation coords (preprocess_fixations.py); crops are cut on
-    the CPU and rotated/foveated/log-polar-transformed on the GPU on the fly.
-    ~10 GB-scale sequential I/O per epoch instead of millions of PNG reads.
-  - png: legacy pre-rendered crops from preprocess.py under ./processed_data.
-
-Example:
-    CUDA_VISIBLE_DEVICES=0 python train.py \
-        --categories faces objects houses \
-        --lr 1e-3 --epochs 50 --variant lp
-
-Each run writes into its output dir:
-    config.json      the exact input configuration of the run
-    summary.json     concise input + output (best/final metrics, wall time)
-    best_model.pth / final_model_<ts>.pth / label_map.json /
-    training_history_<ts>.csv / accuracy.png
-
-The classifier head (fc2) is just the training signal; the Yin/NIMBLE
-simulation operates on the shared 256-d binary code `h` from fc1.
+modifies train.py for models with extra fixation crop coord input architecture
 """
 
 import argparse
@@ -41,8 +19,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from model import Model
-from datasets import make_datasets, make_packed_datasets
+from model_coords import ModelCoords
+from datasets_coords import make_datasets, make_packed_datasets
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
@@ -248,7 +226,7 @@ def main():
                              shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # ----------------------------- Model ----------------------------
-    model = Model(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    model = ModelCoords(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
