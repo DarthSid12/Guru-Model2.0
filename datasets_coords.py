@@ -248,12 +248,13 @@ class PackedFixationEvalDataset(Dataset):
     """Eval set: one sample == all N fixation crops of a base image, uint8 (N,3,180,180)."""
 
     def __init__(self, categories, packed_root, split, num_salient_points,
-                 label_map, crop_size=180):
+                 label_map, crop_size=180, full_image=False):
         self.crop_size = crop_size
         self.num_salient_points = num_salient_points
         self.map = label_map
         self.splits = []
         self.samples = []  # (split_idx, img_idx, global_label)
+        self.full_image = full_image
 
         for category in categories:
             sp = _PackedSplit(packed_root, category, split)
