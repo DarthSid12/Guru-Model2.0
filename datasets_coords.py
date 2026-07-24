@@ -188,11 +188,12 @@ class PackedFixationTrainDataset(Dataset):
     """Training set: one sample == one (image, fixation) crop, uint8 (3,180,180)."""
 
     def __init__(self, categories, packed_root, split, num_salient_points,
-                 label_map, crop_size=180, max_images_per_class=None):
+                 label_map, crop_size=180, max_images_per_class=None, full_image=False):
         self.crop_size = crop_size
         self.map = label_map
         self.splits = []
         self.samples = []  # (split_idx, img_idx, fix_idx, global_label)
+        self.full_image = full_image
         max_images_per_class = max_images_per_class or {}
 
         for category in categories:
