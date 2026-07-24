@@ -29,6 +29,14 @@ class ModelCoords(nn.Module):
         self.coord_embed = nn.Sequential(
             nn.Linear(2, 32),
             nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU()
         )
 
         self.fc1 = nn.Linear(self.in_size + 32, 256)

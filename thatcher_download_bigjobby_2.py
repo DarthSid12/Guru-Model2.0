@@ -109,7 +109,7 @@ def save_lp_and_cnn(img, out_root, orientation, condition, identity, stem, pipel
     img_t = TF.to_tensor(img).unsqueeze(0).to(device)
 
     with torch.no_grad():
-        coords = pipeline.sample_salience_points(img_t)[0].cpu().numpy()
+        coords = pipeline.sample_salience_points(img_t)[0].float().cpu().numpy()
 
     lp_dir = os.path.join(
         out_root,

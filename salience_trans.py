@@ -214,3 +214,26 @@ class OnTheFlyTransform(torch.nn.Module):
         if self.variant == 'lp':
             crops = self.logpolar(crops)
         return crops
+
+# new transform just for the thatcher exp: takes crops as input and just foveates and log polarizes
+class ThatcherTransform(torch.nn.Module):
+    def __init__(self, variant="lp", device="cpu"):
+        super().__init__()
+        self.variant = variant
+        self.foveate = Foveate(crop_size=180)
+        self.logpolar = LogPolar(
+            input_shape=(180,180),
+            output_shape=(180,180),
+            device=device,
+        )
+
+    def forward(self, crops):
+        if crops.dtype == torch.uint8:
+            crops = crops.float()/255.
+
+        crops = self.foveate(crops)
+
+        if self.variant == "lp":
+            crops = self.logpolar(crops)
+
+        return crops
