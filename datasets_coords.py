@@ -58,10 +58,11 @@ class CombinedSalienceDatasetBatched(Dataset):
     """Training set: one sample == one fixation patch (path, global_label)."""
 
     def __init__(self, categories, processed_root, variant, split,
-                 num_salient_points, label_map, max_images_per_class=None):
+                 num_salient_points, label_map, max_images_per_class=None, full_image=False):
         self.num_salient_points = num_salient_points
         self.map = label_map
         self.samples = []  # [(path, "<category>/<class>"), ...]
+        self.full_image = full_image
         max_images_per_class = max_images_per_class or {}
 
         for category in categories:
@@ -104,10 +105,11 @@ class CombinedSalienceDataset(Dataset):
     """Eval set: one sample == all N fixations of a base image, stacked (N,C,H,W)."""
 
     def __init__(self, categories, processed_root, variant, split,
-                 num_salient_points, label_map):
+                 num_salient_points, label_map, full_image=False):
         self.num_salient_points = num_salient_points
         self.map = label_map
         self.samples = []  # [(base_id, [proc_paths...], "<category>/<class>"), ...]
+        self.full_image = full_image
 
         for category in categories:
             split_dir = os.path.join(processed_root, category, variant, split)
@@ -223,8 +225,13 @@ class PackedFixationTrainDataset(Dataset):
     def __getitem__(self, idx):
         si, i, j, gl = self.samples[idx]
         sp = self.splits[si]
-        x, y = sp.coords[i, j]
-        crop = _crop_at(sp.images[i], x, y, self.crop_size)
+
+        if self.full_image:
+            crop = torch.from_numpy(np.array(sp.images[i])).permute(2,0,1)
+        else:
+            x, y = sp.coords[i, j]
+            crop = _crop_at(sp.images[i], x, y, self.crop_size)
+
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
 
@@ -266,19 +273,34 @@ class PackedFixationEvalDataset(Dataset):
     def __getitem__(self, idx):
         si, i, gl = self.samples[idx]
         sp = self.splits[si]
-        crops = torch.stack([
-            _crop_at(sp.images[i], sp.coords[i, j, 0], sp.coords[i, j, 1], self.crop_size)
-            for j in range(self.num_salient_points)], dim=0)
+
+        if self.full_image:
+            img = torch.from_numpy(np.array(sp.images[i])).permute(2, 0, 1)
+            crops = img.unsqueeze(0)
+
+            coords = torch.zeros((1, 2), dtype=torch.float32)
+
+        else:
+            crops = torch.stack([
+                _crop_at(
+                    sp.images[i],
+                    sp.coords[i, j, 0],
+                    sp.coords[i, j, 1],
+                    self.crop_size,
+                )
+                for j in range(self.num_salient_points)
+            ], dim=0)
+
+            coords = torch.tensor(
+                sp.coords[i, :self.num_salient_points],
+                dtype=torch.float32,
+            )
+
+            coords[:, 0] /= sp.images.shape[2]
+            coords[:, 1] /= sp.images.shape[1]
+
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
-
-        coords = torch.tensor(
-            sp.coords[i, :self.num_salient_points],
-            dtype=torch.float32,
-        )
-
-        coords[:,0] /= sp.images.shape[2]
-        coords[:,1] /= sp.images.shape[1]
 
         return crops, coords, one_hot
 

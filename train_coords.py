@@ -123,7 +123,10 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
         if channels_last:
             inputs = inputs.contiguous(memory_format=torch.channels_last)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
-            logits = model(inputs, coords)
+            if transform = None:
+                logits = model(inputs, None)
+            else:
+                logits = model(inputs, coords)
         logits = logits.float().reshape(B, n, -1).sum(dim=1)
         preds = logits.argmax(dim=1)
         accs.append((preds == label_ids).float().mean().item())
@@ -186,6 +189,7 @@ def main():
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
             max_images_per_class=max_images_per_class,
+            full_image = args.cnn_full_image
         )
 
         # in case we don't want cnn fixations
@@ -208,6 +212,7 @@ def main():
             variant=args.variant,
             num_salient_points=args.num_fixations,
             max_images_per_class=max_images_per_class,
+            full_image = args.cnn_full_image
         )
         transforms = {"train": None, "valid": None, "test": None}
 
@@ -216,7 +221,11 @@ def main():
     with open(os.path.join(out_dir, "label_map.json"), "w") as f:
         json.dump(label_map, f, indent=2)
 
-    valid_batch_size = max(1, args.batch_size // args.num_fixations)
+    if args.variant == "cnn" and args.cnn_full_image:
+        valid_batch_size = args.batch_size
+    else:
+        valid_batch_size = max(1, args.batch_size // args.num_fixations)
+
     train_loader = DataLoader(datasets["train"], batch_size=args.batch_size,
                               shuffle=True, num_workers=args.num_workers, pin_memory=True,
                               persistent_workers=args.num_workers > 0)
@@ -268,7 +277,10 @@ def main():
 
             optimizer.zero_grad()
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
-                logits = model(inputs, coords)
+                if args.variant == "cnn" and args.cnn_full_image:
+                    logits = model(inputs, None)
+                else:
+                    logits = model(inputs, coords)
                 loss = ce_criterion(logits, label_ids)
             loss.backward()
             optimizer.step()
