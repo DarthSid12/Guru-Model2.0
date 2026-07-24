@@ -123,7 +123,7 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
         if channels_last:
             inputs = inputs.contiguous(memory_format=torch.channels_last)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
-            if transform = None:
+            if transform == None:
                 logits = model(inputs, None)
             else:
                 logits = model(inputs, coords)
