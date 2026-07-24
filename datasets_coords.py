@@ -25,7 +25,7 @@ def _proc_index(fname):
 
 
 def make_datasets(categories, processed_root="processed_data", variant="lp",
-                  num_salient_points=32, label_map=None, max_images_per_class=None):
+                  num_salient_points=32, label_map=None, max_images_per_class=None, full_image=False):
     """
     Build train/valid/test datasets spanning all `categories` under one global
     label space.
@@ -46,11 +46,11 @@ def make_datasets(categories, processed_root="processed_data", variant="lp",
     return {
         "train": CombinedSalienceDatasetBatched(
             categories, processed_root, variant, "train", num_salient_points, label_map,
-            max_images_per_class=max_images_per_class),
+            max_images_per_class=max_images_per_class, full_image=full_image),
         "valid": CombinedSalienceDataset(
-            categories, processed_root, variant, "valid", num_salient_points, label_map),
+            categories, processed_root, variant, "valid", num_salient_points, label_map, full_image=full_image),
         "test": CombinedSalienceDataset(
-            categories, processed_root, variant, "test", num_salient_points, label_map),
+            categories, processed_root, variant, "test", num_salient_points, label_map, full_image=full_image),
     }, label_map
 
 
@@ -306,7 +306,7 @@ class PackedFixationEvalDataset(Dataset):
 
 def make_packed_datasets(categories, packed_root="fixation_data",
                          num_salient_points=16, label_map=None,
-                         max_images_per_class=None):
+                         max_images_per_class=None, full_image=False):
     """Packed-mode counterpart of make_datasets. Returns the same
     {"train","valid","test"} dict plus the global label map. The returned
     datasets yield *raw uint8 crops*; apply salience_trans.OnTheFlyTransform
@@ -317,9 +317,9 @@ def make_packed_datasets(categories, packed_root="fixation_data",
     return {
         "train": PackedFixationTrainDataset(
             categories, packed_root, "train", num_salient_points, label_map,
-            max_images_per_class=max_images_per_class),
+            max_images_per_class=max_images_per_class, full_image=full_image),
         "valid": PackedFixationEvalDataset(
-            categories, packed_root, "valid", num_salient_points, label_map),
+            categories, packed_root, "valid", num_salient_points, label_map, full_image=full_image),
         "test": PackedFixationEvalDataset(
-            categories, packed_root, "test", num_salient_points, label_map),
+            categories, packed_root, "test", num_salient_points, label_map, full_image=full_image),
     }, label_map
