@@ -230,7 +230,7 @@ class PackedFixationTrainDataset(Dataset):
         if self.full_image:
             crop = torch.from_numpy(np.array(sp.images[i])).permute(2,0,1)
 
-            coord = None
+            coord = torch.zeros(2, dtype=torch.float32)
         else:
             x, y = sp.coords[i, j]
             crop = _crop_at(sp.images[i], x, y, self.crop_size)
