@@ -229,18 +229,20 @@ class PackedFixationTrainDataset(Dataset):
 
         if self.full_image:
             crop = torch.from_numpy(np.array(sp.images[i])).permute(2,0,1)
+
+            coord = None
         else:
             x, y = sp.coords[i, j]
             crop = _crop_at(sp.images[i], x, y, self.crop_size)
 
+            # return fixation crop coord too
+            coord = torch.tensor([
+                x / sp.images.shape[2],   # width (224)
+                y / sp.images.shape[1],   # height (224)
+            ], dtype=torch.float32)
+
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
-
-        # return fixation crop coord too
-        coord = torch.tensor([
-            x / sp.images.shape[2],   # width (224)
-            y / sp.images.shape[1],   # height (224)
-        ], dtype=torch.float32)
 
         return crop, coord, one_hot
 
