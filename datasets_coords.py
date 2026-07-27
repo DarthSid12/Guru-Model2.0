@@ -228,8 +228,12 @@ class PackedFixationTrainDataset(Dataset):
         sp = self.splits[si]
 
         if self.full_image:
-            crop = torch.from_numpy(np.array(sp.images[i])).permute(2,0,1)
-
+            crop = (
+                torch.from_numpy(np.array(sp.images[i]))
+                .permute(2, 0, 1)
+                .float()
+                .div(255.0)
+            )
             coord = torch.zeros(2, dtype=torch.float32)
         else:
             x, y = sp.coords[i, j]
@@ -279,7 +283,12 @@ class PackedFixationEvalDataset(Dataset):
         sp = self.splits[si]
 
         if self.full_image:
-            img = torch.from_numpy(np.array(sp.images[i])).permute(2, 0, 1)
+            img = (
+                torch.from_numpy(np.array(sp.images[i]))
+                .permute(2, 0, 1)
+                .float()
+                .div(255.0)
+            )
             crops = img.unsqueeze(0)
 
             coords = torch.zeros((1, 2), dtype=torch.float32)
