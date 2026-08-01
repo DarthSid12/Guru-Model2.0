@@ -269,7 +269,10 @@ class OnTheFlyTransform(torch.nn.Module):
                     unlike the baked-in rotation of preprocess.py)
                     'test' / 'inverted' -> 180-degree rotation
                     anything else -> upright
-        variant (str): 'lp' applies the log-polar transform, 'cnn' skips it
+        variant (str): 'lp' applies foveation + the log-polar transform,
+                    'cnn' applies foveation only (no log-polar),
+                    'plain' applies neither (raw crop -> backbone; control for
+                    the log-polar+foveation front-end)
     """
 
     def __init__(self, type='train', variant='lp', device='cpu',
@@ -305,7 +308,8 @@ class OnTheFlyTransform(torch.nn.Module):
         if self.augment is not None:
             crops = self.augment(crops)
         crops = self.rotate(crops)
-        crops = self.foveate(crops)
+        if self.variant != 'plain':
+            crops = self.foveate(crops)
         if self.variant == 'lp':
             crops = self.logpolar(crops)
         return crops

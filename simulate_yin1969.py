@@ -187,7 +187,7 @@ def parse_args():
                     help="training run dir; auto-loads config.json (variant, backbone, "
                          "temperature), best_model.pth and label_map.json unless the "
                          "matching flag is given explicitly")
-    ap.add_argument("--variant", choices=["lp", "cnn"], default=None)
+    ap.add_argument("--variant", choices=["lp", "cnn", "plain"], default=None)
     ap.add_argument("--backbone", default=None, help="must match the trained checkpoint")
     ap.add_argument("--packed-root", default="fixation_data")
     ap.add_argument("--checkpoint", default=None)
