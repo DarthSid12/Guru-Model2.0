@@ -21,6 +21,7 @@ import re
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
+from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -295,4 +296,166 @@ def make_packed_datasets(categories, packed_root="fixation_data",
             categories, packed_root, "valid", num_salient_points, label_map),
         "test": PackedFixationEvalDataset(
             categories, packed_root, "test", num_salient_points, label_map),
+    }, label_map
+
+"""
+WHOLE IMAGE LOADING FUNCTIONALITY
+
+For kanwisher, we want to train on the whole image, not 180x180
+"""
+
+class WholeImageDataset(Dataset):
+    """
+    Dataset returning ONE image per sample (no fixation dimension).
+
+    Expected directory layout:
+
+        data_root/
+            faces/
+                train/
+                    person1/
+                        *.jpg
+                    person2/
+                        ...
+                valid/
+                test/
+
+            objects/
+                train/
+                valid/
+                test/
+
+            houses/
+                train/
+                valid/
+                test/
+
+    Returns:
+        image (Tensor C,H,W)
+        label (one-hot Tensor)
+    """
+
+    def __init__(
+        self,
+        categories,
+        data_root,
+        split,
+        label_map,
+        max_images_per_class=None,
+    ):
+        self.samples = []
+
+        max_images_per_class = max_images_per_class or {}
+
+        for category in categories:
+
+            split_dir = Path(data_root) / category / split
+            if not split_dir.exists():
+                continue
+
+            class_dirs = sorted(d for d in split_dir.iterdir() if d.is_dir())
+
+            for class_dir in class_dirs:
+
+                class_name = class_dir.name
+                global_name = f"{category}/{class_name}"
+
+                if global_name not in label_map:
+                    continue
+
+                label = label_map[global_name]
+
+                images = sorted(
+                    p for p in class_dir.iterdir()
+                    if p.suffix.lower() in {
+                        ".jpg", ".jpeg", ".png",
+                        ".bmp", ".tif", ".tiff", ".webp"
+                    }
+                )
+
+                limit = max_images_per_class.get(category)
+                if limit is not None:
+                    images = images[:limit]
+
+                for img_path in images:
+                    self.samples.append((img_path, label))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        path, label = self.samples[idx]
+
+        image = Image.open(path).convert("RGB")
+
+        image = TF.to_tensor(image)
+
+        one_hot = torch.zeros(len(self.map))
+        one_hot[label] = 1.0
+
+        return image, one_hot
+
+def build_whole_label_map(data_root, categories, split="train"):
+    """
+    Build the global "<category>/<class>" -> idx mapping from the raw
+    train directories.
+
+    Expected layout:
+        data_root/
+            faces/train/person1/
+            faces/train/person2/
+            ...
+    """
+    mapping = {}
+    idx = 0
+
+    for category in categories:
+        split_dir = os.path.join(data_root, category, split)
+
+        if not os.path.isdir(split_dir):
+            continue
+
+        classes = sorted(
+            d for d in os.listdir(split_dir)
+            if os.path.isdir(os.path.join(split_dir, d))
+        )
+
+        for cls_name in classes:
+            mapping[f"{category}/{cls_name}"] = idx
+            idx += 1
+
+    return mapping
+
+def make_whole_datasets(categories,
+                        data_root,
+                        label_map=None,
+                        max_images_per_class=None):
+
+    if label_map is None:
+        label_map = build_whole_label_map(
+            data_root,
+            categories,
+            split="train",
+        )
+
+    return {
+        "train": WholeImageDataset(
+            categories,
+            data_root,
+            "train",
+            label_map,
+            max_images_per_class=max_images_per_class,
+        ),
+        "valid": WholeImageDataset(
+            categories,
+            data_root,
+            "valid",
+            label_map,
+        ),
+        "test": WholeImageDataset(
+            categories,
+            data_root,
+            "test",
+            label_map,
+        ),
     }, label_map

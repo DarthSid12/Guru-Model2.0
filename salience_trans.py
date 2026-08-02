@@ -10,6 +10,9 @@ faces, houses and objects alike.
 SaliencePipeline:
     rotates, foveates and log-polar transforms around each salient point (LP),
     and also returns the plain foveated crop (CNN).
+
+OnTheFlyWholeTransform:
+    rotates, foveates and log-polar transforms the entire image - no fixations
 """
 
 import cv2
@@ -313,3 +316,86 @@ class OnTheFlyTransform(torch.nn.Module):
         if self.variant == 'lp':
             crops = self.logpolar(crops)
         return crops
+
+"""
+Whole images (for infinite time simulation for kanwisher)
+"""
+
+class OnTheFlyWholeTransform(torch.nn.Module):
+
+    def __init__(self,
+                 type='train',
+                 variant='lp',
+                 device='cpu',
+                 img_size=224,
+                 hflip_p=0.0,
+                 imagenet_aug=False):
+
+        super().__init__()
+
+        self.variant = variant
+        self.img_size = img_size
+
+        self.augment = (
+            ImageNetAugment()
+            if (type == 'train' and imagenet_aug)
+            else None
+        )
+
+        # Only train augmentation
+        self.hflip_p = hflip_p if type == "train" else 0.0
+
+        # preserve Yin inversion manipulation
+        if type == "train":
+            self.rotate = Rotate()
+        elif type in ("test", "inverted"):
+            self.rotate = Rotate(invert=True)
+        else:
+            self.rotate = torch.nn.Identity()
+
+        self.foveate = Foveate(crop_size=img_size)
+
+        self.logpolar = LogPolar(
+            input_shape=(img_size, img_size),
+            output_shape=(img_size, img_size),
+            device=device
+        )
+
+
+    def forward(self, images):
+
+        if images.dtype == torch.uint8:
+            images = images.float().div_(255.0)
+
+        # resize
+        images = torch.nn.functional.interpolate(
+            images,
+            size=(self.img_size, self.img_size),
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        # train horizontal flip only
+        if self.hflip_p > 0:
+            mask = torch.rand(
+                images.size(0),
+                device=images.device
+            ) < self.hflip_p
+
+            if mask.any():
+                images = images.clone()
+                images[mask] = images[mask].flip(-1)
+
+        if self.augment is not None:
+            images = self.augment(images)
+
+        # test / inverted
+        images = self.rotate(images)
+
+        if self.variant != "plain":
+            images = self.foveate(images)
+
+        if self.variant == "lp":
+            images = self.logpolar(images)
+
+        return images

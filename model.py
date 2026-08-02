@@ -18,7 +18,7 @@ BACKBONES = {
 }
 
 
-def _build_backbone(name, pretrained):
+def _build_backbone(name, pretrained, img_size=180):
     """Return (feature_extractor, out_channels) for a named torchvision model."""
     if name not in BACKBONES:
         raise ValueError(f"unknown backbone {name!r}; choices: {sorted(BACKBONES)}")
@@ -29,7 +29,7 @@ def _build_backbone(name, pretrained):
     else:  # mobilenet / convnext expose a conv stack as `.features`
         extractor = base.features
     with torch.no_grad():
-        c = extractor(torch.zeros(1, 3, 180, 180)).shape[1]
+        c = extractor(torch.zeros(1, 3, img_size, img_size)).shape[1]
     return extractor, c
 
 
@@ -49,7 +49,7 @@ class Model(nn.Module):
         self.stochastic = False  # training mode without sampling when stochastic=False vs sampling mode when stochastic=True
 
         # --------- Backbone (feature extractor) ---------
-        self.backbone, self.in_size = _build_backbone(backbone, pretrained)
+        self.backbone, self.in_size = _build_backbone(backbone, pretrained, img_size=size)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         # --------- Classification head ---------

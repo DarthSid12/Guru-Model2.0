@@ -3,8 +3,14 @@ __pycache__/
 data/
 processed_data/
 runs/
+runs_2.1/
+d1deutsch@dhoni.ucsd.edu/
 *.pth
 *.zip
 *.tar.gz
 .DS_Store
 fixation_data/
+face_landmarker.task
+house_data_local.py
+my_download.py
+access_dhoni.sh
