@@ -276,8 +276,10 @@ def calibrate_noise(model, device, upright_tf, identities, args):
         acc, _ = run_condition(model, device, upright_tf, upright_tf, upright_tf, identities, p)
         print(f"  noise {p:.2f} -> {acc*100:.2f}%")
         if acc <= args.calib_target:
-            best_p = p
+            best_p = p if abs(acc - args.calib_target) <= abs(prev_acc - args.calib_target) else prev_p
             break
+        prev_p = p
+        prev_acc = acc
     print(f"[!] Using noise p={best_p:.2f}\n")
     return best_p
 
