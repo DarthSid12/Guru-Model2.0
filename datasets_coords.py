@@ -241,8 +241,8 @@ class PackedFixationTrainDataset(Dataset):
 
             # return fixation crop coord too
             coord = torch.tensor([
-                x / sp.images.shape[2],   # width (224)
-                y / sp.images.shape[1],   # height (224)
+                x / sp.images.shape[2] - 0.5,   # width (224)
+                y / sp.images.shape[1] - 0.5,   # height (224)
             ], dtype=torch.float32)
 
         one_hot = torch.zeros(len(self.map))
@@ -311,6 +311,7 @@ class PackedFixationEvalDataset(Dataset):
 
             coords[:, 0] /= sp.images.shape[2]
             coords[:, 1] /= sp.images.shape[1]
+            coords -= 0.5
 
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0

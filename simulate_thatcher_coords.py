@@ -31,6 +31,8 @@ from model_coords import ModelCoords
 
 from salience_trans import ThatcherTransform
 
+from utils import normalize_coords_tensor
+
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -177,7 +179,7 @@ def load_trial_data(device,
         imgs = transformer(imgs)
 
         coords = torch.cat(all_coords, dim=0)
-        coords /= 224 # image size
+        normalize_coords_tensor(coords, 224)
 
         samples[cls] = (imgs, coords)
 

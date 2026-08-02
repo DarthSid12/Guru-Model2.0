@@ -50,3 +50,8 @@ def label_to_one_hot(label, mapping):
     idx = mapping[label]
     num_classes = len(mapping)
     return F.one_hot(torch.tensor(idx, dtype=torch.long), num_classes=num_classes).float()
+
+def normalize_coords_tensor(coords, img_size):
+    coords /= img_size
+    coords -= 0.5
+    
