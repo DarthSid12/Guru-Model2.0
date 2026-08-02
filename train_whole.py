@@ -254,6 +254,7 @@ def main():
             "train": OnTheFlyWholeTransform(
                 "train",
                 args.variant,
+                device=device,
                 img_size=224,
                 hflip_p=args.hflip_p,
                 imagenet_aug=args.aug
@@ -262,12 +263,14 @@ def main():
             "valid": OnTheFlyWholeTransform(
                 "valid",
                 args.variant,
+                device=device,
                 img_size=224
             ).to(device),
 
             "test": OnTheFlyWholeTransform(
                 "test",
                 args.variant,
+                device=device,
                 img_size=224
             ).to(device),
         }
