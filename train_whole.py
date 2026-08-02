@@ -32,7 +32,7 @@ from salience_trans import OnTheFlyTransform, OnTheFlyWholeTransform
 # of forcing a fresh (slow, disk-heavy) download.py + preprocess.py run.
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
-DHONI_WHOLE_ROOT = "/home/siagrawal/combined_lpnet/data"
+DHONI_WHOLE_ROOT = "/home/d1deutsch/Guru_Model2.0/data"
 
 
 def parse_args():
