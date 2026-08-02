@@ -188,7 +188,7 @@ def main():
     args.processed_root = resolve_root(args.processed_root, "processed_data", DHONI_PROCESSED_ROOT)
     args.fixation_root = resolve_root(args.fixation_root, "fixation_data", DHONI_FIXATION_ROOT)
     args.whole_root = resolve_root(args.whole_root, "data", DHONI_WHOLE_ROOT)
-)
+
     if args.data_mode == "auto":
         args.data_mode = "packed" if os.path.isdir(args.fixation_root) else "png"
         print(f"[info] --data-mode auto -> {args.data_mode}")
