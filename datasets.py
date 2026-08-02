@@ -345,6 +345,8 @@ class WholeImageDataset(Dataset):
     ):
         self.samples = []
 
+        self.map = label_map
+
         max_images_per_class = max_images_per_class or {}
 
         for category in categories:
