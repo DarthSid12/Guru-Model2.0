@@ -42,7 +42,7 @@ def parse_args():
     ap.add_argument("--variant", choices=["lp", "cnn", "plain"], default="lp",
                     help="lp = log-polar/foveated, cnn = plain crop")
     ap.add_argument("--data-mode", choices=["auto", "packed", "png", "whole"], default="auto",
-                    help="packed = fixation_data (fast, on-the-fly transforms); "
+                    help="packed = fixation_data (fast, on-the-fly transforms); ")
     ap.add_argument("--whole-root", default=None,
                     help="raw whole-image dataset root")
                          "png = legacy pre-rendered processed_data crops; "
