@@ -42,11 +42,11 @@ def parse_args():
     ap.add_argument("--variant", choices=["lp", "cnn", "plain"], default="lp",
                     help="lp = log-polar/foveated, cnn = plain crop")
     ap.add_argument("--data-mode", choices=["auto", "packed", "png", "whole"], default="auto",
-                    help="packed = fixation_data (fast, on-the-fly transforms); ")
-    ap.add_argument("--whole-root", default=None,
-                    help="raw whole-image dataset root")
+                    help="packed = fixation_data (fast, on-the-fly transforms); "
                          "png = legacy pre-rendered processed_data crops; "
                          "auto = packed if fixation_data exists, else png")
+    ap.add_argument("--whole-root", default=None,
+                    help="raw whole-image dataset root")
     ap.add_argument("--fixation-root", default=None,
                     help="packed data root (default: ./fixation_data, falling back to "
                          f"{DHONI_FIXATION_ROOT} on DHONI)")
