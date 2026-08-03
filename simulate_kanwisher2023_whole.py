@@ -273,7 +273,7 @@ def calibrate_noise(model, device, upright_tf, identities, args):
 
     print(f"--- Refining between {prev_p:.2f} and {hit_p:.2f} ---")
     best_p = hit_p
-    prev_p = hit_p
+    prev_p = hit_p - args.calib_max
     for p in np.arange(prev_p + args.calib_fine_step, hit_p, args.calib_fine_step):
         set_seed(args.seed)
         acc, _ = run_condition(model, device, upright_tf, upright_tf, upright_tf, identities, p)
