@@ -30,7 +30,7 @@ from utils import build_global_label_map, label_to_one_hot, list_classes
 _PROC_RE = re.compile(r"_proc(\d+)\.png$")
 
 RAW_ROOTS = {
-    "faces": "faces_cleaned",
+    "faces": "faces",
     "objects": "ImageNet_objects",
     "houses": "houses",
 }
@@ -357,6 +357,7 @@ class WholeImageDataset(Dataset):
         for category in categories:
 
             split_dir = Path(data_root) / RAW_ROOTS[category] / split
+            print(split_dir)
             if not split_dir.exists():
                 print(f"{split_dir} doesn't exist˜")
                 continue
