@@ -432,6 +432,10 @@ def build_whole_label_map(data_root, categories, split="train"):
             if os.path.isdir(os.path.join(split_dir, d))
         )
 
+        print(category, split_dir)
+        print("num classes:", len(classes))
+        print(classes[:10])
+
         for cls_name in classes:
             mapping[f"{category}/{cls_name}"] = idx
             idx += 1
