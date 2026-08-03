@@ -451,7 +451,7 @@ def make_whole_datasets(categories,
     if label_map is None:
         label_map = build_whole_label_map(
             data_root,
-            categories,
+            [RAW_ROOTS[c] for c in categories],
             split="train",
         )
 
@@ -464,13 +464,13 @@ def make_whole_datasets(categories,
             max_images_per_class=max_images_per_class,
         ),
         "valid": WholeImageDataset(
-            categories,
+            [RAW_ROOTS[c] for c in categories],
             data_root,
             "valid",
             label_map,
         ),
         "test": WholeImageDataset(
-            categories,
+            [RAW_ROOTS[c] for c in categories],
             data_root,
             "test",
             label_map,
