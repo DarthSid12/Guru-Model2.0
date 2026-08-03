@@ -358,6 +358,7 @@ class WholeImageDataset(Dataset):
 
             split_dir = Path(data_root) / RAW_ROOTS[category] / split
             if not split_dir.exists():
+                print(f"{split_dir} doesn't exist˜")
                 continue
 
             class_dirs = sorted(d for d in split_dir.iterdir() if d.is_dir())
