@@ -423,7 +423,7 @@ def build_whole_label_map(data_root, categories, split="train"):
     idx = 0
 
     for category in categories:
-        split_dir = os.path.join(data_root, category, split)
+        split_dir = os.path.join(data_root, RAW_ROOTS[category], split)
 
         if not os.path.isdir(split_dir):
             continue
@@ -451,7 +451,7 @@ def make_whole_datasets(categories,
     if label_map is None:
         label_map = build_whole_label_map(
             data_root,
-            [RAW_ROOTS[c] for c in categories],
+            categories,
             split="train",
         )
 
