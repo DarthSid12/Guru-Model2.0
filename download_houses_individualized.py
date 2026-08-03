@@ -137,7 +137,7 @@ def split_objects():
             n = len(imgs)
             n_valid = max(int(n * valid_r), 1) 
             n_test = max(int(n * test_r), 1)
-            n_train = n-n_valid-n_train
+            n_train = n-n_valid-n_test
             split_files = {
                 "train": imgs[:n_train],
                 "valid": imgs[n_train:n_train + n_valid],
