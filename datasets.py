@@ -395,6 +395,9 @@ class WholeImageDataset(Dataset):
 
         image = Image.open(path).convert("RGB")
 
+        image = TF.resize(image, 224)
+        image = TF.center_crop(image, 224)
+
         image = TF.to_tensor(image)
 
         one_hot = torch.zeros(len(self.map))
