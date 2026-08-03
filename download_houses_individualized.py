@@ -126,7 +126,7 @@ def split_objects():
 
         classes = sorted(d for d in os.listdir(class_root) if os.path.isdir(os.path.join(class_root, d)))
         rng = random.Random(OBJECTS_SPLIT_SEED)
-        train_r, valid_r, _ = OBJECTS_SPLIT_RATIOS
+        train_r, valid_r, test_r = OBJECTS_SPLIT_RATIOS
 
         print(f"Splitting {len(classes)} object classes from {class_root!r} into "
               f"train/valid/test ({OBJECTS_SPLIT_RATIOS}) ...")
