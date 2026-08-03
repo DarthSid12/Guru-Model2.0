@@ -355,6 +355,7 @@ class WholeImageDataset(Dataset):
         max_images_per_class = max_images_per_class or {}
 
         for category in categories:
+            print("category:", category)
 
             split_dir = Path(data_root) / RAW_ROOTS[category] / split
             print(split_dir)
