@@ -50,12 +50,12 @@ DATASETS = {
     "faces": (
         "https://drive.google.com/file/d/137YEYgzi6qH5hXqpJOdqtyxe7hWgjAxZ/view?usp=drive_link",
         "128_faces_manually_cleaned.zip",
-        "data/faces_cleaned",
+        "data/faces",
     ),
     "objects": (
         "https://drive.google.com/file/d/1kOhJXRKaGpoQHKazFPG3QA8tLhBGNKOa/view",
         "ImageNet_objects.zip",
-        "data/ImageNet_objects",
+        "data/objects",
     ),
 }
 
