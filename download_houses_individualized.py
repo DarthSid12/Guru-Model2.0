@@ -41,7 +41,7 @@ DATASETS = {
     ),
 
     "houses": (
-        "https://drive.google.com/drive/folders/1s9n0HWHho6oAPatNYWE9nQ4RKQDTk6_Z",
+        "https://drive.google.com/file/d/1pqkvfEmWolxR_1QT-tFoqJPwLu3hzayz/view?usp=sharing",
         "houses.zip",
         "data/houses",
     ),
