@@ -254,6 +254,7 @@ def calibrate_noise(model, device, upright_tf, identities, args):
     """
     print(f"--- Calibrating noise on {args.category} (Upright) ---")
     prev_p, hit_p = 0.0, None
+    prev_acc = None
     for p in np.arange(0.0, args.calib_max, args.calib_step):
         set_seed(args.seed)
         acc, _ = run_condition(model, device, upright_tf, upright_tf, upright_tf, identities, p)
@@ -262,6 +263,7 @@ def calibrate_noise(model, device, upright_tf, identities, args):
             hit_p = p
             break
         prev_p = p
+        prev_acc = acc
     if hit_p is None:
         print(f"[!] Coarse sweep never reached target; using noise p={args.calib_max:.2f}\n")
         return args.calib_max
@@ -271,6 +273,7 @@ def calibrate_noise(model, device, upright_tf, identities, args):
 
     print(f"--- Refining between {prev_p:.2f} and {hit_p:.2f} ---")
     best_p = hit_p
+    prev_p = hit_p
     for p in np.arange(prev_p + args.calib_fine_step, hit_p, args.calib_fine_step):
         set_seed(args.seed)
         acc, _ = run_condition(model, device, upright_tf, upright_tf, upright_tf, identities, p)
