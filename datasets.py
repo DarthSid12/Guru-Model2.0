@@ -29,6 +29,11 @@ from utils import build_global_label_map, label_to_one_hot, list_classes
 
 _PROC_RE = re.compile(r"_proc(\d+)\.png$")
 
+RAW_ROOTS = {
+    "faces": "faces_cleaned",
+    "objects": "ImageNet_objects",
+    "houses": "houses",
+}
 
 def _proc_index(fname):
     m = _PROC_RE.search(fname)
@@ -351,7 +356,7 @@ class WholeImageDataset(Dataset):
 
         for category in categories:
 
-            split_dir = Path(data_root) / category / split
+            split_dir = Path(data_root) / RAW_ROOTS[category] / split
             if not split_dir.exists():
                 continue
 

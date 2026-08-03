@@ -55,7 +55,7 @@ DATASETS = {
     "objects": (
         "https://drive.google.com/file/d/1kOhJXRKaGpoQHKazFPG3QA8tLhBGNKOa/view",
         "ImageNet_objects.zip",
-        "data/objects",
+        "data/ImageNet_objects",
     ),
 }
 
