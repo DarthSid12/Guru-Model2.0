@@ -53,7 +53,6 @@ def make_datasets(categories, processed_root="processed_data", variant="lp",
             categories, processed_root, variant, "test", num_salient_points, label_map, full_image=full_image),
     }, label_map
 
-
 class CombinedSalienceDatasetBatched(Dataset):
     """Training set: one sample == one fixation patch (path, global_label)."""
 
@@ -234,7 +233,7 @@ class PackedFixationTrainDataset(Dataset):
                 .float()
                 .div(255.0)
             )
-            coord = torch.zeros(2, dtype=torch.float32)
+            coord = torch.zeros(4, dtype=torch.float32)
         else:
             x, y = sp.coords[i, j]
             crop = _crop_at(sp.images[i], x, y, self.crop_size)
@@ -243,6 +242,8 @@ class PackedFixationTrainDataset(Dataset):
             coord = torch.tensor([
                 x / sp.images.shape[2] - 0.5,   # width (224)
                 y / sp.images.shape[1] - 0.5,   # height (224)
+                0,
+                0 # dx, dy - doesn't exist unless we pack
             ], dtype=torch.float32)
 
         one_hot = torch.zeros(len(self.map))
@@ -291,7 +292,7 @@ class PackedFixationEvalDataset(Dataset):
             )
             crops = img.unsqueeze(0)
 
-            coords = torch.zeros((1, 2), dtype=torch.float32)
+            coords = torch.zeros((1, 4), dtype=torch.float32)
 
         else:
             crops = torch.stack([
@@ -304,14 +305,21 @@ class PackedFixationEvalDataset(Dataset):
                 for j in range(self.num_salient_points)
             ], dim=0)
 
-            coords = torch.tensor(
+            coords_no_delta = torch.tensor(
                 sp.coords[i, :self.num_salient_points],
                 dtype=torch.float32,
             )
 
-            coords[:, 0] /= sp.images.shape[2]
-            coords[:, 1] /= sp.images.shape[1]
-            coords -= 0.5
+            coords_no_delta[:, 0] /= sp.images.shape[2]
+            coords_no_delta[:, 1] /= sp.images.shape[1]
+            coords_no_delta -= 0.5
+
+            # add deltas
+
+            deltas = torch.zeros_like(coords)
+            deltas[1:] = coords[1:] - coords[:-1]
+
+            coords = torch.cat([coords, deltas], dim=1)
 
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
@@ -330,6 +338,27 @@ def make_packed_datasets(categories, packed_root="fixation_data",
 
     return {
         "train": PackedFixationTrainDataset(
+            categories, packed_root, "train", num_salient_points, label_map,
+            max_images_per_class=max_images_per_class, full_image=full_image),
+        "valid": PackedFixationEvalDataset(
+            categories, packed_root, "valid", num_salient_points, label_map, full_image=full_image),
+        "test": PackedFixationEvalDataset(
+            categories, packed_root, "test", num_salient_points, label_map, full_image=full_image),
+    }, label_map
+
+def make_packed_datasets_coords(categories, packed_root="fixation_data",
+                         num_salient_points=16, label_map=None,
+                         max_images_per_class=None, full_image=False):
+    """Packed-mode counterpart of make_datasets. Returns the same
+    {"train","valid","test"} dict plus the global label map. The returned
+    datasets yield *raw uint8 crops*; apply salience_trans.OnTheFlyTransform
+    (train/valid/test type per split) on the GPU before the model.
+    ALSO, we use EvalDataset for training too for consistent fixation minibatches"""
+    if label_map is None:
+        label_map = build_packed_label_map(packed_root, categories, split="train")
+
+    return {
+        "train": PackedFixationEvalDataset(
             categories, packed_root, "train", num_salient_points, label_map,
             max_images_per_class=max_images_per_class, full_image=full_image),
         "valid": PackedFixationEvalDataset(

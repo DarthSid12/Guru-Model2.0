@@ -19,8 +19,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from model_coords import ModelCoords
-from datasets_coords import make_datasets, make_packed_datasets
+from model_coords_GRU import ModelCoordsGRU
+from datasets_coords import make_datasets, make_packed_datasets_coords
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
@@ -29,6 +29,12 @@ from salience_trans import OnTheFlyTransform
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
 
+"""
+IMPLEMENTATION NOTE:
+
+For some weird reason, the original training script treats each fixation as a separate image for training, but combines all fiations of the same image into one identity for the evaluation
+To better model time steps as the model detects different fixations, we make training also batch 16 fixations together.
+"""
 
 def parse_args():
     ap = argparse.ArgumentParser()
@@ -61,11 +67,11 @@ def parse_args():
                     help="bf16 autocast for model forward/backward (--no-amp to disable)")
     ap.add_argument("--channels-last", action=argparse.BooleanOptionalAction, default=True,
                     help="channels_last memory format for model + inputs")
-    ap.add_argument("--epochs", type=int, default=50)
-    ap.add_argument("--batch-size", type=int, default=256)
+    ap.add_argument("--epochs", type=int, default=200)
+    ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--num-workers", type=int, default=8)
     ap.add_argument("--temperature", type=float, default=2.0)
-    ap.add_argument("--patience", type=int, default=10)
+    ap.add_argument("--patience", type=int, default=25)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--pretrained-path", default=None,
                     help="optional checkpoint to warm-start from (loaded strict=False)")
@@ -99,39 +105,56 @@ def pick_free_device():
     except Exception:
         return "cuda:0"
 
-
 @torch.no_grad()
 def evaluate(model, loader, device, transform=None, amp=False, channels_last=False):
-
     """
-    Sum per-fixation logits over a base image's fixations, then argmax, while
-    passing each fixation's normalized image coordinate alongside its crop.
+    Evaluate one prediction per image.
+
+    Dataset returns:
+        inputs : (B, N, C, H, W)
+        coords : (B, N, 4)
+        labels : one-hot or class indices
+
+    Model returns:
+        logits : (B, num_classes)
     """
 
     model.eval()
     accs = []
-    for inputs, coords, labels in loader:
-        inputs, coords, labels = inputs.to(device), coords.to(device), labels.to(device)
 
-        coords = coords.reshape(-1, 2)
+    for inputs, coords, labels in loader:
+        inputs = inputs.to(device, non_blocking=True)
+        coords = coords.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
 
         label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
-        B, n, C, H, W = inputs.shape
-        inputs = inputs.reshape(-1, C, H, W)
+
+        # Apply crop transform to every fixation independently
         if transform is not None:
+            B, N, C, H, W = inputs.shape
+            inputs = inputs.reshape(B * N, C, H, W)
             inputs = transform(inputs)
+            inputs = inputs.reshape(B, N, C, H, W)
+
         if channels_last:
-            inputs = inputs.contiguous(memory_format=torch.channels_last)
-        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
-            if transform == None:
-                logits = model(inputs, None)
-            else:
-                logits = model(inputs, coords)
-        logits = logits.float().reshape(B, n, -1).sum(dim=1)
+            B, N, C, H, W = inputs.shape
+            inputs = (
+                inputs.reshape(B * N, C, H, W)
+                      .contiguous(memory_format=torch.channels_last)
+                      .reshape(B, N, C, H, W)
+            )
+
+        with torch.autocast(
+            "cuda",
+            dtype=torch.bfloat16,
+            enabled=amp and device.type == "cuda",
+        ):
+            logits = model(inputs, coords)
+
         preds = logits.argmax(dim=1)
         accs.append((preds == label_ids).float().mean().item())
-    return float(np.mean(accs)), float(np.std(accs))
 
+    return float(np.mean(accs)), float(np.std(accs))
 
 def resolve_root(explicit, local_default, dhoni_fallback):
     if explicit is not None:
@@ -184,7 +207,7 @@ def main():
 
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
-        datasets, label_map = make_packed_datasets(
+        datasets, label_map = make_packed_datasets_coords(
             categories=args.categories,
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
@@ -235,7 +258,7 @@ def main():
                              shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # ----------------------------- Model ----------------------------
-    model = ModelCoords(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    model = ModelCoordsGRU(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
@@ -270,7 +293,10 @@ def main():
             labels = labels.to(device, non_blocking=True)
             if transforms["train"] is not None:
                 with torch.no_grad():
+                    B, N, C, H, W = inputs.shape
+                    inputs = inputs.reshape(B * N, C, H, W)
                     inputs = transforms["train"](inputs)
+                    inputs = inputs.reshape(B, N, C, H, W)
             if args.channels_last:
                 inputs = inputs.contiguous(memory_format=torch.channels_last)
             label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
