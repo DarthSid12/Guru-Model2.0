@@ -19,6 +19,11 @@ import torchvision.transforms.functional as TF
 from model import Model
 from salience_trans import OnTheFlyWholeTransform
 
+CAT_FOLDERS = {
+    "faces": "faces",
+    "objects": "ImageNet_objects",
+    "houses": "houses"
+}
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -43,7 +48,7 @@ def collect_identities(data_root, category, splits):
     by_class = {}
 
     for split in splits:
-        split_dir = Path(data_root) / category / split
+        split_dir = Path(data_root) / CAT_FOLDERS[category] / split
 
         if not split_dir.exists():
             continue
