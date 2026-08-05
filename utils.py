@@ -55,7 +55,7 @@ def normalize_coords_tensor(coords, img_size):
     coords /= img_size
     coords -= 0.5
 
-def shuffle_fixations(inputs, coords):
+def shuffle_fixations_one_image(inputs, coords):
     """
     inputs : (N, C, H, W)
     coords : (N, 4)  # (x, y, dx, dy)
@@ -79,3 +79,14 @@ def shuffle_fixations(inputs, coords):
     new_coords = torch.cat([coords_xy, deltas], dim=1)
 
     return new_inputs, new_coords
+
+def shuffle_fixations(inputs, coords):
+    new_inputs = []
+    new_coords = []
+
+    for x in range(len(inputs)):
+        new_i, new_c = shuffle_fixations_one_image(inputs[x], coords[x])
+        new_inputs.append(new_i)
+        new_coords.append(new_c)
+
+    return torch.stack(new_inputs), torch.stack(new_coords)
