@@ -1,5 +1,5 @@
 """
-train.py
+train_coords.py
 
 Train a single network (model.py, unchanged from the familiar-faces branch) on
 the combined faces + houses + objects data under one unified softmax head.
@@ -42,7 +42,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from model_coords import ModelCoords
-from datasets import make_datasets, make_packed_datasets_coords
+from datasets_coords import make_datasets, make_packed_datasets_coords
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
