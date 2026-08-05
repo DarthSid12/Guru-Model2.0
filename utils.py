@@ -56,16 +56,26 @@ def normalize_coords_tensor(coords, img_size):
     coords -= 0.5
 
 def shuffle_fixations(inputs, coords):
-    data = [[images[x], coords[x]] for x in range(len(images))]
+    """
+    inputs : (N, C, H, W)
+    coords : (N, 4)  # (x, y, dx, dy)
 
-    data = random.shuffle(data)
+    Returns:
+        shuffled_inputs
+        shuffled_coords  # recomputed (x, y, dx, dy)
+    """
 
-    new_images = [data[x][0] for x in range(len(data))]
-    coords_no_delta = [data[x][1][:2] for x in range(len(data))]
+    # pair each fixation with its coordinates
+    data = list(zip(inputs, coords[:, :2]))   # only keep x,y
 
-    deltas = torch.zeros_like(coords_no_delta)
-    deltas[1:] = coords_no_delta[1:] - coords_no_delta[:-1]
+    random.shuffle(data)
 
-    new_coords = torch.cat([coords_no_delta, deltas], dim=1)
+    new_inputs = torch.stack([d[0] for d in data])
+    coords_xy = torch.stack([d[1] for d in data])
+
+    deltas = torch.zeros_like(coords_xy)
+    deltas[1:] = coords_xy[1:] - coords_xy[:-1]
+
+    new_coords = torch.cat([coords_xy, deltas], dim=1)
 
     return new_inputs, new_coords
