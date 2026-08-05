@@ -316,10 +316,10 @@ class PackedFixationEvalDataset(Dataset):
 
             # add deltas
 
-            deltas = torch.zeros_like(coords.shape)
-            deltas[1:] = coords[1:] - coords[:-1]
+            deltas = torch.zeros_like(coords_no_delta.shape)
+            deltas[1:] = coords_no_delta[1:] - coords_no_delta[:-1]
 
-            coords = torch.cat([coords, deltas], dim=1)
+            coords = torch.cat([coords_no_delta, deltas], dim=1)
 
         one_hot = torch.zeros(len(self.map))
         one_hot[gl] = 1.0
