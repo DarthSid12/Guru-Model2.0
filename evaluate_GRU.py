@@ -87,11 +87,12 @@ def parse_args():
     ap.add_argument("--checkpoint", required=True)
 
     ap.add_argument("--shuffle", action="store_true")
+    ap.add_argument("--zero-coords", action="store_true")
 
     return ap.parse_args()
 
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False, shuffle=False):
+def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False, shuffle=False, zero_coords=False):
     """
     Evaluate one prediction per image.
 
@@ -118,6 +119,8 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
 
         if shuffle:
             inputs, coords = shuffle_fixations(inputs, coords)
+        if zero_coords:
+            coords = torch.zeros_like(coords)
 
         labels = labels.to(device, non_blocking=True)
 
@@ -232,9 +235,9 @@ def main():
     use_amp = args.amp and device.type == "cuda"
 
     valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
-                                        amp=use_amp, channels_last=args.channels_last, inverted=False, shuffle=args.shuffle)
+                                        amp=use_amp, channels_last=args.channels_last, inverted=False, shuffle=args.shuffle, zero_coords=args.zero_coords)
     test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
-                                      amp=use_amp, channels_last=args.channels_last, inverted=True, shuffle=args.shuffle)
+                                      amp=use_amp, channels_last=args.channels_last, inverted=True, shuffle=args.shuffle, zero_coords=args.zero_coords)
     print(f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | ")
 
 if __name__ == "__main__":
