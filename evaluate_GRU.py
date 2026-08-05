@@ -125,19 +125,6 @@ def main():
     print("Device:", device, "| categories:", args.categories, "| variant:", args.variant,
           "| data-mode:", args.data_mode, "| max_images_per_class:", max_images_per_class or "none")
 
-    out_dir = args.output_dir or (
-        f"runs/{'_'.join(args.categories)}_{args.variant}_"
-        f"{args.num_fixations}fix_lr{args.lr}"
-        + ("_" + "_".join(f"{c}{n}img" for c, n in sorted(max_images_per_class.items()))
-           if max_images_per_class else "")
-        + (f"_{args.run_tag}" if args.run_tag else "")
-    )
-    os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "config.json"), "w") as f:
-        json.dump({**vars(args), "hostname": socket.gethostname(),
-                   "started": datetime.datetime.now().isoformat(timespec="seconds")},
-                  f, indent=2)
-
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
         datasets, label_map = make_packed_datasets_coords(
@@ -180,9 +167,6 @@ def main():
     else:
         valid_batch_size = max(1, args.batch_size // args.num_fixations)
 
-    train_loader = DataLoader(datasets["train"], batch_size=args.batch_size,
-                              shuffle=True, num_workers=args.num_workers, pin_memory=True,
-                              persistent_workers=args.num_workers > 0)
     valid_loader = DataLoader(datasets["valid"], batch_size=valid_batch_size,
                               shuffle=False, num_workers=args.num_workers, pin_memory=True)
     test_loader = DataLoader(datasets["test"], batch_size=valid_batch_size,
@@ -202,8 +186,7 @@ def main():
                                         amp=use_amp, channels_last=args.channels_last, inverted=False)
     test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
                                       amp=use_amp, channels_last=args.channels_last, inverted=True)
-    cur_lr = optimizer.param_groups[0]["lr"]
-    print(f"-> Epoch {epoch}: f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | ")
+    print(f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | ")
 
 if __name__ == "__main__":
     main()
