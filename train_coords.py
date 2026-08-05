@@ -316,7 +316,7 @@ def main():
             B, C, H, W = inputs.shape
 
             # remove dx/dy
-            coords = coords[:, :, :2]
+            coords = coords[:, :2]
 
             if transforms["train"] is not None:
                 with torch.no_grad():
