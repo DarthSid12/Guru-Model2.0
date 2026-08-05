@@ -5,6 +5,24 @@ import os
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
 
+def pick_free_device():
+    if not torch.cuda.is_available():
+        return "cpu"
+    try:
+        out = subprocess.check_output(
+            ["nvidia-smi", "--query-gpu=index,memory.used", "--format=csv,noheader,nounits"],
+            text=True)
+        rows = [tuple(int(v) for v in line.split(",")) for line in out.strip().splitlines()]
+        # nvidia-smi enumerates physical GPUs; respect CUDA_VISIBLE_DEVICES if set
+        visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if visible:
+            allowed = [int(v) for v in visible.split(",") if v.strip() != ""]
+            rows = [(allowed.index(i), m) for i, m in rows if i in allowed]
+        idx = min(rows, key=lambda r: r[1])[0]
+        return f"cuda:{idx}"
+    except Exception:
+        return "cuda:0"
+
 def resolve_root(explicit, local_default, dhoni_fallback):
     if explicit is not None:
         return explicit
