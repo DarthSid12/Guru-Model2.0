@@ -4,6 +4,15 @@ import argparse
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
 
+def resolve_root(explicit, local_default, dhoni_fallback):
+    if explicit is not None:
+        return explicit
+    if not os.path.isdir(local_default) and "dhoni" in socket.gethostname().lower() \
+            and os.path.isdir(dhoni_fallback):
+        print(f"[info] No local ./{local_default} found; using shared DHONI data at {dhoni_fallback}.")
+        return dhoni_fallback
+    return local_default
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--categories", nargs="+", default=["faces", "objects"],
