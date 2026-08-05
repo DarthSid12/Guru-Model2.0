@@ -42,7 +42,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from model_coords import ModelCoords
-from datasets import make_datasets, make_packed_datasets
+from datasets import make_datasets, make_packed_datasets_coords
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
@@ -243,7 +243,7 @@ def main():
 
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
-        datasets, label_map = make_packed_datasets(
+        datasets, label_map = make_packed_datasets_coords(
             categories=args.categories,
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
