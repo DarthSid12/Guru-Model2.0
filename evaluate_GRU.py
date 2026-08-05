@@ -203,8 +203,6 @@ def main():
 
     num_classes = len(label_map)
     print(f"Unified label space: {num_classes} classes across {len(args.categories)} categories")
-    with open(os.path.join(out_dir, "label_map.json"), "w") as f:
-        json.dump(label_map, f, indent=2)
 
     if args.variant == "cnn" and args.cnn_full_image:
         valid_batch_size = args.batch_size
