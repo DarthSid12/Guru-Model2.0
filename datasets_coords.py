@@ -359,8 +359,7 @@ def make_packed_datasets_coords(categories, packed_root="fixation_data",
 
     return {
         "train": PackedFixationEvalDataset(
-            categories, packed_root, "train", num_salient_points, label_map,
-            max_images_per_class=max_images_per_class, full_image=full_image),
+            categories, packed_root, "train", num_salient_points, label_map, full_image=full_image),
         "valid": PackedFixationEvalDataset(
             categories, packed_root, "valid", num_salient_points, label_map, full_image=full_image),
         "test": PackedFixationEvalDataset(
