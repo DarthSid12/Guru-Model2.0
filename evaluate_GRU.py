@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from model_coords_GRU import ModelCoordsGRU
 from datasets_coords import make_datasets, make_packed_datasets_coords
 from salience_trans import OnTheFlyTransform
+from utils import shuffle_fixations
 
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
@@ -85,10 +86,12 @@ def parse_args():
 
     ap.add_argument("--checkpoint", required=True)
 
+    ap.add_argument("--shuffle", action="store_true")
+
     return ap.parse_args()
 
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False):
+def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False, shuffle=False):
     """
     Evaluate one prediction per image.
 
@@ -110,7 +113,11 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
         coords = coords.to(device, non_blocking=True)
 
         if inverted:
-            coords *= -1
+            pass 
+            #coords *= -1
+
+        if shuffle:
+            inputs, coords = shuffle_fixations(inputs, coords)
 
         labels = labels.to(device, non_blocking=True)
 
@@ -225,9 +232,9 @@ def main():
     use_amp = args.amp and device.type == "cuda"
 
     valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
-                                        amp=use_amp, channels_last=args.channels_last, inverted=False)
+                                        amp=use_amp, channels_last=args.channels_last, inverted=False, shuffle=args.shuffle)
     test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
-                                      amp=use_amp, channels_last=args.channels_last, inverted=True)
+                                      amp=use_amp, channels_last=args.channels_last, inverted=True, shuffle=args.shuffle)
     print(f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | ")
 
 if __name__ == "__main__":

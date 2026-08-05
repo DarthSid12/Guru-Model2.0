@@ -1,7 +1,7 @@
 import os
 import torch
 import torch.nn.functional as F
-
+import random
 
 def list_classes(split_dir):
     """Return the sorted list of class (folder) names under a split directory."""
@@ -54,4 +54,18 @@ def label_to_one_hot(label, mapping):
 def normalize_coords_tensor(coords, img_size):
     coords /= img_size
     coords -= 0.5
-    
+
+def shuffle_fixations(inputs, coords):
+    data = [[images[x], coords[x]] for x in range(len(images))]
+
+    data = random.shuffle(data)
+
+    new_images = [data[x][0] for x in range(len(data))]
+    coords_no_delta = [data[x][1][:2] for x in range(len(data))]
+
+    deltas = torch.zeros_like(coords_no_delta)
+    deltas[1:] = coords_no_delta[1:] - coords_no_delta[:-1]
+
+    new_coords = torch.cat([coords_no_delta, deltas], dim=1)
+
+    return new_inputs, new_coords
