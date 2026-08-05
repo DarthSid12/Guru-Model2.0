@@ -211,7 +211,7 @@ def main():
 
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
-        datasets, label_map = make_packed_datasets_coords(
+        datasets, label_map = make_packed_datasets(
             categories=args.categories,
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
