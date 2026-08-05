@@ -313,14 +313,10 @@ def main():
             coords = coords.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
-            B, N, C, H, W = inputs.shape
+            B, C, H, W = inputs.shape
 
             # remove dx/dy
             coords = coords[:, :, :2]
-
-            # flatten fixation dimension
-            inputs = inputs.reshape(B*N, C, H, W)
-            coords = coords.reshape(B*N, 2)
 
             if transforms["train"] is not None:
                 with torch.no_grad():
@@ -332,7 +328,6 @@ def main():
             optimizer.zero_grad()
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
                 logits = model(inputs, coords)
-                logits = logits.reshape(B, N, -1).sum(dim=1)
                 loss = ce_criterion(logits, label_ids)
 
             loss.backward()
