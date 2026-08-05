@@ -316,7 +316,7 @@ class PackedFixationEvalDataset(Dataset):
 
             # add deltas
 
-            deltas = torch.zeros_like(coords_no_delta.shape)
+            deltas = torch.zeros_like(coords_no_delta)
             deltas[1:] = coords_no_delta[1:] - coords_no_delta[:-1]
 
             coords = torch.cat([coords_no_delta, deltas], dim=1)
