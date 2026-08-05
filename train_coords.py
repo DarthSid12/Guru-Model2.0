@@ -106,7 +106,7 @@ def pick_free_device():
         return "cuda:0"
 
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None, amp=False, channels_last=False):
+def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False):
     """
     Evaluate one prediction per image.
 
@@ -124,7 +124,12 @@ def evaluate(model, loader, device, transform=None, amp=False, channels_last=Fal
 
     for inputs, coords, labels in loader:
         inputs = inputs.to(device, non_blocking=True)
+
         coords = coords.to(device, non_blocking=True)
+
+        if inverted:
+            coords *= -1
+
         labels = labels.to(device, non_blocking=True)
 
         label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
@@ -338,9 +343,9 @@ def main():
         train_acc = correct / max(total, 1)
         train_loss = float(np.mean(epoch_losses))
         valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
-                                        amp=use_amp, channels_last=args.channels_last)
+                                        amp=use_amp, channels_last=args.channels_last, inverted=False)
         test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
-                                      amp=use_amp, channels_last=args.channels_last)
+                                      amp=use_amp, channels_last=args.channels_last, inverted=True)
         cur_lr = optimizer.param_groups[0]["lr"]
         if scheduler is not None:
             scheduler.step()
