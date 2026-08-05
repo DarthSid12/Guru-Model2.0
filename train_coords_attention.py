@@ -198,7 +198,7 @@ def main():
 
     out_dir = args.output_dir or (
         f"runs/{'_'.join(args.categories)}_{args.variant}_"
-        f"{args.num_fixations}fix_lr{args.lr}"
+        f"{args.num_fixations}fix_lr{args.lr}_attention"
         + ("_" + "_".join(f"{c}{n}img" for c, n in sorted(max_images_per_class.items()))
            if max_images_per_class else "")
         + (f"_{args.run_tag}" if args.run_tag else "")

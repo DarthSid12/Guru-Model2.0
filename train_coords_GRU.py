@@ -1,29 +1,7 @@
 """
-train.py
+train_coords_GRU.py
 
-Train a single network (model.py, unchanged from the familiar-faces branch) on
-the combined faces + houses + objects data under one unified softmax head.
-
-Two data modes:
-  - packed (default when ./fixation_data exists): raw images + precomputed
-    Gabor-saliency fixation coords (preprocess_fixations.py); crops are cut on
-    the CPU and rotated/foveated/log-polar-transformed on the GPU on the fly.
-    ~10 GB-scale sequential I/O per epoch instead of millions of PNG reads.
-  - png: legacy pre-rendered crops from preprocess.py under ./processed_data.
-
-Example:
-    CUDA_VISIBLE_DEVICES=0 python train.py \
-        --categories faces objects houses \
-        --lr 1e-3 --epochs 50 --variant lp
-
-Each run writes into its output dir:
-    config.json      the exact input configuration of the run
-    summary.json     concise input + output (best/final metrics, wall time)
-    best_model.pth / final_model_<ts>.pth / label_map.json /
-    training_history_<ts>.csv / accuracy.png
-
-The classifier head (fc2) is just the training signal; the Yin/NIMBLE
-simulation operates on the shared 256-d binary code `h` from fc1.
+modifies train.py for models with extra fixation crop coord input architecture
 """
 
 import argparse
@@ -41,8 +19,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from model_coords import ModelCoords
-from datasets import make_datasets, make_packed_datasets
+from model_coords_GRU import ModelCoordsGRU
+from datasets_coords import make_datasets, make_packed_datasets_coords
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
@@ -51,6 +29,12 @@ from salience_trans import OnTheFlyTransform
 DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
 DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
 
+"""
+IMPLEMENTATION NOTE:
+
+For some weird reason, the original training script treats each fixation as a separate image for training, but combines all fiations of the same image into one identity for the evaluation
+To better model time steps as the model detects different fixations, we make training also batch 16 fixations together.
+"""
 
 def parse_args():
     ap = argparse.ArgumentParser()
@@ -83,11 +67,11 @@ def parse_args():
                     help="bf16 autocast for model forward/backward (--no-amp to disable)")
     ap.add_argument("--channels-last", action=argparse.BooleanOptionalAction, default=True,
                     help="channels_last memory format for model + inputs")
-    ap.add_argument("--epochs", type=int, default=50)
-    ap.add_argument("--batch-size", type=int, default=256)
+    ap.add_argument("--epochs", type=int, default=200)
+    ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--num-workers", type=int, default=8)
     ap.add_argument("--temperature", type=float, default=2.0)
-    ap.add_argument("--patience", type=int, default=10)
+    ap.add_argument("--patience", type=int, default=25)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--pretrained-path", default=None,
                     help="optional checkpoint to warm-start from (loaded strict=False)")
@@ -96,6 +80,10 @@ def parse_args():
                     help="suffix appended to the auto-named output dir (used by run_experiments.py)")
     ap.add_argument("--device", default="auto",
                     help="cuda:N | cpu | auto (auto picks the CUDA device with the most free memory)")
+
+    ap.add_argument("--cnn-full-image", action="store_true", help="train fully classical cnn without fixations")
+    # this is useful for the thatcherization experiment, but less so for yin
+
     return ap.parse_args()
 
 
@@ -117,80 +105,61 @@ def pick_free_device():
     except Exception:
         return "cuda:0"
 
-
 @torch.no_grad()
-def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, invert_coords=False):
+def evaluate(model, loader, device, transform=None, amp=False, channels_last=False, inverted=False):
     """
-    Coordinate fixation-summing evaluation.
+    Evaluate one prediction per image.
 
-    Dataset:
-        inputs: (B,N,C,H,W)
-        coords: (B,N,4) = x,y,dx,dy
+    Dataset returns:
+        inputs : (B, N, C, H, W)
+        coords : (B, N, 4)
+        labels : one-hot or class indices
 
-    We discard dx,dy and only use:
-        x,y
-
-    Model:
-        image + coordinate -> fixation logits
-
-    Fixation logits are summed over N fixations.
+    Model returns:
+        logits : (B, num_classes)
     """
 
     model.eval()
     accs = []
 
     for inputs, coords, labels in loader:
-
         inputs = inputs.to(device, non_blocking=True)
+
         coords = coords.to(device, non_blocking=True)
+
+        if inverted:
+            coords *= -1
+
         labels = labels.to(device, non_blocking=True)
 
-        if invert_coords:
-            coords = 1 - coords
+        label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
 
-        label_ids = (
-            labels.argmax(dim=1)
-            if labels.dim() > 1
-            else labels
-        )
-
-        B, N, C, H, W = inputs.shape
-
-        # remove delta coordinates
-        coords = coords[:, :, :2]
-
-        # flatten fixations
-        inputs = inputs.reshape(B*N, C, H, W)
-        coords = coords.reshape(B*N, 2)
-
+        # Apply crop transform to every fixation independently
         if transform is not None:
+            B, N, C, H, W = inputs.shape
+            inputs = inputs.reshape(B * N, C, H, W)
             inputs = transform(inputs)
+            inputs = inputs.reshape(B, N, C, H, W)
 
         if channels_last:
-            inputs = inputs.contiguous(memory_format=torch.channels_last)
+            B, N, C, H, W = inputs.shape
+            inputs = (
+                inputs.reshape(B * N, C, H, W)
+                      .contiguous(memory_format=torch.channels_last)
+                      .reshape(B, N, C, H, W)
+            )
 
         with torch.autocast(
             "cuda",
             dtype=torch.bfloat16,
-            enabled=amp and device.type == "cuda"
+            enabled=amp and device.type == "cuda",
         ):
-
             logits = model(inputs, coords)
 
-        # restore fixation dimension
-        logits = logits.float().reshape(B, N, -1)
-
-        # sum evidence over fixations
-        logits = logits.sum(dim=1)
-
         preds = logits.argmax(dim=1)
-
-        accs.append(
-            (preds == label_ids).float().mean().item()
-        )
+        accs.append((preds == label_ids).float().mean().item())
 
     return float(np.mean(accs)), float(np.std(accs))
-
 
 def resolve_root(explicit, local_default, dhoni_fallback):
     if explicit is not None:
@@ -230,7 +199,7 @@ def main():
 
     out_dir = args.output_dir or (
         f"runs/{'_'.join(args.categories)}_{args.variant}_"
-        f"{args.num_fixations}fix_lr{args.lr}"
+        f"{args.num_fixations}fix_lr{args.lr}_GRU"
         + ("_" + "_".join(f"{c}{n}img" for c, n in sorted(max_images_per_class.items()))
            if max_images_per_class else "")
         + (f"_{args.run_tag}" if args.run_tag else "")
@@ -243,17 +212,27 @@ def main():
 
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
-        datasets, label_map = make_packed_datasets(
+        datasets, label_map = make_packed_datasets_coords(
             categories=args.categories,
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
             max_images_per_class=max_images_per_class,
+            full_image = args.cnn_full_image
         )
-        transforms = {
-            "train": OnTheFlyTransform("train", args.variant, device).to(device),
-            "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
-            "test": OnTheFlyTransform("test", args.variant, device).to(device),
-        }
+
+        # in case we don't want cnn fixations
+        if args.variant == "cnn" and args.cnn_full_image:
+            transforms = {
+                "train": None,
+                "valid": None,
+                "test": None,
+            }
+        else:
+            transforms = {
+                "train": OnTheFlyTransform("train", args.variant, device).to(device),
+                "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
+                "test": OnTheFlyTransform("test", args.variant, device).to(device),
+            }
     else:
         datasets, label_map = make_datasets(
             categories=args.categories,
@@ -261,6 +240,7 @@ def main():
             variant=args.variant,
             num_salient_points=args.num_fixations,
             max_images_per_class=max_images_per_class,
+            full_image = args.cnn_full_image
         )
         transforms = {"train": None, "valid": None, "test": None}
 
@@ -269,7 +249,11 @@ def main():
     with open(os.path.join(out_dir, "label_map.json"), "w") as f:
         json.dump(label_map, f, indent=2)
 
-    valid_batch_size = max(1, args.batch_size // args.num_fixations)
+    if args.variant == "cnn" and args.cnn_full_image:
+        valid_batch_size = args.batch_size
+    else:
+        valid_batch_size = max(1, args.batch_size // args.num_fixations)
+
     train_loader = DataLoader(datasets["train"], batch_size=args.batch_size,
                               shuffle=True, num_workers=args.num_workers, pin_memory=True,
                               persistent_workers=args.num_workers > 0)
@@ -279,7 +263,7 @@ def main():
                              shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # ----------------------------- Model ----------------------------
-    model = ModelCoords(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
+    model = ModelCoordsGRU(size=180, num_classes=num_classes, pretrained=False, T=args.temperature).to(device)
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
@@ -313,44 +297,55 @@ def main():
             coords = coords.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
+            # labels are one per image, not per fixation
+            label_ids = labels.argmax(dim=1)
+
             B, N, C, H, W = inputs.shape
 
-            # remove dx/dy
-            coords = coords[:, :, :2]
-
-            # flatten fixation dimension
-            inputs = inputs.reshape(B*N, C, H, W)
-            coords = coords.reshape(B*N, 2)
-
+            # transforms? (flatten to work with existing code)
+            flat_inputs = inputs.reshape(B * N, C, H, W)
             if transforms["train"] is not None:
                 with torch.no_grad():
-                    inputs = transforms["train"](inputs)
+                    flat_inputs = transforms["train"](flat_inputs)
             if args.channels_last:
-                inputs = inputs.contiguous(memory_format=torch.channels_last)
-            label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
+                flat_inputs = flat_inputs.contiguous(memory_format=torch.channels_last)
+            inputs = flat_inputs.reshape(B, N, C, H, W)
 
             optimizer.zero_grad()
-            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
+
+            with torch.autocast("cuda",
+                                dtype=torch.bfloat16,
+                                enabled=use_amp):
+
+                # one prediction per fixation
                 logits = model(inputs, coords)
-                logits = logits.reshape(B, N, -1).sum(dim=1)
+
                 loss = ce_criterion(logits, label_ids)
 
             loss.backward()
             optimizer.step()
 
+
             correct += (logits.argmax(dim=1) == label_ids).sum().item()
-            total += label_ids.size(0)
+
+            total += B
+
             epoch_losses.append(loss.item())
-            pbar.update(inputs.size(0))
-            pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
+
+            pbar.update(B)
+
+            pbar.set_postfix(
+                acc=f"{correct/total*100:.2f}%",
+                ce=f"{loss.item():.3f}"
+            )
         pbar.close()
 
         train_acc = correct / max(total, 1)
         train_loss = float(np.mean(epoch_losses))
         valid_acc, valid_std = evaluate(model, valid_loader, device, transforms["valid"],
-                                        amp=use_amp, channels_last=args.channels_last)
+                                        amp=use_amp, channels_last=args.channels_last, inverted=False)
         test_acc, test_std = evaluate(model, test_loader, device, transforms["test"],
-                                      amp=use_amp, channels_last=args.channels_last, invert_coords=True)
+                                      amp=use_amp, channels_last=args.channels_last, inverted=True)
         cur_lr = optimizer.param_groups[0]["lr"]
         if scheduler is not None:
             scheduler.step()

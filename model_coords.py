@@ -26,9 +26,8 @@ class ModelCoords(nn.Module):
         # --------- Classification head --------- ResNet18
 
         # add coordinates of fixation crop as input
-        # input: (x,y, dx, dy) - both actual coords and difference from previous fixation given; dx,dy are 0 for the first fixation
         self.coord_embed = nn.Sequential(
-            nn.Linear(4, 32),
+            nn.Linear(2, 32),
             nn.ReLU(),
             nn.Linear(32, 32),
             nn.ReLU()
@@ -53,7 +52,7 @@ class ModelCoords(nn.Module):
         if coords is None:
             coords = torch.zeros(
                 feat.size(0),
-                4,
+                2,
                 device=feat.device,
                 dtype=feat.dtype,
             )
