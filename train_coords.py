@@ -341,7 +341,7 @@ def main():
             correct += (logits.argmax(dim=1) == label_ids).sum().item()
             total += label_ids.size(0)
             epoch_losses.append(loss.item())
-            pbar.update(inputs.size(0))
+            pbar.update(B)
             pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
         pbar.close()
 
