@@ -291,80 +291,48 @@ def main():
             inputs = inputs.to(device, non_blocking=True)
             coords = coords.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
+
+            # labels are one per image, not per fixation
+            label_ids = labels.argmax(dim=1)
+
+            B, N, C, H, W = inputs.shape
+
+            # transforms? (flatten to work with existing code)
+            flat_inputs = inputs.reshape(B * N, C, H, W)
             if transforms["train"] is not None:
                 with torch.no_grad():
-                    B, N, C, H, W = inputs.shape
-                    inputs = inputs.reshape(B * N, C, H, W)
-                    inputs = transforms["train"](inputs)
-                    inputs = inputs.reshape(B, N, C, H, W)
+                    flat_inputs = transforms["train"](flat_inputs)
             if args.channels_last:
-                inputs = inputs.contiguous(memory_format=torch.channels_last)
-            label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
+                flat_inputs = flat_inputs.contiguous(memory_format=torch.channels_last)
+            inputs = flat_inputs.reshape(B, N, C, H, W)
 
             optimizer.zero_grad()
-            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
-                if args.variant == "cnn" and args.cnn_full_image:
-                    logits = model(inputs, None)
-                else:
-                    logits = model(inputs, coords)
+
+            with torch.autocast("cuda",
+                                dtype=torch.bfloat16,
+                                enabled=use_amp):
+
+                # one prediction per fixation
+                logits = model(inputs, coords)
+
                 loss = ce_criterion(logits, label_ids)
+
             loss.backward()
             optimizer.step()
 
+
             correct += (logits.argmax(dim=1) == label_ids).sum().item()
-            total += label_ids.size(0)
+
+            total += B
+
             epoch_losses.append(loss.item())
-            pbar.update(inputs.size(0))
-            pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
-            for inputs, coords, labels in train_loader:
 
-                inputs = inputs.to(device, non_blocking=True)
-                coords = coords.to(device, non_blocking=True)
-                labels = labels.to(device, non_blocking=True)
+            pbar.update(B)
 
-                # labels are one per image, not per fixation
-                label_ids = labels.argmax(dim=1)
-
-                B, N, C, H, W = inputs.shape
-
-                # transforms? (flatten to work with existing code)
-                flat_inputs = inputs.reshape(B * N, C, H, W)
-                if transforms["train"] is not None:
-                    with torch.no_grad():
-                        flat_inputs = transforms["train"](flat_inputs)
-                if args.channels_last:
-                    flat_inputs = flat_inputs.contiguous(memory_format=torch.channels_last)
-                inputs = flat_inputs.reshape(B, N, C, H, W)
-
-                optimizer.zero_grad()
-
-                with torch.autocast("cuda",
-                                    dtype=torch.bfloat16,
-                                    enabled=use_amp):
-
-                    # one prediction per fixation
-                    logits = model(inputs, coords)
-
-                    loss = ce_criterion(logits, label_ids)
-
-                loss.backward()
-                optimizer.step()
-
-
-                correct += (
-                    logits.argmax(dim=1) == label_ids
-                ).sum().item()
-
-                total += B
-
-                epoch_losses.append(loss.item())
-
-                pbar.update(B)
-
-                pbar.set_postfix(
-                    acc=f"{correct/total*100:.2f}%",
-                    ce=f"{loss.item():.3f}"
-                )
+            pbar.set_postfix(
+                acc=f"{correct/total*100:.2f}%",
+                ce=f"{loss.item():.3f}"
+            )
         pbar.close()
 
         train_acc = correct / max(total, 1)
