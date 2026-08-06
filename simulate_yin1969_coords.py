@@ -285,13 +285,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             model.stochastic = True
 
-            coords = torch.zeros_like(coords)
-
             _, h, _ = model(
                 imgs,
                 coords,
                 return_rep=True
             )
+
+            _, h2, _ = model(
+                imgs,
+                torch.zeros_like(coords),
+                return_rep=True
+            )
+
+            print(print((h2 - h).abs().mean())
 
             memory_bank[item_key] = apply_binomial_noise(
                 h.cpu(),
@@ -334,14 +340,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             old_imgs = test_transform(old_imgs)
 
-            old_coords = torch.zeros_like(old_coords)
-
             _, h_old, _ = model(
                 old_imgs,
                 old_coords,
                 return_rep=True
             )
 
+            _, h2, _ = model(
+                old_imgs,
+                torch.zeros_like(old_coords),
+                return_rep=True
+            )
+
+            print(print((h2 - h).abs().mean())
 
             # NEW item
             new = unknown_data[new_items[i]]
@@ -351,14 +362,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             new_imgs = test_transform(new_imgs)
 
-            new_coords = torch.zeros_like(new_coords)
-
             _, h_new, _ = model(
                 new_imgs,
                 new_coords,
                 return_rep=True
             )
 
+            _, h2, _ = model(
+                new_imgs,
+                torch.zeros_like(new_coords),
+                return_rep=True
+            )
+
+            print(print((h2 - h).abs().mean())
 
             # retrieval noise
             h_old = apply_binomial_noise(
@@ -433,7 +449,7 @@ def main():
     model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
     model.eval()
 
-    print(model.coord_embed[0].weight.norm())
+    #print(model.coord_embed[0].weight.norm())
 
     # disjoint study / unknown items within the category (class-level for
     # faces/objects, individual photos for single-class categories like houses)
