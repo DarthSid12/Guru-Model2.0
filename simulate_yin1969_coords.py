@@ -290,13 +290,13 @@ def run_condition(model, device, args, study_items, unknown_items,
                 coords,
                 return_rep=True
             )
-
+            '''
             logits2, h2, _ = model(
                 imgs,
                 torch.zeros_like(coords),
                 return_rep=True
             )
-
+            '''
             #print((logits2 - logits).abs().mean())
 
             memory_bank[item_key] = apply_binomial_noise(
@@ -345,13 +345,13 @@ def run_condition(model, device, args, study_items, unknown_items,
                 old_coords,
                 return_rep=True
             )
-
+            '''
             logits2_old, h2_old, _ = model(
                 old_imgs,
                 torch.zeros_like(old_coords),
                 return_rep=True
             )
-
+            '''
             #print((logits2_old - logits_old).abs().mean())
 
             # NEW item
@@ -367,13 +367,13 @@ def run_condition(model, device, args, study_items, unknown_items,
                 new_coords,
                 return_rep=True
             )
-
+            '''
             logits2_new, h2_new, _ = model(
                 new_imgs,
                 torch.zeros_like(new_coords),
                 return_rep=True
             )
-
+            '''
             #print((logits2_new - logits_new).abs().mean())
 
             # retrieval noise
