@@ -285,6 +285,8 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             model.stochastic = True
 
+            coords = torch.zeros_like(coords)
+
             _, h, _ = model(
                 imgs,
                 coords,
@@ -332,6 +334,8 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             old_imgs = test_transform(old_imgs)
 
+            old_coords = torch.zeros_like(old_coords)
+
             _, h_old, _ = model(
                 old_imgs,
                 old_coords,
@@ -346,6 +350,8 @@ def run_condition(model, device, args, study_items, unknown_items,
             new_coords = new["coords"].to(device).float()
 
             new_imgs = test_transform(new_imgs)
+
+            new_coords = torch.zeros_like(new_coords)
 
             _, h_new, _ = model(
                 new_imgs,
