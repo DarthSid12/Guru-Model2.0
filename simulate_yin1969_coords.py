@@ -139,8 +139,7 @@ def load_item_fixations(
         # same coordinate convention as training
         xy = torch.tensor([
             x / sp.images.shape[2] - 0.5,
-            y / sp.images.shape[1] - 0.5,
-            dtype=torch.float32
+            y / sp.images.shape[1] - 0.5
         ])
 
         coords.append(xy)
@@ -294,7 +293,7 @@ def run_condition(model, device, args, study_items, unknown_items,
         for item_key, sample in study_data.items():
 
             imgs = sample["images"].to(device)
-            coords = sample["coords"].to(device)
+            coords = sample["coords"].to(device).float()
 
             # apply lp/cnn transform
             imgs = study_transform(imgs)
@@ -344,7 +343,7 @@ def run_condition(model, device, args, study_items, unknown_items,
             old = test_old_all[old_items[i]]
 
             old_imgs = old["images"].to(device)
-            old_coords = old["coords"].to(device)
+            old_coords = old["coords"].to(device).float()
 
             old_imgs = test_transform(old_imgs)
 
@@ -359,7 +358,7 @@ def run_condition(model, device, args, study_items, unknown_items,
             new = unknown_data[new_items[i]]
 
             new_imgs = new["images"].to(device)
-            new_coords = new["coords"].to(device)
+            new_coords = new["coords"].to(device).float()
 
             new_imgs = test_transform(new_imgs)
 
