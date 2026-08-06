@@ -182,7 +182,6 @@ def _crop_at(img_hwc, x, y, crop_size):
     return TF.crop(t, top=int(y) - crop_size // 2, left=int(x) - crop_size // 2,
                    height=crop_size, width=crop_size)
 
-
 class PackedFixationTrainDataset(Dataset):
     """Training set: one sample == one (image, fixation) crop, uint8 (3,180,180)."""
 

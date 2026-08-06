@@ -283,7 +283,7 @@ def run_condition(model, device, args, study_items, unknown_items,
             # apply lp/cnn transform
             imgs = study_transform(imgs)
 
-            model.stochastic = False
+            model.stochastic = True
 
             logits, h, _ = model(
                 imgs,
@@ -330,7 +330,7 @@ def run_condition(model, device, args, study_items, unknown_items,
 
         for i in range(n_pairs):
 
-            model.stochastic = False
+            model.stochastic = True
 
             # OLD item
             old = test_old_all[old_items[i]]
