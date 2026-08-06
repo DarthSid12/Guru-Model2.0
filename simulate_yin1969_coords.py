@@ -140,6 +140,7 @@ def load_item_fixations(
         xy = torch.tensor([
             x / sp.images.shape[2] - 0.5,
             y / sp.images.shape[1] - 0.5,
+            dtype=torch.float32
         ])
 
         coords.append(xy)
