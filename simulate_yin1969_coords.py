@@ -433,6 +433,8 @@ def main():
     model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
     model.eval()
 
+    print(model.coord_embed[0].weight.norm())
+
     # disjoint study / unknown items within the category (class-level for
     # faces/objects, individual photos for single-class categories like houses)
     all_items = list_items(args.fixation_root, args.category, "valid")
