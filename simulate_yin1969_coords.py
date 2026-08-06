@@ -149,22 +149,7 @@ def load_item_fixations(
 
     coords = torch.stack(coords)
 
-
-    # add coordinate deltas
-    deltas = torch.zeros_like(coords)
-    deltas[1:] = coords[1:] - coords[:-1]
-
-    coords = torch.cat(
-        [
-            coords,
-            deltas
-        ],
-        dim=1
-    )
-
     return imgs, coords
-
-
 
 def load_trial_data(
         fixation_root,
