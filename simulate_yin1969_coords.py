@@ -457,9 +457,9 @@ def main():
     # 2) all 4 Yin conditions
     conditions = [
         ("Upright", "Upright", "valid", "valid"),
-        ("Inverted", "Inverted", "valid_inverted", "valid_inverted"),
-        ("Upright", "Inverted", "valid", "valid_inverted"),
-        ("Inverted", "Upright", "valid_inverted", "valid"),
+        ("Inverted", "Inverted", "test", "test"),
+        ("Upright", "Inverted", "valid", "test"),
+        ("Inverted", "Upright", "test", "valid"),
     ]
     rows = []
     for s_cond, t_cond, s_split, t_split in conditions:
