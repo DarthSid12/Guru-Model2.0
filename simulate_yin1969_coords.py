@@ -291,7 +291,7 @@ def run_condition(model, device, args, study_items, unknown_items,
                 return_rep=True
             )
 
-            logits, h2, _ = model(
+            logits2, h2, _ = model(
                 imgs,
                 torch.zeros_like(coords),
                 return_rep=True
