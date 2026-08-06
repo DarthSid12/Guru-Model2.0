@@ -297,7 +297,7 @@ def run_condition(model, device, args, study_items, unknown_items,
                 return_rep=True
             )
 
-            print(print((h2 - h).abs().mean())
+            print((h2 - h).abs().mean())
 
             memory_bank[item_key] = apply_binomial_noise(
                 h.cpu(),
@@ -352,7 +352,7 @@ def run_condition(model, device, args, study_items, unknown_items,
                 return_rep=True
             )
 
-            print(print((h2 - h).abs().mean())
+            print((h2 - h).abs().mean())
 
             # NEW item
             new = unknown_data[new_items[i]]
@@ -374,7 +374,7 @@ def run_condition(model, device, args, study_items, unknown_items,
                 return_rep=True
             )
 
-            print(print((h2 - h).abs().mean())
+            print((h2 - h).abs().mean())
 
             # retrieval noise
             h_old = apply_binomial_noise(
