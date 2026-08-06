@@ -285,19 +285,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             model.stochastic = True
 
-            _, h, _ = model(
+            logits, h, _ = model(
                 imgs,
                 coords,
                 return_rep=True
             )
 
-            _, h2, _ = model(
+            logits, h2, _ = model(
                 imgs,
                 torch.zeros_like(coords),
                 return_rep=True
             )
 
-            print((h2 - h).abs().mean())
+            print((logits2 - logits).abs().mean())
 
             memory_bank[item_key] = apply_binomial_noise(
                 h.cpu(),
@@ -340,19 +340,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             old_imgs = test_transform(old_imgs)
 
-            _, h_old, _ = model(
+            logits_old, h_old, _ = model(
                 old_imgs,
                 old_coords,
                 return_rep=True
             )
 
-            _, h2, _ = model(
+            logits2_old, h2_old, _ = model(
                 old_imgs,
                 torch.zeros_like(old_coords),
                 return_rep=True
             )
 
-            print((h2 - h).abs().mean())
+            print((logits2_old - logits_old).abs().mean())
 
             # NEW item
             new = unknown_data[new_items[i]]
@@ -362,19 +362,19 @@ def run_condition(model, device, args, study_items, unknown_items,
 
             new_imgs = test_transform(new_imgs)
 
-            _, h_new, _ = model(
+            logits_new, h_new, _ = model(
                 new_imgs,
                 new_coords,
                 return_rep=True
             )
 
-            _, h2, _ = model(
+            logits2_new, h2_new, _ = model(
                 new_imgs,
                 torch.zeros_like(new_coords),
                 return_rep=True
             )
 
-            print((h2 - h).abs().mean())
+            print((logits2_new - logits_new).abs().mean())
 
             # retrieval noise
             h_old = apply_binomial_noise(
