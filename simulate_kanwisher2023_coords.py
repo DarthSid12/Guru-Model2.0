@@ -306,7 +306,7 @@ def main():
         raise SystemExit("Provide --label-map (or --run-dir) or --num-classes to size the model head.")
 
     model = ModelCoords(size=180, num_classes=num_classes, pretrained=False,
-                  T=args.temperature, backbone=args.backbone).to(device)
+                  T=args.temperature).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device), strict=False)
     model.eval()
 
