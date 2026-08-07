@@ -199,7 +199,7 @@ def parse_args():
     ap.add_argument("--num-study", type=int, default=40)
     ap.add_argument("--num-test", type=int, default=24)
     ap.add_argument("--study-fixations", type=int, default=10)
-    ap.add_argument("--test-fixations", type=int, default=32)
+    ap.add_argument("--test-fixations", type=int, default=16)
     ap.add_argument("--sigma", type=float, default=2.0)
     ap.add_argument("--noise", type=float, default=None,
                     help="fixed retrieval-noise p to use; skips calibration when set")
