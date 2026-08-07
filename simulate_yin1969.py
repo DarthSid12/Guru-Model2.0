@@ -174,8 +174,6 @@ def run_condition(model, device, args, study_items, unknown_items,
         old_items = random.sample(old_pool, n_pairs)
         new_items = random.sample(new_pool, n_pairs)
 
-        print(len(old_pool), len(new_pool), n_pairs, len(old_items), len(new_items))
-
         correct = 0
         for i in range(n_pairs):
             model.stochastic = True
@@ -261,9 +259,9 @@ def main():
     # 2) all 4 Yin conditions
     conditions = [
         ("Upright", "Upright", "valid", "valid"),
-        ("Inverted", "Inverted", "test", "test"),
-        ("Upright", "Inverted", "valid", "test"),
-        ("Inverted", "Upright", "test", "valid"),
+        ("Inverted", "Inverted", "valid_inverted", "valid_inverted"),
+        ("Upright", "Inverted", "valid", "valid_inverted"),
+        ("Inverted", "Upright", "valid_inverted", "valid"),
     ]
     rows = []
     for s_cond, t_cond, s_split, t_split in conditions:
