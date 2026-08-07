@@ -199,7 +199,7 @@ def parse_args():
     ap.add_argument("--num-study", type=int, default=40)
     ap.add_argument("--num-test", type=int, default=24)
     ap.add_argument("--study-fixations", type=int, default=10)
-    ap.add_argument("--test-fixations", type=int, default=16)
+    ap.add_argument("--test-fixations", type=int, default=32)
     ap.add_argument("--sigma", type=float, default=2.0)
     ap.add_argument("--noise", type=float, default=None,
                     help="fixed retrieval-noise p to use; skips calibration when set")
@@ -259,9 +259,9 @@ def main():
     # 2) all 4 Yin conditions
     conditions = [
         ("Upright", "Upright", "valid", "valid"),
-        ("Inverted", "Inverted", "valid_inverted", "valid_inverted"),
-        ("Upright", "Inverted", "valid", "valid_inverted"),
-        ("Inverted", "Upright", "valid_inverted", "valid"),
+        ("Inverted", "Inverted", "test", "test"),
+        ("Upright", "Inverted", "valid", "test"),
+        ("Inverted", "Upright", "test", "valid"),
     ]
     rows = []
     for s_cond, t_cond, s_split, t_split in conditions:
