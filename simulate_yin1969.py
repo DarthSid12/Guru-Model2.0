@@ -95,25 +95,62 @@ def item_id(item):
     return f"{cls}/{stem}"
 
 
-def load_item_fixations(processed_root, category, variant, split, item,
-                        num_fixations, offset=0):
-    """Return tensor(num_fixations, C, H, W) of `item`'s proc crops (after
-    `offset`), or None if that item/split doesn't have enough fixations."""
+def load_item_fixations(
+        processed_root,
+        category,
+        variant,
+        split,
+        item,
+        num_fixations,
+        offset=0
+):
+    """
+    Return tensor(num_fixations, C, H, W).
+
+    If split == "valid_inverted", load from "valid"
+    and rotate every fixation crop 180 degrees.
+    """
+
+    load_split = "valid" if split == "valid_inverted" else split
+
     cls, stem = item
-    cls_dir = os.path.join(processed_root, category, variant, split, cls)
+    cls_dir = os.path.join(
+        processed_root,
+        category,
+        variant,
+        load_split,
+        cls
+    )
+
     if not os.path.isdir(cls_dir):
         return None
+
     proc_list = sorted(
         f for f in os.listdir(cls_dir)
         if f.startswith(stem + "_proc") and f.endswith(".png")
     )
+
     chosen = proc_list[offset: offset + num_fixations]
+
     if len(chosen) < num_fixations:
         return None
-    return torch.stack(
-        [TF.to_tensor(Image.open(os.path.join(cls_dir, p)).convert("RGB")) for p in chosen], dim=0
-    )
 
+    imgs = []
+
+    for fname in chosen:
+
+        img = TF.to_tensor(
+            Image.open(
+                os.path.join(cls_dir, fname)
+            ).convert("RGB")
+        )
+
+        if split == "valid_inverted":
+            img = TF.rotate(img, 180)
+
+        imgs.append(img)
+
+    return torch.stack(imgs, dim=0)
 
 def load_trial_data(processed_root, category, variant, split, items,
                     num_fixations, offset=0):
