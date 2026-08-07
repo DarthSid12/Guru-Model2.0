@@ -174,6 +174,8 @@ def run_condition(model, device, args, study_items, unknown_items,
         old_items = random.sample(old_pool, n_pairs)
         new_items = random.sample(new_pool, n_pairs)
 
+        print(len(old_pool), len(new_pool), len(n_pairs), len(old_items), len(new_items))
+
         correct = 0
         for i in range(n_pairs):
             model.stochastic = True
