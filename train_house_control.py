@@ -37,7 +37,7 @@ import time
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
@@ -130,8 +130,116 @@ def parse_args():
                     help="suffix appended to the auto-named output dir (used by run_experiments.py)")
     ap.add_argument("--device", default="auto",
                     help="cuda:N | cpu | auto (auto picks the CUDA device with the most free memory)")
+
+    # house training fine-tuning arguments
+    ap.add_argument("--houses-delay-epochs", type=int, default=2,
+                    help="number of initial epochs to train without houses; "
+                         "houses are introduced afterward and remain active")
+
+    ap.add_argument("--category-ratios", nargs="+",
+                    default=["faces=0.40", "objects=0.40", "houses=0.20"],
+                    help="target training sampling ratios by category, e.g. "
+                         "faces=0.40 objects=0.40 houses=0.20; ratios are "
+                         "renormalized over currently active categories")
+
     return ap.parse_args()
 
+def parse_category_ratios(specs):
+    """Parse category=ratio arguments into a dict."""
+    ratios = {}
+
+    for spec in specs:
+        category, sep, value = spec.partition("=")
+        if not sep or not category:
+            raise ValueError(
+                f"--category-ratios expects category=ratio, got {spec!r}"
+            )
+
+        value = float(value)
+        if value < 0:
+            raise ValueError(
+                f"Category ratio cannot be negative: {spec!r}"
+            )
+
+        ratios[category] = value
+
+    if not ratios or sum(ratios.values()) <= 0:
+        raise ValueError("At least one positive category ratio is required.")
+
+    return ratios
+
+def make_category_sampler(dataset, active_ids, id_to_category, category_ratios):
+    """Weighted sampler giving approximately the requested category mix.
+
+    Sampling is with replacement, so category proportions are controlled by
+    optimization steps rather than by the raw number of available images.
+    """
+    active_ids = set(active_ids)
+
+    active_categories = {
+        id_to_category[i]
+        for i in active_ids
+        if i < len(id_to_category)
+    }
+
+    # Keep only categories that are currently active.
+    active_ratios = {
+        cat: category_ratios.get(cat, 0.0)
+        for cat in active_categories
+    }
+
+    total_ratio = sum(active_ratios.values())
+    if total_ratio <= 0:
+        raise ValueError(
+            f"No positive sampling ratio for active categories: "
+            f"{sorted(active_categories)}"
+        )
+
+    # Renormalize. Before houses are introduced, for example,
+    # faces=.4 objects=.4 becomes faces=.5 objects=.5.
+    active_ratios = {
+        cat: ratio / total_ratio
+        for cat, ratio in active_ratios.items()
+    }
+
+    # Number of eligible examples per category.
+    category_counts = {cat: 0 for cat in active_categories}
+
+    for sample in dataset.samples:
+        label_id = sample[-1]
+        if label_id in active_ids:
+            cat = id_to_category[label_id]
+            category_counts[cat] += 1
+
+    # Each individual example gets:
+    #
+    #   desired_category_probability / number_of_examples_in_category
+    #
+    # so the total probability mass assigned to a category is the requested
+    # category ratio.
+    weights = torch.zeros(len(dataset), dtype=torch.double)
+
+    for idx, sample in enumerate(dataset.samples):
+        label_id = sample[-1]
+
+        if label_id not in active_ids:
+            continue
+
+        cat = id_to_category[label_id]
+        count = category_counts[cat]
+
+        if count > 0:
+            weights[idx] = active_ratios[cat] / count
+
+    # Keep the same approximate number of optimization examples per epoch
+    # as the ordinary training loader.
+    num_samples = sum(category_counts.values())
+
+    return WeightedRandomSampler(
+        weights=weights,
+        num_samples=num_samples,
+        replacement=True,
+    )
 
 def pick_free_device():
     if not torch.cuda.is_available():
@@ -358,21 +466,99 @@ def main():
     valid_batch_size = max(1, args.batch_size // args.num_fixations)
 
     def make_loaders(active_ids):
-        """Loaders restricted to the currently active classes (all of them
-        outside curriculum mode, where the subsets are skipped entirely)."""
+        """Create loaders for the currently active developmental classes."""
+
         full = len(active_ids) == num_classes
+
+        sampler = make_category_sampler(
+            datasets["train"],
+            active_ids,
+            id_to_category,
+            category_ratios,
+        )
+
+        # Important: sampler indices refer to the ORIGINAL dataset, so we
+        # cannot combine this sampler with a Subset. Instead, use the full
+        # dataset and give inactive classes zero sampling weight.
+        train_loader = DataLoader(
+            datasets["train"],
+            batch_size=args.batch_size,
+            sampler=sampler,
+            num_workers=args.num_workers,
+            pin_memory=True,
+            persistent_workers=args.num_workers > 0,
+        )
+
+        # Validation/test remain ordinary deterministic loaders.
         def split_of(name):
             ds = datasets[name]
-            return ds if full else Subset(ds, subset_indices(ds, active_ids))
-        return (
-            DataLoader(split_of("train"), batch_size=args.batch_size,
-                       shuffle=True, num_workers=args.num_workers, pin_memory=True,
-                       persistent_workers=args.num_workers > 0),
-            DataLoader(split_of("valid"), batch_size=valid_batch_size,
-                       shuffle=False, num_workers=args.num_workers, pin_memory=True),
-            DataLoader(split_of("test"), batch_size=valid_batch_size,
-                       shuffle=False, num_workers=args.num_workers, pin_memory=True),
+            return ds if full else Subset(
+                ds,
+                subset_indices(ds, active_ids)
+            )
+
+        valid_loader = DataLoader(
+            split_of("valid"),
+            batch_size=valid_batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+            pin_memory=True,
         )
+
+        test_loader = DataLoader(
+            split_of("test"),
+            batch_size=valid_batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+            pin_memory=True,
+        )
+
+        return train_loader, valid_loader, test_loader
+
+    # ------------------------- House delay -------------------------
+
+    if "houses" in args.categories and args.houses_delay_epochs > 0:
+        house_delay = args.houses_delay_epochs
+
+        delayed_stages = []
+
+        for stage in stages:
+            if house_delay <= 0:
+                delayed_stages.append(stage)
+                continue
+
+            n_pre = min(stage["epochs"], house_delay)
+
+            non_house_ids = [
+                i for i in stage["active_ids"]
+                if id_to_category[i] != "houses"
+            ]
+
+            if n_pre > 0:
+                delayed_stages.append({
+                    **stage,
+                    "epochs": n_pre,
+                    "spec": f"{stage['spec']}-prehouse",
+                    "active_ids": non_house_ids,
+                    "classes_per_category": {
+                        c: n
+                        for c, n in stage["classes_per_category"].items()
+                        if c != "houses"
+                    },
+                })
+
+            house_delay -= n_pre
+
+            remaining = stage["epochs"] - n_pre
+
+            if remaining > 0:
+                delayed_stages.append({
+                    **stage,
+                    "epochs": remaining,
+                })
+
+        stages = delayed_stages
+        args.epochs = sum(s["epochs"] for s in stages)
 
     # ----------------------------- Model ----------------------------
     model = Model(size=180, num_classes=num_classes, pretrained=args.pretrained,
@@ -429,10 +615,6 @@ def main():
         # warm up the LR after each class introduction (not at the very start,
         # where the cosine already begins from the full base LR)
         warmup_left = args.curriculum_warmup_steps if (args.curriculum and stage_idx > 1) else 0
-        if args.curriculum:
-            print(f"\n=== Stage {stage_idx}/{len(stages)}: {len(stage['active_ids'])} classes "
-                  f"({stage['spec']} per category), {stage['epochs']} epochs, "
-                  f"{len(train_loader.dataset)} train crops ===")
 
         for _ in range(stage["epochs"]):
             epoch += 1
@@ -440,9 +622,14 @@ def main():
             correct = total = 0
             epoch_losses = []
             steps_per_epoch = max(len(train_loader), 1)
-            pbar = tqdm(total=len(train_loader.dataset),
-                        desc=f"Epoch {epoch}/{args.epochs}"
-                             + (f" [stage {stage_idx}]" if args.curriculum else ""), unit="img")
+
+            pbar = tqdm(
+                total=len(train_loader),
+                desc=f"Epoch {epoch}/{args.epochs}"
+                     + (f" [stage {stage_idx}]" if args.curriculum else ""),
+                unit="batch"
+            )
+
             for step, (inputs, labels) in enumerate(train_loader):
                 if args.curriculum:
                     warmup_frac = 1.0
@@ -479,7 +666,7 @@ def main():
                 correct += (logits.argmax(dim=1) == label_ids).sum().item()
                 total += label_ids.size(0)
                 epoch_losses.append(loss.item())
-                pbar.update(inputs.size(0))
+                pbar.update(1)
                 pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
             pbar.close()
 
@@ -561,12 +748,23 @@ def main():
     # Where is the accuracy going: specific classes, or a whole category?
     if os.path.exists(best_path):
         model.load_state_dict(torch.load(best_path, map_location=device))
-    _, _, v_corr, v_tot = evaluate(model, valid_loader, device, num_classes,
-                                   transforms["valid"], amp=use_amp,
-                                   channels_last=args.channels_last)
-    _, _, t_corr, t_tot = evaluate(model, test_loader, device, num_classes,
-                                   transforms["test"], amp=use_amp,
-                                   channels_last=args.channels_last)
+
+    _, full_valid_loader, full_test_loader = make_loaders(list(range(num_classes)))
+
+    _, _, v_corr, v_tot = evaluate(
+        model, full_valid_loader, device, num_classes,
+        transforms["valid"],
+        amp=use_amp,
+        channels_last=args.channels_last,
+    )
+
+    _, _, t_corr, t_tot = evaluate(
+        model, full_test_loader, device, num_classes,
+        transforms["test"],
+        amp=use_amp,
+        channels_last=args.channels_last,
+    )
+
     per_class = pd.DataFrame({
         "class_id": range(num_classes),
         "class_name": id_to_name,
