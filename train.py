@@ -37,7 +37,7 @@ import time
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
@@ -85,6 +85,23 @@ def parse_args():
     ap.add_argument("--channels-last", action=argparse.BooleanOptionalAction, default=True,
                     help="channels_last memory format for model + inputs")
     ap.add_argument("--epochs", type=int, default=50)
+    ap.add_argument("--curriculum", action="store_true",
+                    help="sequential ('learn a few at a time') training: start from a small "
+                         "nested subset of classes per category and double it stage by stage "
+                         "until all classes are active. Packed data mode only.")
+    ap.add_argument("--curriculum-stages", nargs="+",
+                    default=["4", "8", "16", "32", "64", "128", "all"],
+                    help="classes per category active at each stage; 'all' = every class. "
+                         "A category with fewer classes is simply capped at its own count.")
+    ap.add_argument("--curriculum-epochs", nargs="+", type=int,
+                    default=[6, 6, 6, 6, 8, 10, 18],
+                    help="epochs to spend in each stage (same length as --curriculum-stages). "
+                         "Their sum overrides --epochs.")
+    ap.add_argument("--curriculum-seed", type=int, default=0,
+                    help="seed for the nested random class ordering (which classes come first)")
+    ap.add_argument("--curriculum-warmup-steps", type=int, default=200,
+                    help="linear LR warm-up over this many steps after each class introduction, "
+                         "to absorb the new-class loss spike (0 = off)")
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--num-workers", type=int, default=8)
     ap.add_argument("--temperature", type=float, default=2.0)
@@ -136,11 +153,17 @@ def pick_free_device():
 
 
 @torch.no_grad()
-def evaluate(model, loader, device, num_classes, transform=None, amp=False, channels_last=False):
+def evaluate(model, loader, device, num_classes, transform=None, amp=False, channels_last=False,
+             active_mask=None):
     """Sum per-fixation logits over a base image's fixations, then argmax.
 
     Returns (mean_batch_acc, std_batch_acc, correct_per_class, total_per_class),
     the last two as LongTensors of shape [num_classes] for error analysis.
+
+    `active_mask` (bool [num_classes]) restricts the decision to the classes the
+    model has been introduced to so far: a class it has never seen cannot be
+    predicted. It is all-True (a no-op) outside curriculum training and in the
+    final curriculum stage.
     """
     model.eval()
     accs = []
@@ -158,6 +181,8 @@ def evaluate(model, loader, device, num_classes, transform=None, amp=False, chan
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp and device.type == "cuda"):
             logits = model(inputs)
         logits = logits.float().reshape(B, n, -1).sum(dim=1)
+        if active_mask is not None:
+            logits = logits.masked_fill(~active_mask, float("-inf"))
         preds = logits.argmax(dim=1)
         hits = preds == label_ids
         accs.append(hits.float().mean().item())
@@ -185,6 +210,59 @@ def resolve_root(explicit, local_default, dhoni_fallback):
         print(f"[info] No local ./{local_default} found; using shared DHONI data at {dhoni_fallback}.")
         return dhoni_fallback
     return local_default
+
+
+def build_curriculum_stages(args, label_map, categories):
+    """Nested class subsets, one per stage.
+
+    Each category gets a single seeded random ordering of its classes; stage k
+    activates the first `size_k` of that ordering, so stage k's classes are
+    always a subset of stage k+1's ("learn a few at a time", never forgetting).
+    A category with fewer classes than `size_k` is capped at its own count, so
+    e.g. objects (64 classes) saturates while houses keeps growing.
+    """
+    if len(args.curriculum_stages) != len(args.curriculum_epochs):
+        raise ValueError(f"--curriculum-stages has {len(args.curriculum_stages)} entries but "
+                         f"--curriculum-epochs has {len(args.curriculum_epochs)}")
+
+    ids_by_category = {c: [] for c in categories}
+    for name, idx in sorted(label_map.items(), key=lambda kv: kv[1]):
+        ids_by_category[name.split("/", 1)[0]].append(idx)
+
+    rng = np.random.default_rng(args.curriculum_seed)
+    order = {c: rng.permutation(ids).tolist() for c, ids in ids_by_category.items()}
+
+    stages = []
+    for spec, epochs in zip(args.curriculum_stages, args.curriculum_epochs):
+        size = None if str(spec).lower() == "all" else int(spec)
+        active, per_cat = [], {}
+        for c in categories:
+            take = order[c] if size is None else order[c][:size]
+            per_cat[c] = len(take)
+            active.extend(take)
+        stages.append({"spec": str(spec), "epochs": int(epochs),
+                       "classes_per_category": per_cat, "active_ids": sorted(active)})
+    return stages
+
+
+def subset_indices(dataset, active_ids):
+    """Positions in dataset.samples whose global label is currently active.
+
+    Both packed datasets store the global label last in each sample tuple
+    (train: (split, image, fixation, label); eval: (split, image, label)).
+    """
+    active = set(active_ids)
+    return [i for i, s in enumerate(dataset.samples) if s[-1] in active]
+
+
+def curriculum_lr(base_lr, epoch_frac, warmup_frac):
+    """Global cosine over the whole run, times a linear per-stage warm-up factor.
+
+    The cosine spans every stage rather than restarting per stage: a per-stage
+    schedule would drive the LR to zero five times over and freeze the features
+    before the hard, many-class stages ever start.
+    """
+    return base_lr * 0.5 * (1.0 + np.cos(np.pi * min(max(epoch_frac, 0.0), 1.0))) * warmup_frac
 
 
 def main():
@@ -262,14 +340,39 @@ def main():
         id_to_name[i] = name
     id_to_category = [n.split("/")[0] for n in id_to_name]
 
+    # ------------------------- Curriculum stages ---------------------
+    if args.curriculum:
+        if args.data_mode != "packed":
+            raise ValueError("--curriculum requires --data-mode packed")
+        stages = build_curriculum_stages(args, label_map, args.categories)
+        args.epochs = sum(s["epochs"] for s in stages)
+        print(f"Curriculum: {len(stages)} stages, {args.epochs} epochs total")
+        for k, s in enumerate(stages, 1):
+            per_cat = " ".join(f"{c} {n}" for c, n in s["classes_per_category"].items())
+            print(f"  stage {k}: {s['spec']:>4} per category -> {len(s['active_ids']):4d} classes "
+                  f"({per_cat}) | {s['epochs']} epochs")
+    else:
+        stages = [{"spec": "all", "epochs": args.epochs,
+                   "classes_per_category": {}, "active_ids": list(range(num_classes))}]
+
     valid_batch_size = max(1, args.batch_size // args.num_fixations)
-    train_loader = DataLoader(datasets["train"], batch_size=args.batch_size,
-                              shuffle=True, num_workers=args.num_workers, pin_memory=True,
-                              persistent_workers=args.num_workers > 0)
-    valid_loader = DataLoader(datasets["valid"], batch_size=valid_batch_size,
-                              shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_loader = DataLoader(datasets["test"], batch_size=valid_batch_size,
-                             shuffle=False, num_workers=args.num_workers, pin_memory=True)
+
+    def make_loaders(active_ids):
+        """Loaders restricted to the currently active classes (all of them
+        outside curriculum mode, where the subsets are skipped entirely)."""
+        full = len(active_ids) == num_classes
+        def split_of(name):
+            ds = datasets[name]
+            return ds if full else Subset(ds, subset_indices(ds, active_ids))
+        return (
+            DataLoader(split_of("train"), batch_size=args.batch_size,
+                       shuffle=True, num_workers=args.num_workers, pin_memory=True,
+                       persistent_workers=args.num_workers > 0),
+            DataLoader(split_of("valid"), batch_size=valid_batch_size,
+                       shuffle=False, num_workers=args.num_workers, pin_memory=True),
+            DataLoader(split_of("test"), batch_size=valid_batch_size,
+                       shuffle=False, num_workers=args.num_workers, pin_memory=True),
+        )
 
     # ----------------------------- Model ----------------------------
     model = Model(size=180, num_classes=num_classes, pretrained=args.pretrained,
@@ -295,8 +398,9 @@ def main():
         [{"params": decay_params, "weight_decay": args.weight_decay},
          {"params": no_decay_params, "weight_decay": 0.0}],
         lr=args.lr)
+    # curriculum mode drives the LR by hand (global cosine + per-stage warm-up)
     scheduler = (torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
-                 if args.lr_schedule == "cosine" else None)
+                 if args.lr_schedule == "cosine" and not args.curriculum else None)
     ce_criterion = torch.nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
     use_amp = args.amp and device.type == "cuda"
 
@@ -308,73 +412,144 @@ def main():
     t_start = time.time()
 
     # ----------------------------- Train ----------------------------
-    for epoch in range(1, args.epochs + 1):
-        model.train()
-        correct = total = 0
-        epoch_losses = []
-        pbar = tqdm(total=len(train_loader.dataset), desc=f"Epoch {epoch}/{args.epochs}", unit="img")
-        for inputs, labels in train_loader:
-            inputs = inputs.to(device, non_blocking=True)
-            labels = labels.to(device, non_blocking=True)
-            if transforms["train"] is not None:
-                with torch.no_grad():
-                    inputs = transforms["train"](inputs)
-            if args.channels_last:
-                inputs = inputs.contiguous(memory_format=torch.channels_last)
-            label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
+    # One pass per curriculum stage (a single all-classes stage when
+    # --curriculum is off, which reproduces the original loop exactly).
+    epoch = 0
+    for stage_idx, stage in enumerate(stages, 1):
+        is_final_stage = stage_idx == len(stages)
+        active_mask = torch.zeros(num_classes, dtype=torch.bool, device=device)
+        active_mask[torch.tensor(stage["active_ids"], device=device)] = True
+        masked = not bool(active_mask.all())
+        train_loader, valid_loader, test_loader = make_loaders(stage["active_ids"])
+        # Accuracy is only comparable across stages once the class set stops
+        # growing, so best_model.pth tracks the final stage; earlier stages get
+        # their own best purely for the curves and for early stopping.
+        patience_counter = 0
+        stage_best = -1.0
+        # warm up the LR after each class introduction (not at the very start,
+        # where the cosine already begins from the full base LR)
+        warmup_left = args.curriculum_warmup_steps if (args.curriculum and stage_idx > 1) else 0
+        if args.curriculum:
+            print(f"\n=== Stage {stage_idx}/{len(stages)}: {len(stage['active_ids'])} classes "
+                  f"({stage['spec']} per category), {stage['epochs']} epochs, "
+                  f"{len(train_loader.dataset)} train crops ===")
 
-            optimizer.zero_grad()
-            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
-                logits = model(inputs)
-                loss = ce_criterion(logits, label_ids)
-            loss.backward()
-            optimizer.step()
+        for _ in range(stage["epochs"]):
+            epoch += 1
+            model.train()
+            correct = total = 0
+            epoch_losses = []
+            steps_per_epoch = max(len(train_loader), 1)
+            pbar = tqdm(total=len(train_loader.dataset),
+                        desc=f"Epoch {epoch}/{args.epochs}"
+                             + (f" [stage {stage_idx}]" if args.curriculum else ""), unit="img")
+            for step, (inputs, labels) in enumerate(train_loader):
+                if args.curriculum:
+                    warmup_frac = 1.0
+                    if warmup_left > 0:
+                        n = max(args.curriculum_warmup_steps, 1)
+                        warmup_frac = (n - warmup_left + 1) / n   # 1/n -> 1.0
+                        warmup_left -= 1
+                    lr_now = curriculum_lr(args.lr, (epoch - 1 + step / steps_per_epoch)
+                                           / max(args.epochs, 1), warmup_frac) \
+                        if args.lr_schedule == "cosine" else args.lr * warmup_frac
+                    for g in optimizer.param_groups:
+                        g["lr"] = lr_now
 
-            correct += (logits.argmax(dim=1) == label_ids).sum().item()
-            total += label_ids.size(0)
-            epoch_losses.append(loss.item())
-            pbar.update(inputs.size(0))
-            pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
-        pbar.close()
+                inputs = inputs.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
+                if transforms["train"] is not None:
+                    with torch.no_grad():
+                        inputs = transforms["train"](inputs)
+                if args.channels_last:
+                    inputs = inputs.contiguous(memory_format=torch.channels_last)
+                label_ids = labels.argmax(dim=1) if labels.dim() > 1 else labels
 
-        train_acc = correct / max(total, 1)
-        train_loss = float(np.mean(epoch_losses))
-        valid_acc, valid_std, v_corr, v_tot = evaluate(
-            model, valid_loader, device, num_classes, transforms["valid"],
-            amp=use_amp, channels_last=args.channels_last)
-        test_acc, test_std, t_corr, t_tot = evaluate(
-            model, test_loader, device, num_classes, transforms["test"],
-            amp=use_amp, channels_last=args.channels_last)
-        valid_by_cat = per_category_accuracy(v_corr, v_tot, id_to_category)
-        test_by_cat = per_category_accuracy(t_corr, t_tot, id_to_category)
-        cur_lr = optimizer.param_groups[0]["lr"]
-        if scheduler is not None:
-            scheduler.step()
-        cat_str = " ".join(f"{c} {a*100:.1f}%" for c, a in sorted(valid_by_cat.items()))
-        print(f"-> Epoch {epoch}: train {train_acc*100:.2f}% | "
-              f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | "
-              f"loss {train_loss:.4f} | lr {cur_lr:.2e} | valid by cat: {cat_str}")
+                optimizer.zero_grad()
+                with torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_amp):
+                    logits = model(inputs)
+                    # classes not yet introduced take no probability mass, so
+                    # their fc2 rows stay untrained until their stage arrives
+                    if masked:
+                        logits = logits.masked_fill(~active_mask, -1e4)
+                    loss = ce_criterion(logits, label_ids)
+                loss.backward()
+                optimizer.step()
 
-        history.append({"epoch": epoch, "lr": cur_lr,
-                        "train_acc": train_acc, "train_loss": train_loss,
-                        "valid_acc": valid_acc, "valid_std": valid_std,
-                        "test_acc": test_acc, "test_std": test_std,
-                        **{f"valid_acc_{c}": a for c, a in valid_by_cat.items()},
-                        **{f"test_acc_{c}": a for c, a in test_by_cat.items()},
-                        "elapsed_sec": round(time.time() - t_start, 1)})
+                correct += (logits.argmax(dim=1) == label_ids).sum().item()
+                total += label_ids.size(0)
+                epoch_losses.append(loss.item())
+                pbar.update(inputs.size(0))
+                pbar.set_postfix(acc=f"{correct/total*100:.2f}%", ce=f"{loss.item():.3f}")
+            pbar.close()
 
-        if valid_acc > best_val:
-            best_val = valid_acc
-            best_epoch = epoch
-            patience_counter = 0
-            torch.save(model.state_dict(), best_path)
-            print(f"   saved new best (valid {valid_acc*100:.2f}%)")
-        else:
-            patience_counter += 1
-            print(f"   early stopping {patience_counter}/{args.patience}")
-            if patience_counter >= args.patience:
-                print("Early stopping triggered.")
-                break
+            train_acc = correct / max(total, 1)
+            train_loss = float(np.mean(epoch_losses))
+            eval_mask = active_mask if masked else None
+            valid_acc, valid_std, v_corr, v_tot = evaluate(
+                model, valid_loader, device, num_classes, transforms["valid"],
+                amp=use_amp, channels_last=args.channels_last, active_mask=eval_mask)
+            test_acc, test_std, t_corr, t_tot = evaluate(
+                model, test_loader, device, num_classes, transforms["test"],
+                amp=use_amp, channels_last=args.channels_last, active_mask=eval_mask)
+            valid_by_cat = per_category_accuracy(v_corr, v_tot, id_to_category)
+            test_by_cat = per_category_accuracy(t_corr, t_tot, id_to_category)
+            cur_lr = optimizer.param_groups[0]["lr"]
+            if scheduler is not None:
+                scheduler.step()
+            cat_str = " ".join(f"{c} {a*100:.1f}%" for c, a in sorted(valid_by_cat.items()))
+            print(f"-> Epoch {epoch}: train {train_acc*100:.2f}% | "
+                  f"valid {valid_acc*100:.2f}% | test(inv) {test_acc*100:.2f}% | "
+                  f"loss {train_loss:.4f} | lr {cur_lr:.2e} | valid by cat: {cat_str}")
+
+            history.append({"epoch": epoch, "lr": cur_lr,
+                            "stage": stage_idx, "stage_spec": stage["spec"],
+                            "active_classes": len(stage["active_ids"]),
+                            "train_acc": train_acc, "train_loss": train_loss,
+                            "valid_acc": valid_acc, "valid_std": valid_std,
+                            "test_acc": test_acc, "test_std": test_std,
+                            **{f"valid_acc_{c}": a for c, a in valid_by_cat.items()},
+                            **{f"test_acc_{c}": a for c, a in test_by_cat.items()},
+                            "elapsed_sec": round(time.time() - t_start, 1)})
+
+            improved = valid_acc > stage_best
+            if improved:
+                stage_best = valid_acc
+            if improved and is_final_stage:
+                best_val = valid_acc
+                best_epoch = epoch
+                torch.save(model.state_dict(), best_path)
+                print(f"   saved new best (valid {valid_acc*100:.2f}%)")
+            if improved:
+                patience_counter = 0
+            else:
+                patience_counter += 1
+                print(f"   early stopping {patience_counter}/{args.patience}")
+                if patience_counter >= args.patience:
+                    print(f"Early stopping triggered"
+                          + (f" in stage {stage_idx}; advancing." if not is_final_stage else "."))
+                    break
+
+        if args.curriculum:
+            # snapshot the end of every stage, so simulate_yin1969.py can be run
+            # at each point in "development": the inversion effect as a function
+            # of how many identities the model has learned. Without this only
+            # the fully-trained model survives.
+            stage_ckpt = os.path.join(out_dir,
+                                      f"stage{stage_idx}_{len(stage['active_ids'])}cls.pth")
+            torch.save(model.state_dict(), stage_ckpt)
+            # the class subset is needed to score that checkpoint like-for-like
+            with open(os.path.join(out_dir, f"stage{stage_idx}_active_ids.json"), "w") as f:
+                json.dump({"stage": stage_idx, "spec": stage["spec"],
+                           "classes_per_category": stage["classes_per_category"],
+                           "active_ids": stage["active_ids"]}, f)
+            print(f"   saved stage checkpoint {os.path.basename(stage_ckpt)}")
+
+    # a curriculum run that early-stopped every final-stage epoch, or a stage
+    # list ending before any save, still needs a checkpoint to analyse
+    if not os.path.exists(best_path):
+        torch.save(model.state_dict(), best_path)
+        best_val, best_epoch = history[-1]["valid_acc"], history[-1]["epoch"]
 
     # ----------------------------- Save -----------------------------
     ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -423,7 +598,18 @@ def main():
     plt.plot(epochs, [h["train_acc"] for h in history], label="train")
     plt.plot(epochs, [h["valid_acc"] for h in history], label="valid (upright)")
     plt.plot(epochs, [h["test_acc"] for h in history], label="test (inverted)")
-    plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.legend(); plt.title("Training")
+    plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.legend()
+    if args.curriculum:
+        # dashed line at each class introduction, taken from the history so an
+        # early-stopped stage still lands in the right place
+        for prev, cur in zip(history, history[1:]):
+            if cur["stage"] != prev["stage"]:
+                plt.axvline(cur["epoch"] - 0.5, color="0.7", lw=0.8, ls="--")
+                plt.text(cur["epoch"] - 0.5, 0.02, str(cur["active_classes"]),
+                         fontsize=6, color="0.4", rotation=90)
+        plt.title(f"Curriculum training ({len(stages)} stages)")
+    else:
+        plt.title("Training")
     plt.savefig(os.path.join(out_dir, "accuracy.png")); plt.close()
 
     best_row = next(h for h in history if h["epoch"] == best_epoch) if history else {}
@@ -432,6 +618,10 @@ def main():
         "hostname": socket.gethostname(),
         "num_classes": num_classes,
         "dataset_sizes": {k: len(v) for k, v in datasets.items()},
+        "curriculum": [{"stage": i, "spec": s["spec"], "epochs": s["epochs"],
+                        "num_classes": len(s["active_ids"]),
+                        "classes_per_category": s["classes_per_category"]}
+                       for i, s in enumerate(stages, 1)] if args.curriculum else None,
         "results": {
             "epochs_run": len(history),
             "best_epoch": best_epoch,

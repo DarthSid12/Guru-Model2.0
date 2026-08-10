@@ -1,0 +1,16 @@
+category,source,backbone,UU,II,UI,IU
+Faces,Human (Yin 1969),,96.29,81.88,84.13,78.58
+Faces,LP-Net,r18,95.83,70.83,83.33,79.17
+Faces,LP-Net,r34,95.83,79.17,70.83,79.17
+Faces,Plain,r18,95.83,83.33,54.17,62.5
+Faces,Plain,r34,95.83,70.83,50.0,70.83
+Objects,Human (Yin 1969),,84.79,83.96,86.71,82.75
+Objects,LP-Net,r18,83.33,79.17,75.0,79.17
+Objects,LP-Net,r34,83.33,79.17,75.0,83.33
+Objects,Plain,r18,83.33,83.33,70.83,83.33
+Objects,Plain,r34,83.33,62.5,70.83,79.17
+Houses,Human (Yin 1969),,90.71,85.75,88.08,85.71
+Houses,LP-Net,r18,87.5,83.33,87.5,83.33
+Houses,LP-Net,r34,87.5,75.0,83.33,70.83
+Houses,Plain,r18,87.5,62.5,58.33,54.17
+Houses,Plain,r34,87.5,70.83,62.5,66.67
