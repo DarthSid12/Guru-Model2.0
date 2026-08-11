@@ -375,6 +375,7 @@ def curriculum_lr(base_lr, epoch_frac, warmup_frac):
 
 def main():
     args = parse_args()
+    category_ratios = parse_category_ratios(args.category_ratios)
     args.processed_root = resolve_root(args.processed_root, "processed_data", DHONI_PROCESSED_ROOT)
     args.fixation_root = resolve_root(args.fixation_root, "fixation_data", DHONI_FIXATION_ROOT)
     if args.data_mode == "auto":
@@ -474,7 +475,7 @@ def main():
             datasets["train"],
             active_ids,
             id_to_category,
-            args.category_ratios,
+            category_ratios,
         )
 
         # Important: sampler indices refer to the ORIGINAL dataset, so we
