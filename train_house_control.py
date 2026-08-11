@@ -474,7 +474,7 @@ def main():
             datasets["train"],
             active_ids,
             id_to_category,
-            category_ratios,
+            args.category_ratios,
         )
 
         # Important: sampler indices refer to the ORIGINAL dataset, so we
