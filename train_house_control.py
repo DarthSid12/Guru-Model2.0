@@ -48,8 +48,8 @@ from salience_trans import OnTheFlyTransform
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
 # If no local ./processed_data exists, fall back to the shared copy instead
 # of forcing a fresh (slow, disk-heavy) download.py + preprocess.py run.
-DHONI_PROCESSED_ROOT = "/home/siagrawal/combined_lpnet/processed_data"
-DHONI_FIXATION_ROOT = "/home/siagrawal/combined_lpnet/fixation_data"
+DHONI_PROCESSED_ROOT = "/home/d1deutsch/Guru-Model2.0/processed_data"
+DHONI_FIXATION_ROOT = "/home/d1deutsch/Guru-Model2.0/fixation_data" # contains 40 house data finally
 
 
 def parse_args():
