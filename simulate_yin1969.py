@@ -275,11 +275,19 @@ def main():
                          f"study={args.study_fixations}, test={args.test_fixations}.")
     all_items = build_items(sp)
     need = args.num_study + args.num_test
+
     if len(all_items) < need:
+        '''
         raise SystemExit(f"Category '{args.category}' has {len(all_items)} usable items; "
                          f"need >= {need} (num_study + num_test).")
-    study_items = all_items[:args.num_study]
-    unknown_items = all_items[args.num_study:need]
+        '''
+        num_study = (len(all_items) * args.num_study) // (args.num_study + args.num_test)
+        num_test = len(all_items) - num_study
+    else:
+        num_study, num_test = args.num_study, args.num_test
+
+    study_items = all_items[:num_study]
+    unknown_items = all_items[num_study:need]
 
     # 1) calibrate noise on the upright-upright condition (skipped if --noise given)
     if args.noise is not None:
