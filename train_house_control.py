@@ -56,8 +56,8 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--categories", nargs="+", default=["faces", "objects"],
                     help="categories to train on jointly")
-    ap.add_argument("--variant", choices=["lp", "cnn", "plain"], default="lp",
-                    help="lp = log-polar/foveated, cnn = plain crop")
+    ap.add_argument("--variant", choices=["lp", "cnn", "plain", "ch"], default="lp",
+                    help="lp = log-polar/foveated, cnn = plain crop, ch = Cottrell-Hanson")
     ap.add_argument("--data-mode", choices=["auto", "packed", "png"], default="auto",
                     help="packed = fixation_data (fast, on-the-fly transforms); "
                          "png = legacy pre-rendered processed_data crops; "

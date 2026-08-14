@@ -277,7 +277,7 @@ class LogPolar(torch.nn.Module):
 
             rho = (E + a) ** gamma
 
-            # normalize to image radius
+            # normalize to image radius?
 
             rho_min = a ** gamma
             rho_max = (1 + a) ** gamma
