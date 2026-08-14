@@ -461,7 +461,7 @@ class OnTheFlyTransform(torch.nn.Module):
         if crops.dtype == torch.uint8:
             crops = crops.float().div_(255.0)
         if self.hflip_p > 0:
-            flip_mask = pytorch.rand(crops.size(0), device=crops.device) < self.hflip_p
+            flip_mask = torch.rand(crops.size(0), device=crops.device) < self.hflip_p
             if flip_mask.any():
                 crops = crops.clone()
                 crops[flip_mask] = crops[flip_mask].flip(-1)
