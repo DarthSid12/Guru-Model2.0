@@ -170,7 +170,7 @@ class Foveate(torch.nn.Module):
 class LogPolar(torch.nn.Module):
     def __init__(self, input_shape=None, output_shape=None, smoothing = 0, 
                  mask = False, position='circumscribed', log_polar_distance = 2, random_center = False,
-                 device = 'cpu', mapping="log", power_gamma=0.17, power_offset=0.01):
+                 device = 'cpu', mapping="log", power_gamma=1/0.17, power_offset=0.01):
         super().__init__()
         self.device = device
         self.input_shape = input_shape
@@ -647,7 +647,7 @@ class Pipeline(torch.nn.Module):
             self.foveate = Foveate(crop_size=crop_size)
             self.logpolar = LogPolar(input_shape=(crop_size, crop_size),
                                  output_shape=output_shape, device=device, 
-                                 mapping=mapping, power_gamma=0.17, power_offset=0.01)
+                                 mapping=mapping, power_gamma=1/0.17, power_offset=0.01)
         else:
             self.foveate = torch.nn.Identity()
             self.logpolar = torch.nn.Identity()
