@@ -24,12 +24,12 @@ No memory/KDE familiarity model is used.
 
 For each image:
 
-    D_U = mean Hamming distance(
+    D_U = mean expected Hamming distance(
               h(upright-normal),
               h(upright-Thatcher)
           )
 
-    D_I = mean Hamming distance(
+    D_I = mean expected Hamming distance(
               h(inverted-normal),
               h(inverted-Thatcher)
           )
@@ -431,8 +431,8 @@ def get_representation(
 
 def mean_hamming_distance(h1, h2):
     """
-    Mean Hamming distance between corresponding fixation
-    representations.
+    Mean (EXPECTED if stochastic=False) Hamming distance between 
+    corresponding fixation representations.
 
     h1:
         [N, D]
@@ -458,7 +458,7 @@ def mean_hamming_distance(h1, h2):
             f"{h1.shape} vs {h2.shape}"
         )
 
-    distance = (h1 != h2).float().mean()
+    distance = (h1 * (1-h2) + h2 * (1-h1)).mean()
 
     return float(distance.item())
 
