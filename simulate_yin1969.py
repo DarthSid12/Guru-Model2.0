@@ -149,6 +149,8 @@ def parse_args():
     ap.add_argument("--sigma", type=float, default=2.0)
     ap.add_argument("--calib-target", type=float, default=0.96,
                     help="upright-upright accuracy to match when calibrating noise")
+    ap.add_argument("--inv-calib-target", type=float, default=0.82,
+                    help="inverted-inverted accuracy to match when calibrating noise")
     ap.add_argument("--calib-max", type=float, default=0.75)
     ap.add_argument("--calib-step", type=float, default=0.05)
     ap.add_argument("--seed", type=int, default=42)
@@ -203,6 +205,20 @@ def main():
         ideal_noise = 0.25
     print(f"[!] Using noise p={ideal_noise:.2f}\n")
 
+    # 1 b) calibrate INVERTED-INVERTED noise on the I-I condition
+    print(f"--- Calibrating noise on {args.category} (inverted-inverted) ---")
+    ideal_noise_inv = None
+    for p in np.arange(0.0, args.calib_max, args.calib_step):
+        acc = run_condition(model, device, args, study_classes, unknown_classes, "test", "test", p)
+        print(f"  noise {p:.2f} -> {acc*100:.2f}%")
+        if acc <= args.calib_target and ideal_noise_inv is None:
+            ideal_noise_inv = p
+            break
+    if ideal_noise_inv is None:
+        ideal_noise_inv = 0.3 # idk
+    print(f"[!] Using inverted noise p={ideal_noise:.2f}\n")
+
+
     # 2) all 4 Yin conditions
     conditions = [
         ("Upright", "Upright", "valid", "valid"),
@@ -212,7 +228,8 @@ def main():
     ]
     rows = []
     for s_cond, t_cond, s_split, t_split in conditions:
-        acc = run_condition(model, device, args, study_classes, unknown_classes, s_split, t_split, ideal_noise)
+        noise = ideal_noise if s_split == "valid" else ideal_noise_inv
+        acc = run_condition(model, device, args, study_classes, unknown_classes, s_split, t_split, noise)
         rows.append({"Study": s_cond, "Test": t_cond, "Model Accuracy": f"{acc*100:.2f}%"})
 
     print("=====================================================")

@@ -482,7 +482,7 @@ def analyze_image(
     for one image in one orientation.
 
     Returns:
-        float distance
+        float distance (percent diff over normal)
     """
 
     # --------------------------------------------------------
@@ -515,7 +515,7 @@ def analyze_image(
     # Coordinates
     #
     # These come from the LP folder.
-    # CNN uses these exact same coordinates.
+    # CNN uses these exact same coordinates, but variant cnn
     # --------------------------------------------------------
 
     normal_coords_path = get_coords_path(
