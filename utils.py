@@ -50,3 +50,26 @@ def label_to_one_hot(label, mapping):
     idx = mapping[label]
     num_classes = len(mapping)
     return F.one_hot(torch.tensor(idx, dtype=torch.long), num_classes=num_classes).float()
+
+"""
+These functions are for better noise fine-tuning;
+They use functional programming to tune a certain parameter to any function.
+
+We essentially binary search down to the required precision;
+if the bounds are too small or too large, we extend them by doubling the distance.
+"""
+
+"""
+Searches for a parameter value that closest leads to function(param) = target
+Obviously presumes the function is monotonic, which noise functions should be
+"""
+def pure_binary_search(low, high, function,
+                       target, # what we want function(param) to be
+                       precision,
+                       pick='LOW'): # whether we pick the bound right below or right above
+    pass
+
+def search(low, high, function, precision, pick='LOW', 
+           extend_low = True, # whether we allow the lower bound to be decreased,
+           extend_high = True):
+

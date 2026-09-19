@@ -289,23 +289,31 @@ def main():
     study_items = all_items[:num_study]
     unknown_items = all_items[num_study:need]
 
-    # 1) calibrate noise on the upright-upright condition (skipped if --noise given)
-    if args.noise is not None:
-        ideal_noise = args.noise
-        print(f"[!] Using fixed noise p={ideal_noise:.2f} (calibration skipped)\n")
-    else:
-        print(f"--- Calibrating noise on {args.category} (upright-upright) ---")
-        ideal_noise = None
-        for p in np.arange(0.0, args.calib_max, args.calib_step):
-            acc = run_condition(model, device, args, sp, study_items, unknown_items,
-                                upright_tf, upright_tf, p)
-            print(f"  noise {p:.2f} -> {acc*100:.2f}%")
-            if acc <= args.calib_target and ideal_noise is None:
-                ideal_noise = p
-                break
-        if ideal_noise is None:
-            ideal_noise = 0.25
-        print(f"[!] Using noise p={ideal_noise:.2f}\n")
+    # 1) calibrate noise on the upright-upright condition
+    print(f"--- Calibrating noise on {args.category} (upright-upright) ---")
+    ideal_noise = None
+    for p in np.arange(0.0, args.calib_max, args.calib_step):
+        acc = run_condition(model, device, args, study_classes, unknown_classes, "valid", "valid", p)
+        print(f"  noise {p:.2f} -> {acc*100:.2f}%")
+        if acc <= args.calib_target and ideal_noise is None:
+            ideal_noise = p
+            break
+    if ideal_noise is None:
+        ideal_noise = 0.25
+    print(f"[!] Using noise p={ideal_noise:.2f}\n")
+
+    # 1 b) calibrate INVERTED-INVERTED noise on the I-I condition
+    print(f"--- Calibrating noise on {args.category} (inverted-inverted) ---")
+    ideal_noise_inv = None
+    for p in np.arange(0.0, args.calib_max, args.calib_step):
+        acc = run_condition(model, device, args, study_classes, unknown_classes, "test", "test", p)
+        print(f"  noise {p:.2f} -> {acc*100:.2f}%")
+        if acc <= args.calib_target and ideal_noise_inv is None:
+            ideal_noise_inv = p
+            break
+    if ideal_noise_inv is None:
+        ideal_noise_inv = 0.3 # idk
+    print(f"[!] Using inverted noise p={ideal_noise:.2f}\n")
 
     # 2) all 4 Yin conditions (orientation now set by the on-the-fly transform)
     conditions = [
