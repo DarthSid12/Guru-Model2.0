@@ -54,6 +54,8 @@ from datasets import _PackedSplit, _crop_at
 from model import Model
 from salience_trans import OnTheFlyTransform
 
+# faster noise calculation
+from utils import search
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -203,6 +205,10 @@ def parse_args():
                     help="fixed retrieval-noise p to use; skips calibration when set")
     ap.add_argument("--calib-target", type=float, default=0.96,
                     help="upright-upright accuracy to match when calibrating noise")
+    ap.add_argument("--calib-target-inv", type=float, default=0.82,
+                    help="inverted-inverted accuracy to match when calibrating noise")
+    ap.add_argument("--UI-noise-diff", type=float, default=0.01,
+                    help="Inverted noise must be at least as much than upright; this tells us how much worse at min we need it. Feel free to toggle this")
     ap.add_argument("--calib-max", type=float, default=0.75)
     ap.add_argument("--calib-step", type=float, default=0.05)
     ap.add_argument("--seed", type=int, default=42)
@@ -291,28 +297,18 @@ def main():
 
     # 1) calibrate noise on the upright-upright condition
     print(f"--- Calibrating noise on {args.category} (upright-upright) ---")
-    ideal_noise = None
-    for p in np.arange(0.0, args.calib_max, args.calib_step):
-        acc = run_condition(model, device, args, study_classes, unknown_classes, "valid", "valid", p)
-        print(f"  noise {p:.2f} -> {acc*100:.2f}%")
-        if acc <= args.calib_target and ideal_noise is None:
-            ideal_noise = p
-            break
-    if ideal_noise is None:
-        ideal_noise = 0.25
+    
+    upright_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "valid", "valid", param)
+    ideal_noise = search(0.2, 0.36, upright_acc_func, args.calib_target)
+
     print(f"[!] Using noise p={ideal_noise:.2f}\n")
 
     # 1 b) calibrate INVERTED-INVERTED noise on the I-I condition
     print(f"--- Calibrating noise on {args.category} (inverted-inverted) ---")
-    ideal_noise_inv = None
-    for p in np.arange(0.0, args.calib_max, args.calib_step):
-        acc = run_condition(model, device, args, study_classes, unknown_classes, "test", "test", p)
-        print(f"  noise {p:.2f} -> {acc*100:.2f}%")
-        if acc <= args.calib_target and ideal_noise_inv is None:
-            ideal_noise_inv = p
-            break
-    if ideal_noise_inv is None:
-        ideal_noise_inv = 0.3 # idk
+
+    inverted_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "test", "test", param)
+    ideal_noise_inv = search(ideal_noise + args.UI_noise_diff, ideal_noise + args.UI_noise_diff + 0.32, inverted_acc_func, args.calib_target_inv, extend_low = False) # we need at least as much inverted as upright noise
+
     print(f"[!] Using inverted noise p={ideal_noise:.2f}\n")
 
     # 2) all 4 Yin conditions (orientation now set by the on-the-fly transform)

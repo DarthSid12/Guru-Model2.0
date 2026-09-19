@@ -65,11 +65,29 @@ Obviously presumes the function is monotonic, which noise functions should be
 """
 def pure_binary_search(low, high, function,
                        target, # what we want function(param) to be
-                       precision,
+                       param_precision=0.01,
                        pick='LOW'): # whether we pick the bound right below or right above
-    pass
+    while high - low > param_precision:
+        mid = (low + high) / 2
+        value = function(mid)
 
-def search(low, high, function, precision, pick='LOW', 
+        if value < target:
+            low = mid
+        else:
+            high = mid
+
+    return low if pick == 'LOW' else high
+
+def search(low, high, function, target,
+           dir = -1, # -1 means monotonically dec; 1 means inc; more noise = less accuracy leads to this default
+           param_precision=0.01, pick='LOW', 
            extend_low = True, # whether we allow the lower bound to be decreased,
            extend_high = True):
+    if extend_low and ((function(low) - target) * dir > 0):
+        low -= (high - low)
+        return search(low, high, function, target, dir, param_precision, pick, extend_low, extend_high)
+    if extend_high and ((function(high) - target) * dir < 0):
+        high += (high - low)
+        return search(low, high, function, target, dir, param_precision, pick, extend_low, extend_high)
+    return pure_binary_search(low, high, function, target, param_precision, pick)
 
