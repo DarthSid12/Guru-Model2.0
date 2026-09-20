@@ -84,6 +84,7 @@ import torch
 
 from datasets import _PackedSplit, _crop_at
 from model import Model
+from simulate_yin1969 import canon_class, seen_classes
 from salience_trans import OnTheFlyTransform
 
 
@@ -114,7 +115,33 @@ def collect_identities(packed_root, category, splits, num_fixations):
     return by_class
 
 
-def sample_identities(by_class, num_identities, images_per_identity, seed):
+def select_by_group(usable, groups, seed):
+    """Pick identities per class-name prefix: `groups` is [(prefix, n), ...] and
+    n identities are drawn from the classes starting with that prefix (n < 0 =
+    all of them).
+
+    Each prefix is drawn by shuffling its class list once and taking the first n,
+    rather than sampling n directly, so the selections NEST as n grows: at a
+    fixed seed the 5 identities added going from setA_=5 to setA_=10 are added to
+    the same 5 already there. An identity-count sweep is then a within-sample
+    comparison rather than a fresh draw at every point. Each prefix gets its own
+    RNG stream, so changing one group's size never reshuffles another's.
+    """
+    picked = []
+    for prefix, n in groups:
+        pool = sorted(c for c in usable if c.startswith(prefix))
+        if not pool:
+            raise SystemExit(f"no identities match prefix '{prefix}'")
+        if 0 <= n and n > len(pool):
+            raise SystemExit(f"prefix '{prefix}' has {len(pool)} usable "
+                             f"identities, asked for {n}")
+        random.Random(f"{seed}:{prefix}").shuffle(pool)
+        picked += pool if n < 0 else pool[:n]
+    return picked
+
+
+def sample_identities(by_class, num_identities, images_per_identity, seed,
+                      groups=None):
     """Keep identities with >= 2 photos (a trial needs a target and a same-identity
     match), then subsample identities and photos to the requested sizes."""
     rng = random.Random(seed)
@@ -122,9 +149,12 @@ def sample_identities(by_class, num_identities, images_per_identity, seed):
     if len(usable) < 2:
         raise SystemExit(f"Need >= 2 identities with >= 2 photos each; got {len(usable)}. "
                          "For one-photo-per-class categories pass --splits valid test.")
-    names = sorted(usable)
-    if 0 < num_identities < len(names):
-        names = rng.sample(names, num_identities)
+    if groups:
+        names = select_by_group(usable, groups, seed)
+    else:
+        names = sorted(usable)
+        if 0 < num_identities < len(names):
+            names = rng.sample(names, num_identities)
     out = {}
     for c in sorted(names):
         imgs = sorted(usable[c], key=lambda rec: (rec[0], rec[2]))
@@ -265,11 +295,25 @@ def parse_args():
     ap.add_argument("--label-map", default=None, help="label_map.json from the run (sets num_classes)")
     ap.add_argument("--num-classes", type=int, default=None, help="used if --label-map absent")
     ap.add_argument("--temperature", type=float, default=None)
+    ap.add_argument("--exclude-seen-from", default=None,
+                    help="label_map.json; drop every class it lists for this "
+                         "category, leaving only held-out identities")
+    ap.add_argument("--exclude-seen-category", default=None,
+                    help="category prefix to read out of --exclude-seen-from "
+                         "(defaults to --category)")
     ap.add_argument("--splits", nargs="+", default=["valid"],
                     help="packed splits to draw photos from; houses_zubud needs 'valid test' "
                          "(one held-out view each) to get 2 photos per house")
     ap.add_argument("--num-identities", type=int, default=40,
                     help="identities per condition (Dobs et al. Exp. 1 used 40); -1 = all")
+    ap.add_argument("--group-sizes", nargs="+", default=None, metavar="PREFIX=N",
+                    help="compose the identity set from class-name prefixes "
+                         "instead of --num-identities, e.g. "
+                         "--group-sizes celeb_=24 setA_=10 for the 24 CelebA "
+                         "identities plus 10 Set_A ones. N=-1 takes every "
+                         "identity with that prefix. Selections nest as N grows, "
+                         "so an identity-count sweep at a fixed seed keeps adding "
+                         "to the same set")
     ap.add_argument("--images-per-identity", type=int, default=5,
                     help="photos per identity (Dobs et al. used 5); -1 = all")
     ap.add_argument("--num-fixations", type=int, default=16)
@@ -281,6 +325,9 @@ def parse_args():
                          "the Kanwisher analogue of Yin's upright-upright calibration)")
     ap.add_argument("--calib-max", type=float, default=0.75)
     ap.add_argument("--calib-step", type=float, default=0.05)
+    ap.add_argument("--calib-grid", nargs="+", type=float, default=None,
+                    help="report Upright accuracy at exactly these noise levels "
+                         "and exit, instead of running the conditions")
     ap.add_argument("--calib-fine-step", type=float, default=0.01,
                     help="refinement step within the coarse bracket that crosses --calib-target")
     ap.add_argument("--seed", type=int, default=42)
@@ -343,14 +390,39 @@ def main():
 
     by_class = collect_identities(args.packed_root, args.category, args.splits,
                                   args.num_fixations)
+    if args.exclude_seen_from:
+        seen = seen_classes(args.exclude_seen_from,
+                            args.exclude_seen_category or args.category)
+        kept = {c: v for c, v in by_class.items() if canon_class(c) not in seen}
+        print(f"[!] {args.category}: {len(by_class)} classes -> {len(kept)} held-out "
+              f"({len(by_class) - len(kept)} dropped as trained-on)")
+        by_class = kept
+    groups = None
+    if args.group_sizes:
+        groups = [(k, int(v)) for k, v in
+                  (spec.split("=", 1) for spec in args.group_sizes)]
     identities = sample_identities(by_class, args.num_identities,
-                                   args.images_per_identity, args.seed)
+                                   args.images_per_identity, args.seed, groups)
     n_photos = sum(len(v) for v in identities.values())
     print(f"--- {args.category}: {len(identities)} identities, {n_photos} photos "
           f"from splits {args.splits} ({args.num_fixations} fixations each) ---")
+    if groups:
+        counts = {p: sum(1 for c in identities if c.startswith(p)) for p, _ in groups}
+        print("    groups: " + "  ".join(f"{p}{n}" for p, n in counts.items()))
 
     upright_tf = OnTheFlyTransform("valid", args.variant, device).to(device)
     inverted_tf = OnTheFlyTransform("test", args.variant, device).to(device)
+
+    # 0) grid probe: Upright accuracy at each requested p, then stop (see the
+    # matching block in simulate_yin1969.py -- run_sim_seeds.py uses it to fit
+    # one noise level jointly across categories).
+    if args.calib_grid:
+        for p in args.calib_grid:
+            set_seed(args.seed)
+            acc, _ = run_condition(model, device, upright_tf, identities,
+                                   args.num_fixations, p)
+            print(f"  noise {p:.2f} -> {acc*100:.2f}%")
+        return
 
     # 1) calibrate noise on the Upright condition (skipped if --noise given) --
     # the Kanwisher analogue of Yin's upright-upright calibration, since this
