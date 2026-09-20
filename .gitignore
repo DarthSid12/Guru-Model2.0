@@ -8,3 +8,5 @@ runs/
 *.tar.gz
 .DS_Store
 fixation_data/
+fixation_pca/
+logs/
