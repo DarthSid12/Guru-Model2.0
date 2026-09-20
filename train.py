@@ -42,7 +42,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from model import Model, BACKBONES
-from datasets import make_datasets, make_packed_datasets
+from datasets import build_packed_label_map, make_datasets, make_packed_datasets
 from salience_trans import OnTheFlyTransform
 
 # On DHONI, faces/objects/houses are already downloaded + preprocessed here.
@@ -73,6 +73,12 @@ def parse_args():
                     help="optional per-category cap on training base images, e.g. "
                          "--max-images-per-class objects=200 (train split only; "
                          "valid/test are unaffected)")
+    ap.add_argument("--max-classes-per-category", nargs="+", default=[],
+                    help="optional per-category cap on the number of classes, e.g. "
+                         "--max-classes-per-category houses_zubud=40. The first N classes "
+                         "in the packed meta order are kept and the rest are dropped from "
+                         "the label map and from every split, so the softmax head is sized "
+                         "to the classes that are actually trainable.")
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--lr-schedule", choices=["none", "cosine"], default="none",
                     help="cosine = CosineAnnealingLR decaying to 0 over --epochs")
@@ -91,12 +97,30 @@ def parse_args():
                          "until all classes are active. Packed data mode only.")
     ap.add_argument("--curriculum-stages", nargs="+",
                     default=["4", "8", "16", "32", "64", "128", "all"],
-                    help="classes per category active at each stage; 'all' = every class. "
-                         "A category with fewer classes is simply capped at its own count.")
+                    help="classes active at each stage. Either one number applied to every "
+                         "category ('4', or 'all' = every class), or per-category counts "
+                         "'faces=4,objects=4,houses_zubud=0' (every --categories entry must "
+                         "appear; each value may itself be 'all'). A category with fewer "
+                         "classes than requested is simply capped at its own count.")
     ap.add_argument("--curriculum-epochs", nargs="+", type=int,
                     default=[6, 6, 6, 6, 8, 10, 18],
                     help="epochs to spend in each stage (same length as --curriculum-stages). "
                          "Their sum overrides --epochs.")
+    ap.add_argument("--category-weights", nargs="+", default=[],
+                    help="target share of each training batch per category, e.g. "
+                         "--category-weights faces=0.45 objects=0.45 houses_zubud=0.10. "
+                         "Values are normalised, and renormalised over whichever categories "
+                         "are active in the current curriculum stage. Without this the diet "
+                         "follows natural frequency (objects ~1026 img/class vs faces ~130 "
+                         "vs zubud ~3, i.e. ~90%% objects). Epoch length is unchanged, so "
+                         "compute stays comparable to an unweighted run.")
+    ap.add_argument("--acuity-sigmas", nargs="+", type=float, default=[],
+                    help="Gaussian blur sigma (in crop pixels) per curriculum stage, "
+                         "standing in for low neonatal visual acuity relaxed over "
+                         "development (Vogelsang et al. 2018 PNAS): "
+                         "--acuity-sigmas 8 4 2 1 0 0. Train-time only -- valid/test "
+                         "are always run at full acuity. Must have one entry per "
+                         "stage; omit the flag for a full-acuity run.")
     ap.add_argument("--curriculum-seed", type=int, default=0,
                     help="seed for the nested random class ordering (which classes come first)")
     ap.add_argument("--curriculum-warmup-steps", type=int, default=200,
@@ -104,16 +128,24 @@ def parse_args():
                          "to absorb the new-class loss spike (0 = off)")
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--num-workers", type=int, default=8)
+    ap.add_argument("--dataloader-sharing", choices=["auto", "file_descriptor", "file_system"],
+                    default="auto",
+                    help="how DataLoader workers hand batches to the parent. auto = the torch "
+                         "default unless /dev/shm is nearly full; file_system = never use "
+                         "/dev/shm (pick this on a box where other users' jobs can fill it "
+                         "mid-run, which has killed runs here before)")
     ap.add_argument("--temperature", type=float, default=2.0)
     ap.add_argument("--dropout", type=float, default=0.3,
                     help="dropout applied to the binary code h before fc2 (0 = off)")
+    ap.add_argument("--invert-p", type=float, default=0.0,
+                    help="fraction of TRAIN crops shown upside down (per-sample, "
+                         "composed with the normal rotation jitter). Default 0.0 "
+                         "reproduces every model up to r17, which never saw an "
+                         "inverted view in training. Recorded in config.json.")
     ap.add_argument("--aug", action=argparse.BooleanOptionalAction, default=True,
                     help="ImageNet-recipe train augmentation (random resized crop, "
-                         "color jitter, random erasing); packed data mode only. "
-                         "--no-aug to disable")
-    ap.add_argument("--hflip-p", type=float, default=0.5,
-                    help="probability of a random horizontal flip at train time "
-                         "(0 = off; never applied vertically, which would fake inversion)")
+                         "color jitter); packed data mode only. --no-aug to disable. "
+                         "Random erasing and the horizontal flip were removed 2026-09-04.")
     ap.add_argument("--patience", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--backbone", default="resnet18",
@@ -125,12 +157,40 @@ def parse_args():
                          "'purely log-polar trained' assumption; diagnostic use only.")
     ap.add_argument("--pretrained-path", default=None,
                     help="optional checkpoint to warm-start from (loaded strict=False)")
+    ap.add_argument("--pretrained-label-map", default=None,
+                    help="label_map.json of the --pretrained-path run. When the new class "
+                         "set is a superset of the old one, the old fc2 rows are copied "
+                         "into the resized head BY CLASS NAME and only genuinely-new rows "
+                         "are randomly initialised, so known classes keep their classifier "
+                         "instead of having to relearn it.")
     ap.add_argument("--output-dir", default=None)
     ap.add_argument("--run-tag", default=None,
                     help="suffix appended to the auto-named output dir (used by run_experiments.py)")
     ap.add_argument("--device", default="auto",
                     help="cuda:N | cpu | auto (auto picks the CUDA device with the most free memory)")
     return ap.parse_args()
+
+
+def use_file_system_sharing_if_shm_full(min_free_gb=4.0):
+    """DataLoader workers hand collated batches to the parent through /dev/shm.
+
+    DHONI's /dev/shm is a shared 252 GB tmpfs, and other users' stale joblib
+    memmap folders have filled it to 100% before now, which kills a run mid-epoch
+    with "No space left on device". Torch's 'file_system' strategy passes the
+    same tensors through TMPDIR-backed files instead, so a full /dev/shm that we
+    do not own cannot take the run down. Only switch when we have to: the default
+    'file_descriptor' strategy is the one that cleans up after a hard crash.
+    """
+    try:
+        st = os.statvfs("/dev/shm")
+        free_gb = st.f_bavail * st.f_frsize / 1e9
+    except OSError:
+        return
+    if free_gb < min_free_gb:
+        torch.multiprocessing.set_sharing_strategy("file_system")
+        print(f"[warn] /dev/shm has only {free_gb:.1f} GB free; using the 'file_system' "
+              f"sharing strategy (TMPDIR={os.environ.get('TMPDIR', '/tmp')}) so DataLoader "
+              f"workers do not depend on it.")
 
 
 def pick_free_device():
@@ -212,6 +272,36 @@ def resolve_root(explicit, local_default, dhoni_fallback):
     return local_default
 
 
+def parse_stage_spec(spec, categories):
+    """One --curriculum-stages entry -> {category: size or None}, None meaning 'all'.
+
+    Accepts a scalar applied to every category ("4", "all") or explicit
+    per-category counts ("faces=4,objects=4,houses_zubud=0"), which is what a
+    developmental schedule needs: faces, objects and places do not grow at the
+    same rate, and places start at zero.
+    """
+    spec = str(spec)
+    if "=" not in spec:
+        size = None if spec.lower() == "all" else int(spec)
+        return {c: size for c in categories}
+
+    sizes = {}
+    for part in spec.split(","):
+        cat, _, n = part.partition("=")
+        cat, n = cat.strip(), n.strip()
+        if not n:
+            raise ValueError(f"stage spec {spec!r}: expected category=N, got {part!r}")
+        if cat not in categories:
+            raise ValueError(f"stage spec {spec!r}: unknown category {cat!r} "
+                             f"(--categories is {categories})")
+        sizes[cat] = None if n.lower() == "all" else int(n)
+    missing = [c for c in categories if c not in sizes]
+    if missing:
+        raise ValueError(f"stage spec {spec!r} does not mention {missing}; per-category "
+                         f"specs must list every category (use 0 to keep one out of a stage)")
+    return sizes
+
+
 def build_curriculum_stages(args, label_map, categories):
     """Nested class subsets, one per stage.
 
@@ -219,7 +309,7 @@ def build_curriculum_stages(args, label_map, categories):
     activates the first `size_k` of that ordering, so stage k's classes are
     always a subset of stage k+1's ("learn a few at a time", never forgetting).
     A category with fewer classes than `size_k` is capped at its own count, so
-    e.g. objects (64 classes) saturates while houses keeps growing.
+    e.g. objects (64 classes) saturates while faces keep growing.
     """
     if len(args.curriculum_stages) != len(args.curriculum_epochs):
         raise ValueError(f"--curriculum-stages has {len(args.curriculum_stages)} entries but "
@@ -232,14 +322,21 @@ def build_curriculum_stages(args, label_map, categories):
     rng = np.random.default_rng(args.curriculum_seed)
     order = {c: rng.permutation(ids).tolist() for c, ids in ids_by_category.items()}
 
-    stages = []
+    stages, prev = [], {c: 0 for c in categories}
     for spec, epochs in zip(args.curriculum_stages, args.curriculum_epochs):
-        size = None if str(spec).lower() == "all" else int(spec)
+        sizes = parse_stage_spec(spec, categories)
         active, per_cat = [], {}
         for c in categories:
+            size = sizes[c]
             take = order[c] if size is None else order[c][:size]
+            if len(take) < prev[c]:
+                raise ValueError(f"stage spec {spec!r} shrinks {c} from {prev[c]} to "
+                                 f"{len(take)} classes; stages must be nested (never forget)")
             per_cat[c] = len(take)
             active.extend(take)
+        if not active:
+            raise ValueError(f"stage spec {spec!r} activates no classes at all")
+        prev = per_cat
         stages.append({"spec": str(spec), "epochs": int(epochs),
                        "classes_per_category": per_cat, "active_ids": sorted(active)})
     return stages
@@ -277,17 +374,50 @@ def main():
 
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
+    if args.num_workers > 0:
+        if args.dataloader_sharing == "auto":
+            use_file_system_sharing_if_shm_full()
+        else:
+            torch.multiprocessing.set_sharing_strategy(args.dataloader_sharing)
+            print(f"[info] DataLoader sharing strategy: {args.dataloader_sharing}")
 
     device = torch.device(args.device)
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True   # fixed 180x180 input -> autotune kernels
         torch.set_float32_matmul_precision("high")  # TF32 matmuls on Ampere+
-    max_images_per_class = {}
-    for spec in args.max_images_per_class:
-        category, _, n = spec.partition("=")
-        if not n:
-            raise ValueError(f"--max-images-per-class expects category=N pairs, got {spec!r}")
-        max_images_per_class[category] = int(n)
+    def parse_category_caps(specs, flag):
+        caps = {}
+        for spec in specs:
+            category, _, n = spec.partition("=")
+            if not n:
+                raise ValueError(f"{flag} expects category=N pairs, got {spec!r}")
+            if category not in args.categories:
+                raise ValueError(f"{flag}: unknown category {category!r} "
+                                 f"(--categories is {args.categories})")
+            caps[category] = int(n)
+        return caps
+
+    max_images_per_class = parse_category_caps(args.max_images_per_class,
+                                               "--max-images-per-class")
+    max_classes_per_category = parse_category_caps(args.max_classes_per_category,
+                                                   "--max-classes-per-category")
+
+    category_weights = {}
+    for spec in args.category_weights:
+        category, _, w = spec.partition("=")
+        if not w:
+            raise ValueError(f"--category-weights expects category=W pairs, got {spec!r}")
+        if category not in args.categories:
+            raise ValueError(f"--category-weights: unknown category {category!r} "
+                             f"(--categories is {args.categories})")
+        if float(w) < 0:
+            raise ValueError(f"--category-weights: negative weight in {spec!r}")
+        category_weights[category] = float(w)
+    if category_weights:
+        total = sum(category_weights.values())
+        if total <= 0:
+            raise ValueError("--category-weights must not sum to zero")
+        category_weights = {c: w / total for c, w in category_weights.items()}
     print("Device:", device, "| categories:", args.categories, "| variant:", args.variant,
           "| data-mode:", args.data_mode, "| max_images_per_class:", max_images_per_class or "none")
 
@@ -307,18 +437,46 @@ def main():
 
     # ----------------------------- Data -----------------------------
     if args.data_mode == "packed":
+        capped_map = None
+        if max_classes_per_category:
+            # Trim the label map first, then re-index it: the packed datasets skip
+            # any sample whose "<category>/<class>" key is absent, so dropped
+            # classes vanish from train/valid/test and from the softmax head.
+            full = build_packed_label_map(args.fixation_root, args.categories, split="train")
+            kept, seen = [], {}
+            for name in sorted(full, key=full.get):
+                category = name.split("/", 1)[0]
+                cap = max_classes_per_category.get(category)
+                seen[category] = seen.get(category, 0) + 1
+                if cap is None or seen[category] <= cap:
+                    kept.append(name)
+            capped_map = {name: i for i, name in enumerate(kept)}
+            for category, cap in sorted(max_classes_per_category.items()):
+                print(f"[info] --max-classes-per-category {category}={cap}: "
+                      f"{seen.get(category, 0)} -> {min(cap, seen.get(category, 0))} classes")
         datasets, label_map = make_packed_datasets(
             categories=args.categories,
             packed_root=args.fixation_root,
             num_salient_points=args.num_fixations,
+            label_map=capped_map,
             max_images_per_class=max_images_per_class,
         )
         transforms = {
-            "train": OnTheFlyTransform("train", args.variant, device, hflip_p=args.hflip_p,
+            "train": OnTheFlyTransform("train", args.variant, device,
                                        imagenet_aug=args.aug).to(device),
             "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
             "test": OnTheFlyTransform("test", args.variant, device).to(device),
         }
+        # Inverted-exposure arm. Only the TRAIN transform is touched: valid and
+        # test must stay upright/inverted by definition or the eval columns stop
+        # meaning anything.
+        transforms["train"].invert_p = args.invert_p
+        if args.invert_p > 0:
+            print(f"[!] inverted-exposure run: {args.invert_p:.1%} of train crops "
+                  f"rotated 180 deg before the +-15 deg jitter. This DELIBERATELY "
+                  f"breaks the upright-only training invariant every model up to "
+                  f"r17 relied on -- Yin rows from this run are not comparable to "
+                  f"theirs except as the intended manipulation.")
     else:
         datasets, label_map = make_datasets(
             categories=args.categories,
@@ -346,16 +504,50 @@ def main():
             raise ValueError("--curriculum requires --data-mode packed")
         stages = build_curriculum_stages(args, label_map, args.categories)
         args.epochs = sum(s["epochs"] for s in stages)
+        if args.acuity_sigmas and len(args.acuity_sigmas) != len(stages):
+            raise ValueError(f"--acuity-sigmas has {len(args.acuity_sigmas)} entries but "
+                             f"there are {len(stages)} curriculum stages")
         print(f"Curriculum: {len(stages)} stages, {args.epochs} epochs total")
         for k, s in enumerate(stages, 1):
-            per_cat = " ".join(f"{c} {n}" for c, n in s["classes_per_category"].items())
-            print(f"  stage {k}: {s['spec']:>4} per category -> {len(s['active_ids']):4d} classes "
-                  f"({per_cat}) | {s['epochs']} epochs")
+            per_cat = ", ".join(f"{n} {c}" for c, n in s["classes_per_category"].items())
+            print(f"  stage {k}: {len(s['active_ids']):4d} classes ({per_cat}) "
+                  f"| {s['epochs']} epochs")
     else:
+        if args.acuity_sigmas:
+            raise ValueError("--acuity-sigmas is a per-stage schedule and needs --curriculum")
         stages = [{"spec": "all", "epochs": args.epochs,
                    "classes_per_category": {}, "active_ids": list(range(num_classes))}]
 
     valid_batch_size = max(1, args.batch_size // args.num_fixations)
+
+    def category_sampler(train_split):
+        """WeightedRandomSampler giving each category its requested batch share.
+
+        A sample's weight is share_c / n_c, so a category's expected share of the
+        batch is its target regardless of how many crops it actually owns. Shares
+        are renormalised over the categories present in this stage (houses are
+        absent from the first stages), and the number of draws per epoch equals
+        the subset size, so weighting changes the *diet* and not the compute.
+        """
+        if not category_weights:
+            return None
+        base = train_split.dataset if isinstance(train_split, Subset) else train_split
+        idxs = train_split.indices if isinstance(train_split, Subset) else range(len(base))
+        cats = [id_to_category[base.samples[i][-1]] for i in idxs]
+        n_by_cat = {}
+        for c in cats:
+            n_by_cat[c] = n_by_cat.get(c, 0) + 1
+        present = sum(category_weights.get(c, 0.0) for c in n_by_cat)
+        if present <= 0:
+            raise ValueError(f"--category-weights gives zero total weight to the categories "
+                             f"present in this stage ({sorted(n_by_cat)})")
+        share = {c: category_weights.get(c, 0.0) / present for c in n_by_cat}
+        print("  sampling shares: " + ", ".join(
+            f"{c} {100 * share[c]:.1f}% (natural {100 * n_by_cat[c] / len(cats):.1f}%, "
+            f"{n_by_cat[c]} crops)" for c in sorted(n_by_cat)))
+        w = [share[c] / n_by_cat[c] for c in cats]
+        return torch.utils.data.WeightedRandomSampler(w, num_samples=len(cats),
+                                                      replacement=True)
 
     def make_loaders(active_ids):
         """Loaders restricted to the currently active classes (all of them
@@ -364,9 +556,12 @@ def main():
         def split_of(name):
             ds = datasets[name]
             return ds if full else Subset(ds, subset_indices(ds, active_ids))
+        train_split = split_of("train")
+        sampler = category_sampler(train_split)
         return (
-            DataLoader(split_of("train"), batch_size=args.batch_size,
-                       shuffle=True, num_workers=args.num_workers, pin_memory=True,
+            DataLoader(train_split, batch_size=args.batch_size,
+                       shuffle=sampler is None, sampler=sampler,
+                       num_workers=args.num_workers, pin_memory=True,
                        persistent_workers=args.num_workers > 0),
             DataLoader(split_of("valid"), batch_size=valid_batch_size,
                        shuffle=False, num_workers=args.num_workers, pin_memory=True),
@@ -384,6 +579,42 @@ def main():
         model = model.to(memory_format=torch.channels_last)
     if args.pretrained_path:
         state = torch.load(args.pretrained_path, map_location=device)
+        # Fine-tuning onto a different class set resizes fc2, and a shape
+        # mismatch raises even under strict=False, so drop the old classifier
+        # and let it re-initialise. Everything the simulations read is upstream
+        # of it -- they score the 256-d bottleneck `h` (fc1), not fc2 -- so the
+        # transferred part is exactly the part that matters.
+        params = dict(model.named_parameters())
+        mismatched = [k for k in state
+                      if k.startswith("fc2.") and state[k].shape != params[k].shape]
+        if mismatched and args.pretrained_label_map:
+            # Re-initialising the whole head makes EVERY known class relearn its
+            # classifier, and categories with few images per class (houses at ~3,
+            # the new faces at 1-4) cannot do that before early stopping fires on
+            # an aggregate valid accuracy dominated by the big categories -- that
+            # is how r8ft lost its house arm (90.0% -> 17.5%). Copy the old rows
+            # across by class NAME instead: the label map is reordered by the new
+            # categories, so row index alone is not a valid correspondence.
+            with open(args.pretrained_label_map) as f:
+                old_map = json.load(f)
+            new_w = params["fc2.weight"].data.clone()
+            new_b = params["fc2.bias"].data.clone()
+            kept = 0
+            for name, old_i in old_map.items():
+                new_i = label_map.get(name)
+                if new_i is not None:
+                    new_w[new_i] = state["fc2.weight"][old_i].to(new_w.device, new_w.dtype)
+                    new_b[new_i] = state["fc2.bias"][old_i].to(new_b.device, new_b.dtype)
+                    kept += 1
+            state["fc2.weight"], state["fc2.bias"] = new_w, new_b
+            print(f"  [warm-start] fc2 {tuple(params['fc2.weight'].shape)}: carried over "
+                  f"{kept}/{len(old_map)} old class rows by name, "
+                  f"{len(label_map) - kept} newly initialised")
+        else:
+            for k in mismatched:
+                print(f"  [warm-start] dropping {k} {tuple(state[k].shape)} "
+                      f"-> {tuple(params[k].shape)} (re-init)")
+                del state[k]
         missing = model.load_state_dict(state, strict=False)
         print(f"Warm-started from {args.pretrained_path} ({missing})")
     model.stochastic = False  # deterministic expectation during training
@@ -429,10 +660,17 @@ def main():
         # warm up the LR after each class introduction (not at the very start,
         # where the cosine already begins from the full base LR)
         warmup_left = args.curriculum_warmup_steps if (args.curriculum and stage_idx > 1) else 0
+        # Train-time acuity for this stage. valid/test transforms are never
+        # touched: the model is always evaluated at full acuity.
+        if args.acuity_sigmas:
+            transforms["train"].set_acuity(args.acuity_sigmas[stage_idx - 1])
         if args.curriculum:
+            per_cat = ", ".join(f"{n} {c}" for c, n in stage["classes_per_category"].items())
             print(f"\n=== Stage {stage_idx}/{len(stages)}: {len(stage['active_ids'])} classes "
-                  f"({stage['spec']} per category), {stage['epochs']} epochs, "
-                  f"{len(train_loader.dataset)} train crops ===")
+                  f"({per_cat}), {stage['epochs']} epochs, "
+                  f"{len(train_loader.dataset)} train crops"
+                  + (f", acuity sigma {args.acuity_sigmas[stage_idx - 1]:g}px"
+                     if args.acuity_sigmas else "") + " ===")
 
         for _ in range(stage["epochs"]):
             epoch += 1

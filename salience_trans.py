@@ -12,8 +12,11 @@ SaliencePipeline:
     and also returns the plain foveated crop (CNN).
 """
 
+import math
+
 import cv2
 import torch
+import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 import numpy as np
 from trans import LogPolar, Rotate, Foveate
@@ -179,26 +182,25 @@ class SaliencePipeline(torch.nn.Module):
 
 
 class ImageNetAugment(torch.nn.Module):
-    """Standard ImageNet-recipe augmentations — random resized crop (scale
-    jitter), color jitter, random erasing — implemented batched with
-    per-sample parameters so they run on the GPU inside OnTheFlyTransform.
+    """Random resized crop (per-sample scale jitter + shift), implemented
+    batched so it runs on the GPU inside OnTheFlyTransform.
 
     Applied to the raw fixation crop BEFORE rotation/foveation/log-polar, so
     the same augmentations serve both the lp and cnn variants. Expects float
-    crops in [0, 1], shape (B, C, H, W). hflip lives in OnTheFlyTransform.
+    crops in [0, 1], shape (B, C, H, W).
+
+    Removed 2026-09-04, leaving scale jitter as the only augmentation:
+    random erasing (pasted a patch of uniform noise), the horizontal mirror
+    flip, and colour jitter (brightness/contrast/saturation). Every model up to
+    and including r16/r17 trained WITH all three.
+
+    Foveation and the log-polar transform are NOT augmentation and are
+    untouched -- they live in OnTheFlyTransform.forward.
     """
 
-    def __init__(self, scale=(0.6, 1.0), brightness=0.4, contrast=0.4,
-                 saturation=0.4, erase_p=0.25, erase_scale=(0.02, 0.15),
-                 erase_ratio=(0.3, 3.3)):
+    def __init__(self, scale=(0.6, 1.0)):
         super().__init__()
         self.scale = scale
-        self.brightness = brightness
-        self.contrast = contrast
-        self.saturation = saturation
-        self.erase_p = erase_p
-        self.erase_scale = erase_scale
-        self.erase_ratio = erase_ratio
 
     def _random_resized_crop(self, x):
         # per-sample zoom + shift via a batched affine grid (the fixation
@@ -219,44 +221,8 @@ class ImageNetAugment(torch.nn.Module):
                                                padding_mode='reflection',
                                                align_corners=False)
 
-    def _color_jitter(self, x):
-        shape = (x.size(0), 1, 1, 1)
-        dev = x.device
-        if self.brightness > 0:
-            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.brightness
-            x = x * f
-        if self.contrast > 0:
-            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.contrast
-            mean = TF.rgb_to_grayscale(x).mean(dim=(2, 3), keepdim=True)
-            x = (x - mean) * f + mean
-        if self.saturation > 0:
-            f = 1 + (torch.rand(shape, device=dev) * 2 - 1) * self.saturation
-            gray = TF.rgb_to_grayscale(x)
-            x = (x - gray) * f + gray
-        return x.clamp_(0, 1)
-
-    def _random_erase(self, x):
-        B, C, H, W = x.shape
-        hit = torch.rand(B, device=x.device) < self.erase_p
-        for b in hit.nonzero(as_tuple=True)[0].tolist():
-            area = np.random.uniform(*self.erase_scale) * H * W
-            log_ratio = np.random.uniform(np.log(self.erase_ratio[0]),
-                                          np.log(self.erase_ratio[1]))
-            ratio = np.exp(log_ratio)
-            eh = int(round(np.sqrt(area * ratio)))
-            ew = int(round(np.sqrt(area / ratio)))
-            if 0 < eh < H and 0 < ew < W:
-                top = np.random.randint(0, H - eh)
-                left = np.random.randint(0, W - ew)
-                x[b, :, top:top + eh, left:left + ew] = torch.rand(
-                    C, eh, ew, device=x.device)
-        return x
-
     def forward(self, x):
-        x = self._random_resized_crop(x)
-        x = self._color_jitter(x)
-        x = self._random_erase(x)
-        return x
+        return self._random_resized_crop(x)
 
 
 class OnTheFlyTransform(torch.nn.Module):
@@ -276,16 +242,30 @@ class OnTheFlyTransform(torch.nn.Module):
     """
 
     def __init__(self, type='train', variant='lp', device='cpu',
-                 crop_size=180, output_shape=(180, 180), hflip_p=0.5,
+                 crop_size=180, output_shape=(180, 180),
                  imagenet_aug=False):
         super().__init__()
         self.variant = variant
+        # Acuity schedule (Vogelsang et al. 2018 PNAS): a Gaussian blur standing
+        # in for low neonatal visual acuity, relaxed to zero over the curriculum.
+        # Train-time only -- the model is always *evaluated* at full acuity, which
+        # is the whole point of the manipulation. 0.0 is a no-op, so a run without
+        # --acuity-sigmas behaves exactly as before.
+        self.acuity_sigma = 0.0
+        self._blur_kernel = None
+        self._blur_kernel_sigma = None
         self.augment = ImageNetAugment() if (type == 'train' and imagenet_aug) else None
-        # horizontal (left-right) flip only, and only at train time: faces/objects
-        # are ~bilaterally symmetric so this is a free augmentation, but a
-        # vertical flip would fake the inversion manipulation the whole
-        # pipeline exists to test, so it is never applied here.
-        self.hflip_p = hflip_p if type == 'train' else 0.0
+        # Fraction of TRAIN crops shown upside down. 0.0 (the default, and every
+        # model up to r17) means the network never sees an inverted view during
+        # training -- a deliberate safeguard, since inverted exposure
+        # contaminates the manipulation simulate_yin1969.py is built to measure.
+        # Setting it above zero changes the claim from "an inversion effect
+        # emerges from upright-only experience" to "this much inverted
+        # experience does/does not abolish it", so it is opt-in and recorded in
+        # the run config. Applied per-sample, BEFORE the +-15 deg jitter, so an
+        # inverted crop is augmented exactly like an upright one.
+        self.invert_p = 0.0
+        self._invert = Rotate(invert=True)
         if type == 'train':
             self.rotate = Rotate()
         elif type in ('test', 'inverted'):
@@ -296,17 +276,51 @@ class OnTheFlyTransform(torch.nn.Module):
         self.logpolar = LogPolar(input_shape=(crop_size, crop_size),
                                  output_shape=output_shape, device=device)
 
+    def set_acuity(self, sigma):
+        """Set the train-time blur sigma in crop pixels. 0.0 disables the blur."""
+        sigma = float(sigma)
+        if sigma < 0:
+            raise ValueError(f"acuity sigma must be >= 0, got {sigma}")
+        self.acuity_sigma = sigma
+        return self
+
+    def _blur(self, crops):
+        """Separable Gaussian blur at self.acuity_sigma, reflect-padded."""
+        sigma = self.acuity_sigma
+        if self._blur_kernel_sigma != sigma or (
+                self._blur_kernel is not None
+                and self._blur_kernel.device != crops.device):
+            radius = max(1, int(math.ceil(3.0 * sigma)))
+            x = torch.arange(-radius, radius + 1, dtype=torch.float32,
+                             device=crops.device)
+            k = torch.exp(-(x ** 2) / (2.0 * sigma ** 2))
+            self._blur_kernel = (k / k.sum())
+            self._blur_kernel_sigma = sigma
+        k = self._blur_kernel.to(crops.dtype)
+        c = crops.size(1)
+        r = (k.numel() - 1) // 2
+        out = F.pad(crops, (r, r, 0, 0), mode="reflect")
+        out = F.conv2d(out, k.view(1, 1, 1, -1).expand(c, 1, 1, -1), groups=c)
+        out = F.pad(out, (0, 0, r, r), mode="reflect")
+        out = F.conv2d(out, k.view(1, 1, -1, 1).expand(c, 1, -1, 1), groups=c)
+        return out
+
     def forward(self, crops):
         """crops: (B, C, H, W) uint8 [0,255] or float [0,1] -> float (B, C, H, W)."""
         if crops.dtype == torch.uint8:
             crops = crops.float().div_(255.0)
-        if self.hflip_p > 0:
-            flip_mask = torch.rand(crops.size(0), device=crops.device) < self.hflip_p
-            if flip_mask.any():
-                crops = crops.clone()
-                crops[flip_mask] = crops[flip_mask].flip(-1)
+        if self.acuity_sigma > 0:
+            crops = self._blur(crops)
         if self.augment is not None:
             crops = self.augment(crops)
+        if self.invert_p > 0.0:
+            # Per-sample, not per-batch: one draw for the whole batch would make
+            # the realised inverted fraction hugely variable and correlate
+            # orientation with whatever else is in that batch.
+            sel = torch.rand(crops.size(0), device=crops.device) < self.invert_p
+            if sel.any():
+                crops = crops.clone()
+                crops[sel] = self._invert(crops[sel])
         crops = self.rotate(crops)
         if self.variant != 'plain':
             crops = self.foveate(crops)
