@@ -174,8 +174,8 @@ def run_condition(model, device, args, sp, study_items, unknown_items,
         for i in range(n_pairs):
             old_crops = load_item_fixations(sp, test_old_idx[old_items[i]], args.test_fixations, offset=0)
             new_crops = load_item_fixations(sp, unknown_idx[new_items[i]], args.test_fixations, offset=0)
-            h_old = encode(model, test_tf, old_crops, device, p_noise)
-            h_new = encode(model, test_tf, new_crops, device, p_noise)
+            h_old = encode(model, test_tf, old_crops, device, 0.0)
+            h_new = encode(model, test_tf, new_crops, device, 0.0)
             if compute_familiarity_score(h_old, memory_bank, args.sigma) > \
                compute_familiarity_score(h_new, memory_bank, args.sigma):
                 correct += 1
