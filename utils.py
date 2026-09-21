@@ -83,10 +83,14 @@ def search(low, high, function, target,
            param_precision=0.01, pick='LOW', 
            extend_low = True, # whether we allow the lower bound to be decreased,
            extend_high = True):
-    if extend_low and ((function(low) - target) * dir > 0):
+    if (function(low) - target) * dir > 0:
+        if not extend_low:
+            return low
         low -= (high - low)
         return search(low, high, function, target, dir, param_precision, pick, extend_low, extend_high)
-    if extend_high and ((function(high) - target) * dir < 0):
+    if (function(high) - target) * dir < 0:
+        if not extend_high:
+            return high
         high += (high - low)
         return search(low, high, function, target, dir, param_precision, pick, extend_low, extend_high)
     return pure_binary_search(low, high, function, target, param_precision, pick)

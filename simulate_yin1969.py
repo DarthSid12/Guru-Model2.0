@@ -140,7 +140,7 @@ def compute_familiarity_score(F_test, memory_bank, sigma):
 
 # ----------------------- Yin condition --------------------------
 def run_condition(model, device, args, sp, study_items, unknown_items,
-                  study_tf, test_tf, p_noise):
+                  study_tf, test_tf, mem_noise, perc_noise):
     """One Yin 2AFC condition. `study_tf`/`test_tf` are OnTheFlyTransforms that
     fix the orientation (upright vs inverted) of the study and test phases."""
     set_seed(args.seed)
@@ -154,7 +154,7 @@ def run_condition(model, device, args, sp, study_items, unknown_items,
             test_crops = load_item_fixations(sp, img_idx, args.test_fixations, offset=0)
             if study_crops is None or test_crops is None:
                 continue
-            memory_bank[iid] = encode(model, study_tf, study_crops, device, p_noise)
+            memory_bank[iid] = encode(model, study_tf, study_crops, device, mem_noise)
             test_old_idx[iid] = img_idx
 
         # ---- new (never-studied) distractor pool ----
@@ -174,8 +174,8 @@ def run_condition(model, device, args, sp, study_items, unknown_items,
         for i in range(n_pairs):
             old_crops = load_item_fixations(sp, test_old_idx[old_items[i]], args.test_fixations, offset=0)
             new_crops = load_item_fixations(sp, unknown_idx[new_items[i]], args.test_fixations, offset=0)
-            h_old = encode(model, test_tf, old_crops, device, 0.0)
-            h_new = encode(model, test_tf, new_crops, device, 0.0)
+            h_old = encode(model, test_tf, old_crops, device, perc_noise)
+            h_new = encode(model, test_tf, new_crops, device, perc_noise)
             if compute_familiarity_score(h_old, memory_bank, args.sigma) > \
                compute_familiarity_score(h_new, memory_bank, args.sigma):
                 correct += 1
@@ -298,7 +298,7 @@ def main():
     # 1) calibrate noise on the upright-upright condition
     print(f"--- Calibrating noise on {args.category} (upright-upright) ---")
     
-    upright_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "valid", "valid", param)
+    upright_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "valid", "valid", param, param)
     ideal_noise = search(0.2, 0.36, upright_acc_func, args.calib_target)
 
     print(f"[!] Using noise p={ideal_noise:.2f}\n")
@@ -306,7 +306,7 @@ def main():
     # 1 b) calibrate INVERTED-INVERTED noise on the I-I condition
     print(f"--- Calibrating noise on {args.category} (inverted-inverted) ---")
 
-    inverted_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "test", "test", param)
+    inverted_acc_func = lambda param: run_condition(model, device, args, study_classes, unknown_classes, "test", "test", param, ideal_noise) # perceptual noise always the same
     ideal_noise_inv = search(ideal_noise + args.UI_noise_diff, ideal_noise + args.UI_noise_diff + 0.32, inverted_acc_func, args.calib_target_inv, extend_low = False) # we need at least as much inverted as upright noise
 
     print(f"[!] Using inverted noise p={ideal_noise:.2f}\n")
@@ -320,8 +320,9 @@ def main():
     ]
     rows = []
     for s_cond, t_cond, s_tf, t_tf in conditions:
+        mem_noise = ideal_noise_inv if s_cond == "Inverted" else ideal_noise
         acc = run_condition(model, device, args, sp, study_items, unknown_items,
-                            s_tf, t_tf, ideal_noise)
+                            s_tf, t_tf, mem_noise, ideal_noise)
         rows.append({"Study": s_cond, "Test": t_cond, "Model Accuracy": f"{acc*100:.2f}%"})
 
     print("=====================================================")
