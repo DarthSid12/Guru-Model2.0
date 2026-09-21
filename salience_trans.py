@@ -237,7 +237,10 @@ class SaliencePipelineCH(torch.nn.Module):
 
         return filters
 
-    def sample_salience_points(self, img, center=None):
+    def sample_salience_points(self, img, center=None,
+                               min_top_left = 1/6, # salience points must be in middle of the image; current criterion is x and y coords at least 1/3 a way through the image
+                               min_bottom_right = 5/6 # same on other end
+                              ):
         img = img.to(self.device)
         B, _, H, W = img.shape
 
@@ -302,6 +305,11 @@ class SaliencePipelineCH(torch.nn.Module):
             xs = idx % W
             y_actual = yMap[ys, xs]
             x_actual = xMap[ys, xs]
+
+            if x_actual / W < min_top_left or x_actual / W > min_bottom_right or y_actual / H < min_top_left or y_actual / H > min_bottom_right:
+                b -= 1
+                continue # don't include these points
+
             coords[b] = torch.stack([x_actual, y_actual], dim=-1)  # [num_points, 2]
         return coords  # [B, num_points, 2]
 
