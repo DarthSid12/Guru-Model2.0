@@ -63,7 +63,7 @@ if the bounds are too small or too large, we extend them by doubling the distanc
 Searches for a parameter value that closest leads to function(param) = target
 Obviously presumes the function is monotonic, which noise functions should be
 """
-def pure_binary_search(low, high, function,
+def pure_binary_search(low, high, function, dir, # increasing or decreasing func? +-1
                        target, # what we want function(param) to be
                        param_precision=0.01,
                        pick='LOW'): # whether we pick the bound right below or right above
@@ -71,7 +71,9 @@ def pure_binary_search(low, high, function,
         mid = (low + high) / 2
         value = function(mid)
 
-        if value < target:
+        if value == target:
+            return mid
+        elif (value - target) * dir < 0:
             low = mid
         else:
             high = mid
@@ -93,5 +95,5 @@ def search(low, high, function, target,
             return high
         high += (high - low)
         return search(low, high, function, target, dir, param_precision, pick, extend_low, extend_high)
-    return pure_binary_search(low, high, function, target, param_precision, pick)
+    return pure_binary_search(low, high, function, dir, target, param_precision, pick)
 
