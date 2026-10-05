@@ -224,19 +224,54 @@ def compute_p_f_given_c(f, M_c, sigma):
     return torch.mean(torch.exp(-dists / (2 * sigma ** 2)))
 
 
-def compute_familiarity_score(F_test, memory_bank, sigma):
-    best = -float("inf")
-    for _, M_c in memory_bank.items():
-        ll = 0.0
-        for i in range(F_test.size(0)):
-            ll += torch.log(compute_p_f_given_c(F_test[i], M_c, sigma) + 1e-12).item()
-        best = max(best, ll)
-    return best
+_FAST_FAMILIARITY = True   # set False by --familiarity loop, for reproducing pre-2026-09-20 runs
+
+
+def compute_familiarity_score(F_test, memory_bank, sigma, _fast=None):
+    """Barrington KDE familiarity: max over stored classes of the summed
+    log-likelihood of the test fixations under that class's stored codes.
+
+    The vectorised path is algebraically the loop below. Codes are BINARY
+    (bernoulli-sampled h, XORed with the noise mask), so
+    ||a-b||^2 = ||a||^2 + ||b||^2 - 2 a.b exactly, which turns 245,760 tiny
+    per-(class, fixation) tensor ops into one matmul. Measured 206x on this
+    function and ~2.5x end-to-end, since it was 61% of runtime.
+
+    It agrees with the loop to ~2.4e-07 absolute on scores of order 1e2
+    (relative ~2e-9) -- float32 epsilon, arising only from summation order in
+    the float64 accumulation. The score is used solely in a > comparison, so a
+    difference that small can only matter if two candidates tie to 7 decimals.
+    Pass _fast=False for the original loop.
+    """
+    if _fast is None:
+        _fast = _FAST_FAMILIARITY
+    if not _fast:
+        best = -float("inf")
+        for _, M_c in memory_bank.items():
+            ll = 0.0
+            for i in range(F_test.size(0)):
+                ll += torch.log(compute_p_f_given_c(F_test[i], M_c, sigma) + 1e-12).item()
+            best = max(best, ll)
+        return best
+
+    if not memory_bank:
+        return -float("inf")
+    M = torch.stack(list(memory_bank.values()))          # [C, S, D]
+    C, S, D = M.shape
+    Mf = M.reshape(C * S, D)
+    d = (Mf.pow(2).sum(1)[:, None] + F_test.pow(2).sum(1)[None, :]
+         - 2.0 * (Mf @ F_test.T))                        # [C*S, T]
+    d = d.clamp_min(0).reshape(C, S, -1)
+    p = torch.exp(-d / (2 * sigma ** 2)).mean(1)         # [C, T]
+    return torch.log(p + 1e-12).double().sum(1).max().item()
 
 
 # ----------------------- Yin condition --------------------------
 def run_condition(model, device, args, sp, study_items, unknown_items,
                   study_tf, test_tf, p_noise, sp_unknown=None):
+    # --noise-phase study: the memory trace decays, the probe in front of you
+    # does not, so test-side encodings are clean.
+    p_test = p_noise if getattr(args, "noise_phase", "both") == "both" else 0.0
     """One Yin 2AFC condition. `study_tf`/`test_tf` are OnTheFlyTransforms that
     fix the orientation (upright vs inverted) of the study and test phases.
 
@@ -276,9 +311,9 @@ def run_condition(model, device, args, sp, study_items, unknown_items,
         for i in range(n_pairs):
             old_crops = load_item_fixations(sp, test_old_idx[old_items[i]], args.test_fixations, offset=0)
             new_crops = load_item_fixations(sp_unknown, unknown_idx[new_items[i]], args.test_fixations, offset=0)
-            h_old = encode(model, test_tf, old_crops, device, p_noise,
+            h_old = encode(model, test_tf, old_crops, device, p_test,
                            args.layer, getattr(args, '_thresholds', None))
-            h_new = encode(model, test_tf, new_crops, device, p_noise,
+            h_new = encode(model, test_tf, new_crops, device, p_test,
                            args.layer, getattr(args, '_thresholds', None))
             sig = getattr(args, '_sigma_eff', args.sigma)
             if compute_familiarity_score(h_old, memory_bank, sig) > \
@@ -345,6 +380,28 @@ def parse_args():
                     help="fixed retrieval-noise p to use; skips calibration when set")
     ap.add_argument("--calib-target", type=float, default=0.96,
                     help="upright-upright accuracy to match when calibrating noise")
+    # Which encodings the retrieval noise is applied to.
+    #   both  (default) noise the stored code AND both test probes. This is what
+    #         every branch in this repo has always done, and what every row in
+    #         paper/results_rfwcal_battery.md was produced with.
+    #   study noise ONLY the memory bank; test probes are encoded clean.
+    # These are NOT interchangeable. Under `both`, accuracy-vs-noise is U-shaped:
+    # near p=1 the stored code and the probe are each nearly complemented, and
+    # Hamming distance is invariant under complement, so discriminability returns
+    # to near its p=0 value (measured: disc +0.258 at p=0, -0.002 at p=0.5, +0.248
+    # at p=0.99). Any fitted p is then ambiguous with its mirror at 1-p, and
+    # targets outside the band are unreachable. Under `study` the curve is
+    # monotonic over the whole range and single-valued: it passes through chance
+    # at p=0.5 and then goes BELOW chance as the familiarity judgement inverts
+    # (disc -0.252 at p=0.99), which `both` can never do.
+    ap.add_argument("--noise-phase", choices=["both", "study"], default="both",
+                    help="apply retrieval noise to both study and test encodings "
+                         "(default, matches the existing battery) or to the "
+                         "stored memory bank only")
+    ap.add_argument("--familiarity", choices=["fast", "loop"], default="fast",
+                    help="'fast' = vectorised KDE (206x on that function, ~2.5x "
+                         "end-to-end, agrees with 'loop' to ~2.4e-07); 'loop' = "
+                         "the original per-class/per-fixation Python loop")
     ap.add_argument("--calib-max", type=float, default=0.75)
     ap.add_argument("--calib-step", type=float, default=0.05)
     ap.add_argument("--calib-grid", nargs="+", type=float, default=None,
@@ -383,7 +440,9 @@ def resolve_from_run_dir(args):
 
 
 def main():
+    global _FAST_FAMILIARITY
     args = parse_args()
+    _FAST_FAMILIARITY = (args.familiarity == "fast")
     resolve_from_run_dir(args)
 
     # defaults for anything still unset (no --run-dir given)

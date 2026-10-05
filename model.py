@@ -9,13 +9,40 @@ import torchvision.models as tvm
 # adding a backbone here needs no other change. resnet18 is the historical
 # default (~11M params); mobilenet is the "smaller" run, resnet34/50 the
 # "bigger" runs, convnext_tiny the modern-conv comparison.
+# The two log-polar-aware variants. theta is the ROW axis of the log-polar
+# image, so a rotation is a cyclic row-shift; see cylconv.py for why stock
+# zero-padded, strided ResNets cannot exploit that.
+#   resnet18_cyl       circular padding on theta (the seam fix, CyCNN)
+#   resnet18_cylblur   that PLUS anti-aliased downsampling (Zhang 2019)
+#   resnet18_blur      anti-aliased downsampling ONLY, zero padding kept and the
+#                      blur reflect-padded: fixes aliasing without building the
+#                      theta wrap (and with it rotation) into the architecture
+# Both keep resnet18's parameter count -- BlurPool filters are fixed buffers.
 BACKBONES = {
     "mobilenet_v3_small": (tvm.mobilenet_v3_small, "features"),  # ~2.5M
     "resnet18":           (tvm.resnet18,           "resnet"),    # ~11M  (baseline)
     "resnet34":           (tvm.resnet34,           "resnet"),    # ~21M
     "resnet50":           (tvm.resnet50,           "resnet"),    # ~25M, C=2048
     "convnext_tiny":      (tvm.convnext_tiny,      "features"),  # ~28M, C=768
+    "resnet18_cyl":       (tvm.resnet18,           "resnet"),    # + circular theta
+    "resnet18_cylblur":   (tvm.resnet18,           "resnet"),    # + circular + blurpool
+    "resnet18_blur":      (tvm.resnet18,           "resnet"),    # + blurpool only
+    # Zhang 2019's own antialiased models (pip install antialiased-cnns), built
+    # from the reference code so "antialiased ResNet-18 / VGG16-BN" means exactly
+    # the published architecture: BlurPool after the ReLU, stem left strided
+    # (pool_only=True), reflect padding, filter size 4 (the package default).
+    "resnet18_aa":        (lambda weights=None: _aa("resnet18", weights), "resnet"),    # ~11M
+    "vgg16_bn_aa":        (lambda weights=None: _aa("vgg16_bn", weights), "features"),  # ~15M conv, C=512
+    "vgg16_bn_aa5":       (lambda weights=None: _aa("vgg16_bn", weights, filter_size=5), "features"),
+    "vgg16_bn":           (tvm.vgg16_bn, "features"),
 }
+
+
+def _aa(arch, weights, filter_size=4):
+    """An antialiased-cnns model, imported lazily so no other backbone needs it."""
+    import antialiased_cnns
+    return getattr(antialiased_cnns, arch)(pretrained=weights is not None,
+                                         filter_size=filter_size)
 
 
 def _build_backbone(name, pretrained):
@@ -28,6 +55,14 @@ def _build_backbone(name, pretrained):
         extractor = nn.Sequential(*list(base.children())[:-2])  # drop avgpool+fc
     else:  # mobilenet / convnext expose a conv stack as `.features`
         extractor = base.features
+    if name in ("resnet18_cyl", "resnet18_cylblur"):
+        from cylconv import cylindrify, antialias
+        extractor = cylindrify(extractor)
+        if name == "resnet18_cylblur":
+            extractor = antialias(extractor)
+    elif name == "resnet18_blur":
+        from cylconv import antialias
+        extractor = antialias(extractor, circular=False)
     with torch.no_grad():
         c = extractor(torch.zeros(1, 3, 180, 180)).shape[1]
     return extractor, c

@@ -16,6 +16,7 @@ where:
 
 import json
 import os
+import random
 import re
 
 import numpy as np
@@ -196,11 +197,15 @@ class PackedFixationTrainDataset(Dataset):
     """Training set: one sample == one (image, fixation) crop, uint8 (3,180,180)."""
 
     def __init__(self, categories, packed_root, split, num_salient_points,
-                 label_map, crop_size=180, max_images_per_class=None):
+                 label_map, crop_size=180, max_images_per_class=None,
+                 random_fixations=False):
         self.crop_size = crop_size
         self.map = label_map
         self.splits = []
         self.samples = []  # (split_idx, img_idx, fix_idx, global_label)
+        self.num_salient_points = num_salient_points
+        self.random_fixations = random_fixations
+        self._pools = []   # per split: fix_slot -> the fixations that slot may draw
         max_images_per_class = max_images_per_class or {}
 
         for category in categories:
@@ -210,6 +215,15 @@ class PackedFixationTrainDataset(Dataset):
                                  f"but num_salient_points={num_salient_points} requested")
             si = len(self.splits)
             self.splits.append(sp)
+            # Slot j owns the residue class {j, j+N, j+2N, ...} of the K packed
+            # fixations. Drawing one member per slot yields exactly N DISTINCT
+            # fixations per image per epoch (never a duplicate, unlike sampling
+            # N times from K independently) while every one of the K is reachable
+            # across epochs. It is stateless, so it works unchanged under
+            # persistent DataLoader workers, which a per-epoch shuffled
+            # permutation would not.
+            self._pools.append([list(range(j, sp.num_coords, num_salient_points))
+                                for j in range(num_salient_points)])
             cap = max_images_per_class.get(category)
             per_class_count = {}
             for i, ci in enumerate(sp.labels):
@@ -233,6 +247,9 @@ class PackedFixationTrainDataset(Dataset):
     def __getitem__(self, idx):
         si, i, j, gl = self.samples[idx]
         sp = self.splits[si]
+        if self.random_fixations:
+            pool = self._pools[si][j]
+            j = pool[random.randrange(len(pool))] if len(pool) > 1 else pool[0]
         x, y = sp.coords[i, j]
         crop = _crop_at(sp.images[i], x, y, self.crop_size)
         one_hot = torch.zeros(len(self.map))
@@ -251,7 +268,17 @@ class PackedFixationEvalDataset(Dataset):
         self.splits = []
         self.samples = []  # (split_idx, img_idx, global_label)
 
+        self.missing = []   # categories that have no such split at all
+
         for category in categories:
+            # A category may legitimately lack a split: houses_zubud137_41
+            # spends its 5th ZuBuD view on training and ships no test split,
+            # since train.py's "test" is only the inverted-presentation monitor.
+            # Skipping it keeps that category out of this loader instead of
+            # failing the whole run.
+            if not os.path.isdir(os.path.join(packed_root, category, split)):
+                self.missing.append(category)
+                continue
             sp = _PackedSplit(packed_root, category, split)
             si = len(self.splits)
             self.splits.append(sp)
@@ -261,7 +288,9 @@ class PackedFixationEvalDataset(Dataset):
                     self.samples.append((si, i, self.map[label]))
 
         if not self.samples:
-            raise ValueError(f"No packed eval samples for categories={categories} ({split}).")
+            raise ValueError(f"No packed eval samples for categories={categories} ({split})."
+                             + (f" No category has a {split!r} split: {self.missing}."
+                                if self.missing else ""))
 
     def __len__(self):
         return len(self.samples)
@@ -279,7 +308,7 @@ class PackedFixationEvalDataset(Dataset):
 
 def make_packed_datasets(categories, packed_root="fixation_data",
                          num_salient_points=16, label_map=None,
-                         max_images_per_class=None):
+                         max_images_per_class=None, random_fixations=False):
     """Packed-mode counterpart of make_datasets. Returns the same
     {"train","valid","test"} dict plus the global label map. The returned
     datasets yield *raw uint8 crops*; apply salience_trans.OnTheFlyTransform
@@ -290,7 +319,8 @@ def make_packed_datasets(categories, packed_root="fixation_data",
     return {
         "train": PackedFixationTrainDataset(
             categories, packed_root, "train", num_salient_points, label_map,
-            max_images_per_class=max_images_per_class),
+            max_images_per_class=max_images_per_class,
+            random_fixations=random_fixations),
         "valid": PackedFixationEvalDataset(
             categories, packed_root, "valid", num_salient_points, label_map),
         "test": PackedFixationEvalDataset(

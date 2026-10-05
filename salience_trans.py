@@ -24,7 +24,7 @@ from trans import LogPolar, Rotate, Foveate
 
 class SaliencePipeline(torch.nn.Module):
     def __init__(self, type='train', device='cpu', logpolar=True, crop_size=180,
-                 output_shape=(180, 180), num_salient_points=4):
+                 output_shape=(180, 180), num_salient_points=4, edge_margin=0.0):
         """
         Args:
             type (str): 'train'  -> random rotation augmentation
@@ -35,9 +35,29 @@ class SaliencePipeline(torch.nn.Module):
             crop_size (int): crop size for both LP and CNN
             output_shape (tuple): output shape for the log-polar transform
             num_salient_points (int): number of fixations per base image
+            edge_margin (float): reject fixations within this fraction of the image
+                on each side, so all points fall in the central
+                (1 - 2*edge_margin) square. 0.0 = the whole image (the old
+                behaviour). 0.15 keeps the central 70%.
+
+                A fixation near the border produces a crop that is largely zero
+                padding -- crop_size is 180 on a 224 image, so a fixation at x=0
+                gives a crop that is ~50% black. Those crops carry almost no
+                stimulus but still cost a full forward pass and still get a
+                label, so they are noise the model has to learn to ignore.
+
+                The rejection happens INSIDE the sampler rather than as a filter
+                afterwards, and that matters: only 10-48% of images (by category)
+                have 32 of their current points inside the central 70%, so
+                filtering post hoc would leave most images short. Masking the
+                saliency map first means all num_salient_points are drawn from
+                the restricted region and every image still gets a full set.
         """
         super().__init__()
         self.num_salient_points = num_salient_points
+        self.edge_margin = float(edge_margin)
+        if not 0.0 <= self.edge_margin < 0.5:
+            raise ValueError(f"edge_margin must be in [0, 0.5), got {edge_margin}")
         self.device = device
         self.type = type
         self.crop_size = crop_size
@@ -87,6 +107,9 @@ class SaliencePipeline(torch.nn.Module):
         B, _, H, W = img.shape
 
         img = TF.rgb_to_grayscale(img, num_output_channels=1)
+        # W is rebound to the log-polar width further down, so keep the image's
+        # own dimensions for the central-region test.
+        Himg, Wimg = H, W
 
         # Gaussian attention prior centered on the image.
         if center is None:
@@ -136,6 +159,25 @@ class SaliencePipeline(torch.nn.Module):
 
         # variance across orientation channels -> saliency
         variance = torch.var(filtered, dim=1)
+
+        # Central-region constraint. xMap/yMap give the CARTESIAN coordinate each
+        # log-polar pixel was read from, so the region is expressed in image
+        # space (where the crop is taken) even though the sampling happens in
+        # log-polar space. Zeroing the weight makes multinomial unable to draw
+        # those positions at all.
+        if self.edge_margin > 0:
+            lo_x, hi_x = self.edge_margin * Wimg, (1 - self.edge_margin) * Wimg
+            lo_y, hi_y = self.edge_margin * Himg, (1 - self.edge_margin) * Himg
+            central = ((xMap >= lo_x) & (xMap <= hi_x)
+                       & (yMap >= lo_y) & (yMap <= hi_y)).to(variance.dtype)
+            variance = variance * central.unsqueeze(0)
+            n_usable = int((variance[0] > 0).sum())
+            if n_usable < self.num_salient_points:
+                raise RuntimeError(
+                    f"only {n_usable} log-polar positions map into the central "
+                    f"{100 * (1 - 2 * self.edge_margin):.0f}% of the image, but "
+                    f"{self.num_salient_points} fixations were requested; lower "
+                    f"--num-coords or --edge-margin")
 
         # sample top salient points proportional to variance
         coords = torch.zeros(B, self.num_salient_points, 2, device=self.device, dtype=torch.long)

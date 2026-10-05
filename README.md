@@ -1,11 +1,11 @@
 # combined_lpnet
 
-A single log-polar / foveated ResNet18 trained jointly on **faces + houses + objects**,
+A log-polar / foveated VGG16-BN trained jointly on **faces + houses + objects**,
 used to replicate Yin's (1969) face-inversion effect (and the same test for houses
 and objects) via a Barrington-NIMBLE KDE memory model.
 
 The model (`model.py`) comes from the `TheModel2.0` `familiar-faces` branch:
-ResNet18 backbone → `fc1` (512→256) → temperature-scaled sigmoid → Bernoulli binary
+VGG16-BN backbone → `fc1` (512→256) → temperature-scaled sigmoid → Bernoulli binary
 code `h` → `fc2` classifier. The Yin/NIMBLE simulation operates on the shared 256-d
 binary code `h`; the classifier head is only the training signal.
 
@@ -83,6 +83,16 @@ python preprocess.py --categories faces objects houses \
 
 ### 3. Train
 
+The current VGG2k curriculum uses 2,048 face identities, objects,
+137 individual buildings, and generic houses across 10 stages / 124 epochs:
+
+```bash
+bash scripts/train_r21_vgg2k.sh cuda:0 42 vgg16_bn_aa5
+```
+
+The launcher also accepts `vgg16_bn` and `vgg16_bn_aa` for the report comparisons.
+The examples below describe the general training interface.
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 python train.py \
     --categories faces objects houses \
@@ -100,7 +110,7 @@ Key flags:
 - `--data-mode auto|packed|png` — `auto` (default) picks `packed` when
   `fixation_data/` exists
 - `--epochs`, `--batch-size`, `--num-fixations`, `--patience`, `--temperature`
-- `--pretrained-path PATH` — warm-start from a checkpoint
+- `--resume [PATH]` — resume a full training checkpoint
 - `--device auto|cuda:N|cpu`
 
 Each run writes `config.json`, `summary.json` (accuracies, wall time),

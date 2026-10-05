@@ -9,9 +9,9 @@ that appear (section sign, degree, times, dashes, arrow, minus).
 Emits a .tex file; run pdflatex yourself (twice, for the table of contents
 and hyperref outlines):
 
-    python scripts/md2pdf.py paper/inversion_story.md /tmp/x/story.tex
+    python scripts/md2pdf.py paper/vgg16bn_results_report.md /tmp/x/story.tex
     cd /tmp/x && pdflatex -interaction=nonstopmode story.tex && pdflatex ...
-    cp story.pdf paper/inversion_story.pdf
+    cp story.pdf paper/vgg16bn_results_report.pdf
 
 Wide tables are set in tabularx with ragged-right wrapped columns; if a table
 still overflows, lower BUDGET in table().

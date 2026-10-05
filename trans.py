@@ -57,14 +57,52 @@ class Rotate(torch.nn.Module):
     """
     def __init__(self, deg: float = 15.0, invert: bool = False, center=None):
         super().__init__()
-        if invert:
-            self.rotate = T.RandomRotation((180,180), center=None)
+        self.invert, self.deg = invert, float(deg)
+        if invert or center is not None:
+            # 180 deg is the same for every sample, so the batched torchvision
+            # call is already exact; a custom center keeps the old path too.
+            self.rotate = (T.RandomRotation((180, 180), center=None) if invert
+                           else T.RandomRotation(deg, center=center))
         else:
-            self.rotate = T.RandomRotation(deg, center=center)
+            self.rotate = None
 
     def __call__(self, data):
-        out = self.rotate(data)
-        return out
+        if self.rotate is not None:
+            return self.rotate(data)
+        return self._per_sample(data)
+
+    def _per_sample(self, data):
+        """An independent angle in [-deg, deg] for EVERY sample.
+
+        T.RandomRotation draws ONE angle per call, so on a (B, C, H, W) batch
+        every crop in a training step was rotated identically: the gradient
+        never contrasted orientations within a batch and BatchNorm statistics
+        came from single-angle batches. This rotates each sample by its own
+        angle with one batched affine grid. Nearest-neighbour sampling, zero
+        fill and rotation about the image centre match T.RandomRotation's
+        defaults, so the per-sample draw is the only behavioural change.
+        """
+        squeeze = data.dim() == 3
+        x = data.unsqueeze(0) if squeeze else data
+        dtype = x.dtype
+        if not x.is_floating_point():
+            x = x.float()
+        B, _, H, W = x.shape
+        ang = torch.deg2rad(torch.empty(B, device=x.device).uniform_(-self.deg, self.deg))
+        cos, sin = torch.cos(ang), torch.sin(ang)
+        theta = torch.zeros(B, 2, 3, device=x.device, dtype=x.dtype)
+        # counter-clockwise for positive angles, as F.rotate; the H/W factors
+        # keep the rotation rigid on non-square inputs in normalised coords
+        theta[:, 0, 0] = cos
+        theta[:, 0, 1] = -sin * H / W
+        theta[:, 1, 0] = sin * W / H
+        theta[:, 1, 1] = cos
+        grid = F.affine_grid(theta, list(x.shape), align_corners=False)
+        out = F.grid_sample(x, grid, mode="nearest", padding_mode="zeros",
+                            align_corners=False)
+        if not dtype.is_floating_point:
+            out = out.round().clamp(0, 255).to(dtype)
+        return out.squeeze(0) if squeeze else out
 
 class Foveate(torch.nn.Module):
     def __init__(self, crop_size=None, p_val=None, center=None):

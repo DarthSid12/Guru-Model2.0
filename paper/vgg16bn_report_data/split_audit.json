@@ -1,0 +1,17 @@
+{
+  "faces_rfwW": {
+    "images_identical": true,
+    "coords_identical": false,
+    "n_images": 1669
+  },
+  "faces_rfwO": {
+    "images_identical": true,
+    "coords_identical": false,
+    "n_images": 900
+  },
+  "houses": {
+    "images_identical": true,
+    "coords_identical": false,
+    "n_images": 100
+  }
+}

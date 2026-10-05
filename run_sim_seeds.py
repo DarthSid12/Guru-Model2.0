@@ -172,6 +172,15 @@ MODELS = {
     "r19_rfwh_s45": "runs/faces_faces_vgg_faces_rfwW_faces_rfwO_objects_houses_zubud137_houses_lp_16fix_lr0.001_resnet18_r19_rfwh_s45",
     "r19_rfwh_s46": "runs/faces_faces_vgg_faces_rfwW_faces_rfwO_objects_houses_zubud137_houses_lp_16fix_lr0.001_resnet18_r19_rfwh_s46",
     "r19_rfwh_s47": "runs/faces_faces_vgg_faces_rfwW_faces_rfwO_objects_houses_zubud137_houses_lp_16fix_lr0.001_resnet18_r19_rfwh_s47",
+    # r21 developmental diet (4->2048 faces, sqrt-rule sampling, 15% edge
+    # margin fixations), Zhang-2019 antialiased resnet18. Scored on
+    # best_model.pth (epoch 117, the final stage), so no CHECKPOINT entry.
+    "r21dev_aa_s42": "runs/faces_vgg_faces_faces_rfwW_faces_rfwO_objects_houses_zubud137_41_houses_lp_16fix_lr0.001_resnet18_aa_r21dev_aa_s42",
+    # Same diet on the Zhang-2019 antialiased vgg16_bn (model 3), and that
+    # backbone on the VGGFace2-only 2048-identity face diet (model 4). Both
+    # scored on best_model.pth like r21dev_aa_s42.
+    "r21dev_vgg16bnaa_s42": "runs/faces_vgg_faces_faces_rfwW_faces_rfwO_objects_houses_zubud137_41_houses_lp_16fix_lr0.001_vgg16_bn_aa_r21dev_vgg16_bn_aa_s42",
+    "r21vgg2k_vgg16bnaa_s42": "runs/faces_vgg2k_objects_houses_zubud137_41_houses_lp_16fix_lr0.001_vgg16_bn_aa_r21vgg2k_vgg16_bn_aa_s42",
 }
 # Checkpoint override, per model. `--run-dir` otherwise resolves to
 # best_model.pth (simulate_yin1969.resolve_from_run_dir), which is selected on
@@ -1129,6 +1138,14 @@ EXPERIMENTS = {
         yin_shuffle={"faces_cfdWM64"},
         kanw_units={}, kanw_calib_label=None, label_col="n_identities",
     ),
+    "rfwWM64": dict(
+        out_dir="runs/sim_seeds_rfwWM64",
+        sims=["yin"],
+        categories={"yin": ["faces_rfwWM64"]},
+        calib_categories={"yin": ["faces_rfwWM64"]},
+        yin_shuffle={"faces_rfwWM64"},
+        kanw_units={}, kanw_calib_label=None, label_col="n_identities",
+    ),
     "cfdWM": dict(
         out_dir="runs/sim_seeds_cfdWM",
         sims=["yin"],
@@ -1548,7 +1565,7 @@ def main():
     noise = json.load(open(noise_path)) if os.path.isfile(noise_path) else {}
     fixed = dict(kv.split("=", 1) for kv in args.fixed_noise)
     for sim in args.sims:
-        if sim in noise:
+        if noise.get(sim) is not None:
             continue
         t0 = time.time()
         if sim in fixed:

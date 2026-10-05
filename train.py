@@ -29,7 +29,9 @@ simulation operates on the shared 256-d binary code `h` from fc1.
 import argparse
 import datetime
 import json
+import math
 import os
+import random
 import socket
 import subprocess
 import time
@@ -69,6 +71,16 @@ def parse_args():
                     help="png-mode data root (default: ./processed_data, falling back to "
                          f"{DHONI_PROCESSED_ROOT} on DHONI)")
     ap.add_argument("--num-fixations", type=int, default=16)
+    ap.add_argument("--random-fixations", action="store_true",
+                    help="draw each training crop's fixation at random from the packed set "
+                         "instead of always taking the first --num-fixations of them. Stores "
+                         "hold 32 points but training uses 16, so without this the other 16 "
+                         "are never seen by any model and every epoch re-presents an image "
+                         "through exactly the same 16 apertures. Slot j draws from "
+                         "{j, j+N, j+2N, ...}, so each image still contributes N DISTINCT "
+                         "fixations per epoch and all 32 are reached over a run. Train split "
+                         "only -- valid/test stay deterministic or their accuracy columns "
+                         "stop being comparable across epochs.")
     ap.add_argument("--max-images-per-class", nargs="+", default=[],
                     help="optional per-category cap on training base images, e.g. "
                          "--max-images-per-class objects=200 (train split only; "
@@ -114,15 +126,49 @@ def parse_args():
                          "follows natural frequency (objects ~1026 img/class vs faces ~130 "
                          "vs zubud ~3, i.e. ~90%% objects). Epoch length is unchanged, so "
                          "compute stays comparable to an unweighted run.")
-    ap.add_argument("--acuity-sigmas", nargs="+", type=float, default=[],
-                    help="Gaussian blur sigma (in crop pixels) per curriculum stage, "
-                         "standing in for low neonatal visual acuity relaxed over "
-                         "development (Vogelsang et al. 2018 PNAS): "
-                         "--acuity-sigmas 8 4 2 1 0 0. Train-time only -- valid/test "
-                         "are always run at full acuity. Must have one entry per "
-                         "stage; omit the flag for a full-acuity run.")
+    ap.add_argument("--category-weighting", choices=["fixed", "sqrt"], default="fixed",
+                    help="fixed = the hand-set --category-weights shares. sqrt = no hand-set "
+                         "numbers: at every level of the hierarchy an item's sampling weight is "
+                         "proportional to the square root of the number of items beneath it. "
+                         "A domain's share of the batch is sqrt(its active classes) over the "
+                         "stage total -- a single-class domain (the generic house category) is "
+                         "counted by its active photos instead, since its ladder grows in "
+                         "exemplars -- and within a domain each class is weighted by "
+                         "sqrt(its photos). This is the same sqrt rule as the epoch schedule, "
+                         "the geometric midpoint between equal shares per domain (which lets "
+                         "four buildings take a quarter of every batch) and equal shares per "
+                         "class (which lets the largest domain swamp the rest).")
+    ap.add_argument("--weight-domains", nargs="+", default=[],
+                    help="with --category-weighting sqrt: group categories into one domain, e.g. "
+                         "--weight-domains faces=faces_vgg,faces,faces_rfwW,faces_rfwO. "
+                         "Ungrouped categories are their own domain.")
     ap.add_argument("--curriculum-seed", type=int, default=0,
                     help="seed for the nested random class ordering (which classes come first)")
+    ap.add_argument("--curriculum-image-caps", nargs="+", default=[],
+                    help="per-stage cap on BASE IMAGES per class, one entry per stage, e.g. "
+                         "--curriculum-image-caps houses=4 houses=8 houses=16. The generic "
+                         "house category is a single class, so its ladder has to grow in "
+                         "exemplars rather than classes (each generic house photo is a "
+                         "different building, so this grows building variety too). Categories "
+                         "left out of an entry are uncapped. Caps must not shrink between "
+                         "stages, for the same never-forget reason class counts must not. "
+                         "Applies to the train split only.")
+    ap.add_argument("--curriculum-pin", nargs="+", default=[],
+                    help="hand-picked classes that take the FRONT of a category's ordering, e.g. "
+                         "--curriculum-pin faces_vgg=vgg_n000002,vgg_n000003, or =@file with one "
+                         "name per line. Without this the "
+                         "order is a --curriculum-seed permutation, so which identities the model "
+                         "meets first is arbitrary; pin them when stage 1 is supposed to be a "
+                         "specific set (the white-first face ladder). Unpinned classes keep their "
+                         "seeded order behind the pins, so nesting is unaffected. A pinned name "
+                         "that is not in the label map is an error, never a silent fallback.")
+    ap.add_argument("--steps-per-epoch", type=int, default=0,
+                    help="fixed optimizer steps per epoch (0 = one pass over the active subset). "
+                         "An epoch is otherwise the subset size, so a 4-class stage gets ~30 steps "
+                         "and the final stage ~8000: the early 'developmental' stages are then a "
+                         "rounding error next to the last one. A fixed budget makes stages "
+                         "compute-comparable and the cosine LR and --patience mean the same thing "
+                         "at every stage. Sampling is with replacement.")
     ap.add_argument("--curriculum-warmup-steps", type=int, default=200,
                     help="linear LR warm-up over this many steps after each class introduction, "
                          "to absorb the new-class loss spike (0 = off)")
@@ -137,32 +183,25 @@ def parse_args():
     ap.add_argument("--temperature", type=float, default=2.0)
     ap.add_argument("--dropout", type=float, default=0.3,
                     help="dropout applied to the binary code h before fc2 (0 = off)")
-    ap.add_argument("--invert-p", type=float, default=0.0,
-                    help="fraction of TRAIN crops shown upside down (per-sample, "
-                         "composed with the normal rotation jitter). Default 0.0 "
-                         "reproduces every model up to r17, which never saw an "
-                         "inverted view in training. Recorded in config.json.")
     ap.add_argument("--aug", action=argparse.BooleanOptionalAction, default=True,
                     help="ImageNet-recipe train augmentation (random resized crop, "
                          "color jitter); packed data mode only. --no-aug to disable. "
                          "Random erasing and the horizontal flip were removed 2026-09-04.")
     ap.add_argument("--patience", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--backbone", default="resnet18",
+    ap.add_argument("--backbone", default="vgg16_bn_aa5",
                     choices=list(BACKBONES),
-                    help="conv feature extractor (small->large): mobilenet_v3_small, "
-                         "resnet18 (default), resnet34, resnet50, convnext_tiny")
+                    help="convolutional backbone (default: vgg16_bn_aa5)")
+    ap.add_argument("--resume", nargs="?", const="auto", default=None,
+                    help="resume from a full-state checkpoint. Bare --resume (or "
+                         "'auto') picks up out_dir/checkpoint_last.pth if it exists "
+                         "and starts fresh if it does not, so the same command can "
+                         "be re-run after an eviction.")
+    ap.add_argument("--checkpoint-every", type=int, default=1,
+                    help="write checkpoint_last.pth every N epochs (0 disables).")
     ap.add_argument("--pretrained", action="store_true",
                     help="initialise the backbone from ImageNet weights. NOTE: breaks the "
                          "'purely log-polar trained' assumption; diagnostic use only.")
-    ap.add_argument("--pretrained-path", default=None,
-                    help="optional checkpoint to warm-start from (loaded strict=False)")
-    ap.add_argument("--pretrained-label-map", default=None,
-                    help="label_map.json of the --pretrained-path run. When the new class "
-                         "set is a superset of the old one, the old fc2 rows are copied "
-                         "into the resized head BY CLASS NAME and only genuinely-new rows "
-                         "are randomly initialised, so known classes keep their classifier "
-                         "instead of having to relearn it.")
     ap.add_argument("--output-dir", default=None)
     ap.add_argument("--run-tag", default=None,
                     help="suffix appended to the auto-named output dir (used by run_experiments.py)")
@@ -302,6 +341,69 @@ def parse_stage_spec(spec, categories):
     return sizes
 
 
+def parse_image_cap_spec(spec, categories):
+    """One --curriculum-image-caps entry -> {category: n}; absent or 'all' = uncapped."""
+    spec = str(spec).strip()
+    if spec.lower() in ("", "none", "all"):
+        return {}
+    caps = {}
+    for part in spec.split(","):
+        cat, _, n = part.partition("=")
+        cat, n = cat.strip(), n.strip()
+        if not n:
+            raise ValueError(f"--curriculum-image-caps {spec!r}: expected category=N, "
+                             f"got {part!r}")
+        if cat not in categories:
+            raise ValueError(f"--curriculum-image-caps {spec!r}: unknown category {cat!r} "
+                             f"(--categories is {categories})")
+        # None = explicitly uncapped, which is NOT the same as absent: absent
+        # after an earlier cap is a silent jump and is rejected below.
+        caps[cat] = None if n.lower() == "all" else int(n)
+    return caps
+
+
+def parse_pin_spec(specs, label_map, categories):
+    """--curriculum-pin entries -> {category: [global_id, ...]} in the order given.
+
+    Names are the packed meta class names without the category prefix, i.e.
+    `faces_vgg=vgg_n000002` looks up "faces_vgg/vgg_n000002". An unknown name
+    raises: a pin that silently missed would hand stage 1 back to the random
+    permutation, which is exactly the failure this flag exists to prevent.
+    """
+    pinned = {}
+    for spec in specs:
+        cat, _, names = str(spec).partition("=")
+        cat, names = cat.strip(), names.strip()
+        if not names:
+            raise ValueError(f"--curriculum-pin {spec!r}: expected category=name1,name2,...")
+        if cat not in categories:
+            raise ValueError(f"--curriculum-pin {spec!r}: unknown category {cat!r} "
+                             f"(--categories is {categories})")
+        if cat in pinned:
+            raise ValueError(f"--curriculum-pin names category {cat!r} more than once")
+        if names.startswith("@"):
+            # @file: one class name per line -- how a full hand-built order (e.g.
+            # the 2048-identity White-first VGGFace2 ladder) is passed without a
+            # 25 KB command line
+            with open(names[1:]) as f:
+                names = ",".join(line.strip() for line in f if line.strip())
+        ids = []
+        for n in names.split(","):
+            n = n.strip()
+            if not n:
+                continue
+            key = f"{cat}/{n}"
+            if key not in label_map:
+                raise ValueError(f"--curriculum-pin {spec!r}: {key!r} is not a class in this "
+                                 f"run's label map (check the spelling, and that "
+                                 f"--max-classes-per-category has not trimmed it away)")
+            if label_map[key] in ids:
+                raise ValueError(f"--curriculum-pin {spec!r}: {n!r} listed twice")
+            ids.append(label_map[key])
+        pinned[cat] = ids
+    return pinned
+
+
 def build_curriculum_stages(args, label_map, categories):
     """Nested class subsets, one per stage.
 
@@ -314,6 +416,11 @@ def build_curriculum_stages(args, label_map, categories):
     if len(args.curriculum_stages) != len(args.curriculum_epochs):
         raise ValueError(f"--curriculum-stages has {len(args.curriculum_stages)} entries but "
                          f"--curriculum-epochs has {len(args.curriculum_epochs)}")
+    caps_per_stage = [parse_image_cap_spec(x, categories) for x in args.curriculum_image_caps] \
+        or [{}] * len(args.curriculum_stages)
+    if len(caps_per_stage) != len(args.curriculum_stages):
+        raise ValueError(f"--curriculum-image-caps has {len(caps_per_stage)} entries but "
+                         f"--curriculum-stages has {len(args.curriculum_stages)}")
 
     ids_by_category = {c: [] for c in categories}
     for name, idx in sorted(label_map.items(), key=lambda kv: kv[1]):
@@ -322,9 +429,30 @@ def build_curriculum_stages(args, label_map, categories):
     rng = np.random.default_rng(args.curriculum_seed)
     order = {c: rng.permutation(ids).tolist() for c, ids in ids_by_category.items()}
 
-    stages, prev = [], {c: 0 for c in categories}
-    for spec, epochs in zip(args.curriculum_stages, args.curriculum_epochs):
+    # Hand-picked classes jump to the front, so stage 1 is the set that was
+    # chosen rather than whatever --curriculum-seed happened to draw. The rest
+    # keep their seeded order behind the pins; nesting still holds because the
+    # ordering is still a single fixed list every stage takes a prefix of.
+    for c, head in parse_pin_spec(args.curriculum_pin, label_map, categories).items():
+        rest = [i for i in order[c] if i not in set(head)]
+        order[c] = head + rest
+
+    stages, prev, prev_caps = [], {c: 0 for c in categories}, {}
+    for spec, epochs, caps in zip(args.curriculum_stages, args.curriculum_epochs,
+                                  caps_per_stage):
         sizes = parse_stage_spec(spec, categories)
+        for c, n in caps.items():
+            was = prev_caps.get(c)
+            if was is not None and n is not None and n < was:
+                raise ValueError(f"--curriculum-image-caps shrinks {c} from {was} to {n} "
+                                 f"images/class; caps must be nested (never forget)")
+        for c, was in prev_caps.items():
+            if c not in caps:
+                raise ValueError(f"--curriculum-image-caps drops the cap on {c} after "
+                                 f"stage-capping it at {was}; pass {c}=all to uncap it "
+                                 f"explicitly so the jump is visible in the command")
+        # an explicit =all retires the cap, so later stages need not repeat it
+        prev_caps = {c: n for c, n in caps.items() if n is not None}
         active, per_cat = [], {}
         for c in categories:
             size = sizes[c]
@@ -338,18 +466,43 @@ def build_curriculum_stages(args, label_map, categories):
             raise ValueError(f"stage spec {spec!r} activates no classes at all")
         prev = per_cat
         stages.append({"spec": str(spec), "epochs": int(epochs),
-                       "classes_per_category": per_cat, "active_ids": sorted(active)})
+                       "classes_per_category": per_cat, "active_ids": sorted(active),
+                       "image_caps": caps})
     return stages
 
 
-def subset_indices(dataset, active_ids):
+def subset_indices(dataset, active_ids, image_caps=None, id_to_category=None):
     """Positions in dataset.samples whose global label is currently active.
 
     Both packed datasets store the global label last in each sample tuple
-    (train: (split, image, fixation, label); eval: (split, image, label)).
+    (train: (split, image, fixation, label); eval: (split, image, label)), and
+    the first two entries identify the base image in both.
+
+    `image_caps` ({category: n}) additionally keeps only the first n BASE IMAGES
+    of each class in that category. Every fixation of a kept image is kept, so a
+    capped class is a smaller set of photos rather than a thinner sampling of the
+    same photos -- which is what an exemplar ladder means.
     """
     active = set(active_ids)
-    return [i for i, s in enumerate(dataset.samples) if s[-1] in active]
+    caps = image_caps or {}
+    if not caps:
+        return [i for i, s in enumerate(dataset.samples) if s[-1] in active]
+
+    keep, seen = [], {}
+    for i, s in enumerate(dataset.samples):
+        gl = s[-1]
+        if gl not in active:
+            continue
+        cap = caps.get(id_to_category[gl])
+        if cap is not None:
+            imgs = seen.setdefault(gl, set())
+            key = (s[0], s[1])
+            if key not in imgs:
+                if len(imgs) >= cap:
+                    continue
+                imgs.add(key)
+        keep.append(i)
+    return keep
 
 
 def curriculum_lr(base_lr, epoch_frac, warmup_frac):
@@ -360,6 +513,48 @@ def curriculum_lr(base_lr, epoch_frac, warmup_frac):
     before the hard, many-class stages ever start.
     """
     return base_lr * 0.5 * (1.0 + np.cos(np.pi * min(max(epoch_frac, 0.0), 1.0))) * warmup_frac
+
+
+RESUME_NAME = "checkpoint_last.pth"
+
+
+def save_resume_state(path, model, optimizer, **state):
+    """Full training state, written atomically.
+
+    torch.save of ~11M params takes long enough that a kill mid-write leaves a
+    truncated file, so write to .tmp and os.replace (atomic on POSIX). The
+    previous good checkpoint survives any crash during the write.
+    """
+    state["model"] = model.state_dict()
+    state["optimizer"] = optimizer.state_dict()
+    state["rng"] = {
+        "torch": torch.get_rng_state(),
+        "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+        "numpy": np.random.get_state(),
+        "python": random.getstate(),
+    }
+    tmp = path + ".tmp"
+    torch.save(state, tmp)
+    os.replace(tmp, path)
+
+
+def load_resume_state(path, model, optimizer, device):
+    ck = torch.load(path, map_location=device, weights_only=False)
+    model.load_state_dict(ck["model"])
+    optimizer.load_state_dict(ck["optimizer"])
+    rng = ck.get("rng") or {}
+    try:
+        if rng.get("torch") is not None:
+            torch.set_rng_state(rng["torch"].cpu() if hasattr(rng["torch"], "cpu") else rng["torch"])
+        if rng.get("cuda") is not None and torch.cuda.is_available():
+            torch.cuda.set_rng_state_all([r.cpu() if hasattr(r, "cpu") else r for r in rng["cuda"]])
+        if rng.get("numpy") is not None:
+            np.random.set_state(rng["numpy"])
+        if rng.get("python") is not None:
+            random.setstate(rng["python"])
+    except Exception as e:                      # RNG is a nicety, not correctness
+        print(f"[resume] could not restore RNG state ({e}); continuing")
+    return ck
 
 
 def main():
@@ -460,6 +655,7 @@ def main():
             num_salient_points=args.num_fixations,
             label_map=capped_map,
             max_images_per_class=max_images_per_class,
+            random_fixations=args.random_fixations,
         )
         transforms = {
             "train": OnTheFlyTransform("train", args.variant, device,
@@ -467,16 +663,6 @@ def main():
             "valid": OnTheFlyTransform("valid", args.variant, device).to(device),
             "test": OnTheFlyTransform("test", args.variant, device).to(device),
         }
-        # Inverted-exposure arm. Only the TRAIN transform is touched: valid and
-        # test must stay upright/inverted by definition or the eval columns stop
-        # meaning anything.
-        transforms["train"].invert_p = args.invert_p
-        if args.invert_p > 0:
-            print(f"[!] inverted-exposure run: {args.invert_p:.1%} of train crops "
-                  f"rotated 180 deg before the +-15 deg jitter. This DELIBERATELY "
-                  f"breaks the upright-only training invariant every model up to "
-                  f"r17 relied on -- Yin rows from this run are not comparable to "
-                  f"theirs except as the intended manipulation.")
     else:
         datasets, label_map = make_datasets(
             categories=args.categories,
@@ -504,21 +690,79 @@ def main():
             raise ValueError("--curriculum requires --data-mode packed")
         stages = build_curriculum_stages(args, label_map, args.categories)
         args.epochs = sum(s["epochs"] for s in stages)
-        if args.acuity_sigmas and len(args.acuity_sigmas) != len(stages):
-            raise ValueError(f"--acuity-sigmas has {len(args.acuity_sigmas)} entries but "
-                             f"there are {len(stages)} curriculum stages")
         print(f"Curriculum: {len(stages)} stages, {args.epochs} epochs total")
         for k, s in enumerate(stages, 1):
             per_cat = ", ".join(f"{n} {c}" for c, n in s["classes_per_category"].items())
             print(f"  stage {k}: {len(s['active_ids']):4d} classes ({per_cat}) "
                   f"| {s['epochs']} epochs")
     else:
-        if args.acuity_sigmas:
-            raise ValueError("--acuity-sigmas is a per-stage schedule and needs --curriculum")
-        stages = [{"spec": "all", "epochs": args.epochs,
+        stages = [{"spec": "all", "epochs": args.epochs, "image_caps": {},
                    "classes_per_category": {}, "active_ids": list(range(num_classes))}]
 
     valid_batch_size = max(1, args.batch_size // args.num_fixations)
+
+    def epoch_draws(natural):
+        """Samples drawn per epoch: the subset's own size, or a fixed budget.
+
+        Without --steps-per-epoch an epoch is one pass over whatever is active,
+        which makes stage 1 (~30 steps) and the final stage (~8000) differ by
+        two orders of magnitude in how much they can actually shape the weights.
+        """
+        return args.steps_per_epoch * args.batch_size if args.steps_per_epoch else natural
+
+    domain_of = {}
+    for spec in args.weight_domains:
+        dom, _, members = spec.partition("=")
+        for c in members.split(","):
+            c = c.strip()
+            if c not in args.categories:
+                raise ValueError(f"--weight-domains {spec!r}: {c!r} is not in --categories")
+            if c in domain_of:
+                raise ValueError(f"--weight-domains puts {c!r} in two domains")
+            domain_of[c] = dom.strip()
+
+    def sqrt_sampler(train_split):
+        """WeightedRandomSampler for --category-weighting sqrt (see its help).
+
+        A crop's weight is
+            share(domain) * sqrt(photos_k) / sum_{k' in domain} sqrt(photos_k') / crops_k
+        so every class k gets its sqrt-share of its domain's share, spread evenly
+        over its own crops. Counts are taken from the ACTIVE subset, so the shares
+        follow the curriculum and the per-stage image caps automatically.
+        """
+        base = train_split.dataset if isinstance(train_split, Subset) else train_split
+        idxs = list(train_split.indices if isinstance(train_split, Subset) else range(len(base)))
+        crops, photos = {}, {}
+        for i in idxs:
+            smp = base.samples[i]
+            k = smp[-1]
+            crops[k] = crops.get(k, 0) + 1
+            photos.setdefault(k, set()).add((smp[0], smp[1]))
+        photos = {k: len(v) for k, v in photos.items()}
+        dom = lambda k: domain_of.get(id_to_category[k], id_to_category[k])
+        classes_in = {}
+        for k in crops:
+            classes_in.setdefault(dom(k), []).append(k)
+        # items beneath each domain: its classes, or its photos if it has only one
+        items = {d: (photos[ks[0]] if len(ks) == 1 else len(ks)) for d, ks in classes_in.items()}
+        tot = sum(math.sqrt(n) for n in items.values())
+        dshare = {d: math.sqrt(n) / tot for d, n in items.items()}
+        kshare = {}
+        for d, ks in classes_in.items():
+            z = sum(math.sqrt(photos[k]) for k in ks)
+            for k in ks:
+                kshare[k] = dshare[d] * math.sqrt(photos[k]) / z
+        cat_share = {}
+        for k, v in kshare.items():
+            cat_share[id_to_category[k]] = cat_share.get(id_to_category[k], 0.0) + v
+        print("  sqrt-rule domain shares: " + ", ".join(
+            f"{d} {100 * dshare[d]:.1f}% ({items[d]} {'photos' if len(classes_in[d]) == 1 else 'classes'})"
+            for d in sorted(dshare)))
+        print("  sqrt-rule category shares: " + ", ".join(
+            f"{c} {100 * v:.1f}%" for c, v in sorted(cat_share.items())))
+        w = [kshare[base.samples[i][-1]] / crops[base.samples[i][-1]] for i in idxs]
+        return torch.utils.data.WeightedRandomSampler(w, num_samples=epoch_draws(len(idxs)),
+                                                      replacement=True)
 
     def category_sampler(train_split):
         """WeightedRandomSampler giving each category its requested batch share.
@@ -529,6 +773,8 @@ def main():
         absent from the first stages), and the number of draws per epoch equals
         the subset size, so weighting changes the *diet* and not the compute.
         """
+        if args.category_weighting == "sqrt":
+            return sqrt_sampler(train_split)
         if not category_weights:
             return None
         base = train_split.dataset if isinstance(train_split, Subset) else train_split
@@ -546,18 +792,32 @@ def main():
             f"{c} {100 * share[c]:.1f}% (natural {100 * n_by_cat[c] / len(cats):.1f}%, "
             f"{n_by_cat[c]} crops)" for c in sorted(n_by_cat)))
         w = [share[c] / n_by_cat[c] for c in cats]
-        return torch.utils.data.WeightedRandomSampler(w, num_samples=len(cats),
+        return torch.utils.data.WeightedRandomSampler(w, num_samples=epoch_draws(len(cats)),
                                                       replacement=True)
 
-    def make_loaders(active_ids):
+    def make_loaders(active_ids, image_caps=None):
         """Loaders restricted to the currently active classes (all of them
-        outside curriculum mode, where the subsets are skipped entirely)."""
+        outside curriculum mode, where the subsets are skipped entirely).
+
+        `image_caps` is a train-only exemplar cap: valid and test must stay the
+        same set of images at every stage or the accuracy columns stop being
+        comparable across stages.
+        """
         full = len(active_ids) == num_classes
         def split_of(name):
             ds = datasets[name]
-            return ds if full else Subset(ds, subset_indices(ds, active_ids))
+            caps = image_caps if name == "train" else None
+            if full and not caps:
+                return ds
+            return Subset(ds, subset_indices(ds, active_ids, caps, id_to_category))
         train_split = split_of("train")
         sampler = category_sampler(train_split)
+        if sampler is None and args.steps_per_epoch:
+            # No category weights, but the epoch still has to be a fixed length,
+            # so draw the same budget uniformly (with replacement, like the
+            # weighted path) instead of walking the subset once.
+            sampler = torch.utils.data.RandomSampler(
+                train_split, replacement=True, num_samples=epoch_draws(len(train_split)))
         return (
             DataLoader(train_split, batch_size=args.batch_size,
                        shuffle=sampler is None, sampler=sampler,
@@ -577,46 +837,6 @@ def main():
           + (" [ImageNet-pretrained]" if args.pretrained else " [from scratch]"))
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
-    if args.pretrained_path:
-        state = torch.load(args.pretrained_path, map_location=device)
-        # Fine-tuning onto a different class set resizes fc2, and a shape
-        # mismatch raises even under strict=False, so drop the old classifier
-        # and let it re-initialise. Everything the simulations read is upstream
-        # of it -- they score the 256-d bottleneck `h` (fc1), not fc2 -- so the
-        # transferred part is exactly the part that matters.
-        params = dict(model.named_parameters())
-        mismatched = [k for k in state
-                      if k.startswith("fc2.") and state[k].shape != params[k].shape]
-        if mismatched and args.pretrained_label_map:
-            # Re-initialising the whole head makes EVERY known class relearn its
-            # classifier, and categories with few images per class (houses at ~3,
-            # the new faces at 1-4) cannot do that before early stopping fires on
-            # an aggregate valid accuracy dominated by the big categories -- that
-            # is how r8ft lost its house arm (90.0% -> 17.5%). Copy the old rows
-            # across by class NAME instead: the label map is reordered by the new
-            # categories, so row index alone is not a valid correspondence.
-            with open(args.pretrained_label_map) as f:
-                old_map = json.load(f)
-            new_w = params["fc2.weight"].data.clone()
-            new_b = params["fc2.bias"].data.clone()
-            kept = 0
-            for name, old_i in old_map.items():
-                new_i = label_map.get(name)
-                if new_i is not None:
-                    new_w[new_i] = state["fc2.weight"][old_i].to(new_w.device, new_w.dtype)
-                    new_b[new_i] = state["fc2.bias"][old_i].to(new_b.device, new_b.dtype)
-                    kept += 1
-            state["fc2.weight"], state["fc2.bias"] = new_w, new_b
-            print(f"  [warm-start] fc2 {tuple(params['fc2.weight'].shape)}: carried over "
-                  f"{kept}/{len(old_map)} old class rows by name, "
-                  f"{len(label_map) - kept} newly initialised")
-        else:
-            for k in mismatched:
-                print(f"  [warm-start] dropping {k} {tuple(state[k].shape)} "
-                      f"-> {tuple(params[k].shape)} (re-init)")
-                del state[k]
-        missing = model.load_state_dict(state, strict=False)
-        print(f"Warm-started from {args.pretrained_path} ({missing})")
     model.stochastic = False  # deterministic expectation during training
 
     # standard ImageNet practice: no weight decay on biases / norm params
@@ -639,8 +859,36 @@ def main():
     best_epoch = 0
     patience_counter = 0
     best_path = os.path.join(out_dir, "best_model.pth")
+    resume_path = os.path.join(out_dir, RESUME_NAME)
     history = []
     t_start = time.time()
+
+    # ---------------------------- Resume ----------------------------
+    # Restores weights, AdamW moments, LR position (via `epoch`), curriculum
+    # position, early-stopping counters and RNG. Skips stages already finished
+    # and epochs already done inside the stage we died in.
+    resume_stage, resume_ep_in_stage, resume_epoch = 1, 0, 0
+    resume_warmup_left = None
+    elapsed_offset = 0.0
+    if args.resume:
+        rp = resume_path if args.resume in ("auto", "1", "true") else args.resume
+        if os.path.exists(rp):
+            ck = load_resume_state(rp, model, optimizer, device)
+            resume_epoch = ck["epoch"]
+            resume_stage = ck["stage_idx"]
+            resume_ep_in_stage = ck["ep_in_stage"] + 1
+            best_val, best_epoch = ck["best_val"], ck["best_epoch"]
+            patience_counter = ck["patience_counter"]
+            history = ck.get("history", [])
+            resume_warmup_left = ck.get("warmup_left")
+            elapsed_offset = ck.get("elapsed", 0.0)
+            print(f"[resume] {os.path.basename(rp)}: continuing after epoch "
+                  f"{resume_epoch} (stage {resume_stage}, epoch {resume_ep_in_stage} "
+                  f"of that stage); best valid so far {best_val*100:.2f}% "
+                  f"@ epoch {best_epoch}")
+        else:
+            print(f"[resume] no checkpoint at {rp}; starting from scratch")
+    t_start = time.time() - elapsed_offset
 
     # ----------------------------- Train ----------------------------
     # One pass per curriculum stage (a single all-classes stage when
@@ -648,37 +896,48 @@ def main():
     epoch = 0
     for stage_idx, stage in enumerate(stages, 1):
         is_final_stage = stage_idx == len(stages)
+        if stage_idx < resume_stage:
+            continue          # finished before the interruption; `epoch` restored
         active_mask = torch.zeros(num_classes, dtype=torch.bool, device=device)
         active_mask[torch.tensor(stage["active_ids"], device=device)] = True
         masked = not bool(active_mask.all())
-        train_loader, valid_loader, test_loader = make_loaders(stage["active_ids"])
+        train_loader, valid_loader, test_loader = make_loaders(
+            stage["active_ids"], stage.get("image_caps"))
         # Accuracy is only comparable across stages once the class set stops
         # growing, so best_model.pth tracks the final stage; earlier stages get
         # their own best purely for the curves and for early stopping.
-        patience_counter = 0
-        stage_best = -1.0
+        if stage_idx > resume_stage:
+            patience_counter = 0
+        stage_best = max([h["valid_acc"] for h in history
+                          if h.get("stage") == stage_idx], default=-1.0)
         # warm up the LR after each class introduction (not at the very start,
         # where the cosine already begins from the full base LR)
         warmup_left = args.curriculum_warmup_steps if (args.curriculum and stage_idx > 1) else 0
-        # Train-time acuity for this stage. valid/test transforms are never
-        # touched: the model is always evaluated at full acuity.
-        if args.acuity_sigmas:
-            transforms["train"].set_acuity(args.acuity_sigmas[stage_idx - 1])
+        if stage_idx == resume_stage and resume_warmup_left is not None:
+            warmup_left = resume_warmup_left      # warm-up already partly spent
+        epoch = resume_epoch if stage_idx == resume_stage else epoch
         if args.curriculum:
             per_cat = ", ".join(f"{n} {c}" for c, n in stage["classes_per_category"].items())
+            # "train crops" is the pool this stage draws from; the epoch itself is
+            # len(sampler), which --steps-per-epoch pins to a fixed budget and which
+            # is otherwise one pass over that pool.
             print(f"\n=== Stage {stage_idx}/{len(stages)}: {len(stage['active_ids'])} classes "
                   f"({per_cat}), {stage['epochs']} epochs, "
-                  f"{len(train_loader.dataset)} train crops"
-                  + (f", acuity sigma {args.acuity_sigmas[stage_idx - 1]:g}px"
-                     if args.acuity_sigmas else "") + " ===")
+                  f"{len(train_loader.dataset)} train crops, "
+                  f"{len(train_loader)} steps/epoch"
+                  + " ===")
 
-        for _ in range(stage["epochs"]):
+        for ep_in_stage in range(stage["epochs"]):
+            if stage_idx == resume_stage and ep_in_stage < resume_ep_in_stage:
+                continue      # already done before the interruption
             epoch += 1
             model.train()
             correct = total = 0
             epoch_losses = []
             steps_per_epoch = max(len(train_loader), 1)
-            pbar = tqdm(total=len(train_loader.dataset),
+            # the sampler decides epoch length once --steps-per-epoch is set,
+            # and it is the dataset size in every other case
+            pbar = tqdm(total=len(train_loader.sampler),
                         desc=f"Epoch {epoch}/{args.epochs}"
                              + (f" [stage {stage_idx}]" if args.curriculum else ""), unit="img")
             for step, (inputs, labels) in enumerate(train_loader):
@@ -763,10 +1022,22 @@ def main():
             else:
                 patience_counter += 1
                 print(f"   early stopping {patience_counter}/{args.patience}")
-                if patience_counter >= args.patience:
-                    print(f"Early stopping triggered"
-                          + (f" in stage {stage_idx}; advancing." if not is_final_stage else "."))
-                    break
+
+            # Full-state checkpoint AFTER the counters settle and BEFORE any
+            # early-stopping break, so a resume never replays a finished epoch.
+            if args.checkpoint_every and epoch % args.checkpoint_every == 0:
+                save_resume_state(resume_path, model, optimizer,
+                                  epoch=epoch, stage_idx=stage_idx,
+                                  ep_in_stage=ep_in_stage,
+                                  best_val=best_val, best_epoch=best_epoch,
+                                  patience_counter=patience_counter,
+                                  warmup_left=warmup_left, history=history,
+                                  elapsed=time.time() - t_start)
+
+            if patience_counter >= args.patience:
+                print(f"Early stopping triggered"
+                      + (f" in stage {stage_idx}; advancing." if not is_final_stage else "."))
+                break
 
         if args.curriculum:
             # snapshot the end of every stage, so simulate_yin1969.py can be run

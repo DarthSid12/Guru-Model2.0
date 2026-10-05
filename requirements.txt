@@ -1,5 +1,6 @@
 torch==2.5.1
 torchvision==0.20.1
+antialiased-cnns==0.3
 numpy==2.2.6
 pandas==2.3.3
 pillow==12.1.1
