@@ -24,7 +24,7 @@ Overall validation includes the ZuBuD category, while overall test omits it. Als
 
 The `summary.json` per-category values were computed after reloading the **best** checkpoint. These plots use the per-epoch **history CSV** to avoid substituting best-checkpoint values for the final epoch.
 
-Code evidence: [training evaluation and history](../train.py#L1064), [evaluation aggregation](../train.py#L276), [test transform](../salience_trans.py#L270), [180° rotation](../trans.py#L47), [missing-split handling](../datasets.py#L258).
+Code evidence: [training evaluation and history](../training/train.py#L1064), [evaluation aggregation](../training/train.py#L276), [test transform](../training/salience_trans.py#L270), [180° rotation](../training/trans.py#L47), [missing-split handling](../training/datasets.py#L258).
 
 ## Overall curves
 
@@ -111,6 +111,6 @@ Code evidence: [training evaluation and history](../train.py#L1064), [evaluation
 
 ## Reproducibility
 
-[All curve coordinates](vgg16bn_report_data/training_curves.csv) · [History hashes](vgg16bn_report_data/training_source_manifest.json) · [Stage evaluation records and photo samples](../runs/vgg16bn_training_curve_audit_20260928/) · [Evaluator](../scripts/evaluate_vgg_training_checkpoints.py) · [Plot generator](../scripts/plot_vgg16bn_training_curves.py)
+[All curve coordinates](vgg16bn_report_data/training_curves.csv) · [History hashes](vgg16bn_report_data/training_source_manifest.json) · [Stage evaluation records and photo samples](../runs/vgg16bn_training_curve_audit_20260928/) · [Evaluator](../training/evaluate_vgg_training_checkpoints.py) · [Plot generator](../reporting/plot_vgg16bn_training_curves.py)
 
 The deterministic sample seed is 20260928. Training samples respect each saved active-class list and the stage-specific generic-house image cap. Stage weights are loaded strictly; no weights are updated. Photo lists, correct/total counts, checkpoint hashes, and evaluation-code hashes are saved. The same VGG2k class/photo samples are used across its three architecture variants. All stages completed for all four models.

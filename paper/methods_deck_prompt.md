@@ -717,7 +717,7 @@ Prefer reading them over guessing.
 
 | What | Where |
 |---|---|
-| Training recipe, curriculum, weights | `scripts/train_r21_vgg2k.sh` |
+| Training recipe, curriculum, weights | `training/train_r21_vgg2k.sh` |
 | Resolved config as run | `runs/*_r19_rfwh_s42/config.json` |
 | Stage table, class counts, crop counts | header of `runs/logs_r19_rfwh_s42.log` |
 | Optimizer, LR schedule, sampler, masking | `train.py` |
@@ -727,7 +727,7 @@ Prefer reading them over guessing.
 | Packed-store layout and the first-16 rule | `datasets.py` |
 | Two-noise simulation, KDE, conditions | `simulate_yin1969_bothnoise.py` |
 | Binary-search fitting | `utils.py` (`search`) |
-| Battery orchestration, seeds, stores | `scripts/run_bothnoise.sh` |
+| Battery orchestration, seeds, stores | `yin_tests/run_bothnoise.sh` |
 | Dataset counts per store | `fixation_data/<category>/<split>/meta.json` |
 
 Note that `paper_methods.md` in the repo root describes an **older** model round and

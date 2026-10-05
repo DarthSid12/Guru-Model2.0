@@ -1,10 +1,32 @@
 # combined_lpnet
 
+Agent guidance: [AGENTS.md](AGENTS.md). Cluster setup and operations:
+[instructions/hpc-onboarding.md](instructions/hpc-onboarding.md).
+
+## Repository layout
+
+| Folder | Contents |
+| --- | --- |
+| `training/` | Training, shared model/data transforms, launchers, checkpoint audits |
+| `yin_tests/` | Yin simulations, calibration, transfers, seed replications |
+| `kanwisher_tests/` | Kanwisher/Dobs simulations and summaries |
+| `data_preparation/` | Downloading, preprocessing, and dataset construction |
+| `analysis/` | Fixation visualization, PCA, and shift analysis |
+| `reporting/` | Report generators, templates, figures, and packaging tools |
+| `instructions/` | HPC onboarding and general methods guidance |
+| `tests/` | Automated regression tests |
+| `paper/` | Reports, methods, figures, and supporting result tables |
+| `runs/` | Saved experiments and logs (local, ignored by Git) |
+
+Run commands from the repository root. Python imports use the categorized packages; use the folder paths for commands.
+`yin_tests/` and `kanwisher_tests/` contain experiments; automated tests live in
+`tests/`.
+
 A log-polar / foveated VGG16-BN trained jointly on **faces + houses + objects**,
 used to replicate Yin's (1969) face-inversion effect (and the same test for houses
 and objects) via a Barrington-NIMBLE KDE memory model.
 
-The model (`model.py`) comes from the `TheModel2.0` `familiar-faces` branch:
+The model (`training/model.py`) comes from the `TheModel2.0` `familiar-faces` branch:
 VGG16-BN backbone → `fc1` (512→256) → temperature-scaled sigmoid → Bernoulli binary
 code `h` → `fc2` classifier. The Yin/NIMBLE simulation operates on the shared 256-d
 binary code `h`; the classifier head is only the training signal.
@@ -24,7 +46,7 @@ Requires a CUDA-capable GPU for practical training speed.
 ```bash
 conda create -y -n lpnet python=3.10
 conda activate lpnet
-pip install --index-url https://download.pytorch.org/whl/cu121 \
+pip install --index-url https://data_preparation/download.pytorch.org/whl/cu121 \
     torch==2.5.1 torchvision==0.20.1
 pip install -r requirements.txt
 
@@ -41,7 +63,7 @@ run fresh and guarantee your data matches your code version.
 ### 1. Download raw data
 
 ```bash
-python download.py faces objects houses
+python data_preparation/download.py faces objects houses
 ```
 
 Faces/objects come from Google Drive archives; houses from the public
@@ -52,7 +74,7 @@ anything already present.
 ### 2. Preprocess into packed fixation data
 
 ```bash
-python preprocess_fixations.py \
+python data_preparation/preprocess_fixations.py \
     --categories faces objects houses \
     --num-coords 32 \
     --devices cuda:0 cuda:1
@@ -71,12 +93,12 @@ already-packed `(category, split)` units (`--force` to re-pack).
 <details>
 <summary>Legacy PNG path (not recommended)</summary>
 
-`preprocess.py` pre-renders every fixation crop to disk under
+`data_preparation/preprocess.py` pre-renders every fixation crop to disk under
 `processed_data/<category>/<lp|cnn>/<split>/<class>/` (~246 GB, ~6M PNGs,
 I/O-bound training). Only use it if you specifically need the rendered crops:
 
 ```bash
-python preprocess.py --categories faces objects houses \
+python data_preparation/preprocess.py --categories faces objects houses \
     --num-fixations 16 --input-size 224 --devices cuda:0
 ```
 </details>
@@ -87,14 +109,14 @@ The current VGG2k curriculum uses 2,048 face identities, objects,
 137 individual buildings, and generic houses across 10 stages / 124 epochs:
 
 ```bash
-bash scripts/train_r21_vgg2k.sh cuda:0 42 vgg16_bn_aa5
+bash training/train_r21_vgg2k.sh cuda:0 42 vgg16_bn_aa5
 ```
 
 The launcher also accepts `vgg16_bn` and `vgg16_bn_aa` for the report comparisons.
 The examples below describe the general training interface.
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python train.py \
+CUDA_VISIBLE_DEVICES=0 python training/train.py \
     --categories faces objects houses \
     --variant lp \
     --lr 1e-3 \
@@ -117,10 +139,10 @@ Each run writes `config.json`, `summary.json` (accuracies, wall time),
 `best_model.pth`, `label_map.json` (needed by the Yin simulation), a history
 CSV, and an accuracy plot into its `runs/...` directory.
 
-### 3b. Run several experiments at once — `run_experiments.py`
+### 3b. Run several experiments at once — `training/run_experiments.py`
 
-`run_experiments.py` is a parallel experiment launcher: it takes a list of
-`train.py` argument strings and runs them simultaneously, **one per free GPU**
+`training/run_experiments.py` is a parallel experiment launcher: it takes a list of
+`training/train.py` argument strings and runs them simultaneously, **one per free GPU**
 (auto-detected via nvidia-smi, or pinned with `--gpus 0 1 2`). Extra runs
 queue and start as GPUs free up. Everything lands under an auto-named
 `runs/exp_<timestamp>/` folder — one subfolder per run (`config.json`,
@@ -128,12 +150,12 @@ queue and start as GPUs free up. Everything lands under an auto-named
 accuracy table is printed at the end.
 
 ```bash
-python run_experiments.py \
+python training/run_experiments.py \
     --base "--categories faces objects houses --variant lp --epochs 50" \
     --run "--lr 1e-3" --run "--lr 3e-4" --run "--lr 1e-4 --variant cnn"
 
-# or keep the grid in a file (one train.py arg-string per line, '#' comments)
-python run_experiments.py --gpus 0 1 2 --runs-file my_grid.txt
+# or keep the grid in a file (one training/train.py arg-string per line, '#' comments)
+python training/run_experiments.py --gpus 0 1 2 --runs-file my_grid.txt
 ```
 
 **Watching logs live:** each run writes its full stdout/stderr to
@@ -156,7 +178,7 @@ following.
 Once per category, pointing at the trained checkpoint:
 
 ```bash
-python simulate_yin1969.py --category faces --variant lp \
+python yin_tests/simulate_yin1969.py --category faces --variant lp \
     --checkpoint runs/<run>/best_model.pth \
     --label-map  runs/<run>/label_map.json
 ```
@@ -166,21 +188,21 @@ Repeat with `--category objects` and `--category houses`. Key flags:
 `--sigma` (NIMBLE kernel bandwidth), `--calib-target`.
 
 Note on houses: there is no per-house identity, so an "item" is an individual
-photo drawn from a shared valid/test "Yin pool" built by `download.py`
+photo drawn from a shared valid/test "Yin pool" built by `data_preparation/download.py`
 (default 100 photos, same photo upright vs. inverted). This is a stopgap
 until a set of ~40 houses with 2 photos each is sourced.
 
 ## Files
 | file | purpose |
 |------|---------|
-| `model.py` | ResNet18 + binary-code head (from `familiar-faces`) |
-| `trans.py` | Rotate / Foveate / LogPolar / Pipeline transforms (from `familiar-faces`) |
-| `salience_trans.py` | Gabor-saliency fixation pipeline |
-| `datasets.py` | combined multi-category datasets, one global label space |
-| `utils.py` | global label map + helpers |
-| `download.py` | fetch raw data per category |
-| `preprocess_fixations.py` | raw → packed images + saliency coords (fast path) |
-| `preprocess.py` | raw → pre-rendered lp/cnn fixation crop PNGs (legacy path) |
-| `train.py` | joint training |
-| `run_experiments.py` | parallel multi-GPU experiment launcher |
-| `simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |
+| `training/model.py` | ResNet18 + binary-code head (from `familiar-faces`) |
+| `training/trans.py` | Rotate / Foveate / LogPolar / Pipeline transforms (from `familiar-faces`) |
+| `training/salience_trans.py` | Gabor-saliency fixation pipeline |
+| `training/datasets.py` | combined multi-category datasets, one global label space |
+| `training/utils.py` | global label map + helpers |
+| `data_preparation/download.py` | fetch raw data per category |
+| `data_preparation/preprocess_fixations.py` | raw → packed images + saliency coords (fast path) |
+| `data_preparation/preprocess.py` | raw → pre-rendered lp/cnn fixation crop PNGs (legacy path) |
+| `training/train.py` | joint training |
+| `training/run_experiments.py` | parallel multi-GPU experiment launcher |
+| `yin_tests/simulate_yin1969.py` | per-category Yin/NIMBLE 2AFC simulation |

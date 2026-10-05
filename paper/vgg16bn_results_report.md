@@ -326,7 +326,7 @@ The same p1 supplies `single_uu`. All RFW/CFD face fits were within the sampled 
 
 ## Sources and reproducibility
 
-The compilation reads seed CSVs rather than transcribing rounded Markdown. It checks unique seeds, full counts, completed records, and equality of reused UU/UI cells. Exact source paths and checkpoint hashes accompany the [JSON data](vgg16bn_report_data/results.json); [source file hashes](vgg16bn_report_data/source_manifest.json) identify the audited inputs. The [generator](../scripts/build_vgg16bn_report.py) rebuilds the behavioral report and figures.
+The compilation reads seed CSVs rather than transcribing rounded Markdown. It checks unique seeds, full counts, completed records, and equality of reused UU/UI cells. Exact source paths and checkpoint hashes accompany the [JSON data](vgg16bn_report_data/results.json); [source file hashes](vgg16bn_report_data/source_manifest.json) identify the audited inputs. The [generator](../reporting/build_vgg16bn_report.py) rebuilds the behavioral report and figures.
 
 <details><summary>Source reports and supporting records</summary>
 

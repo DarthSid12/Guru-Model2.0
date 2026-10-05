@@ -1,3 +1,8 @@
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
+
 import argparse
 import importlib.util
 import json
@@ -9,9 +14,8 @@ import unittest
 from unittest.mock import patch
 
 import torch
-import run_yin_orientation as runner
-
-spec = importlib.util.spec_from_file_location("queue_yin", runner.ROOT / "scripts/queue_yin_orientation.py")
+from yin_tests import run_yin_orientation as runner
+spec = importlib.util.spec_from_file_location("queue_yin", runner.ROOT / "yin_tests/queue_yin_orientation.py")
 queue = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(queue)
 

@@ -56,9 +56,9 @@ These two models share the older r20 diet. Counts are cumulative active classes.
 
 The fixed final-stage sampling shares are CelebA 14%, VGG 26%, RFW-W 16%, RFW-O 4%, objects 19%, ZuBuD 16%, and generic houses 5%; absent categories are renormalized in earlier stages. r20 uses a global 80-epoch cosine schedule with a 200-step warm-up at each stage change. Its epochs are based on the active training pool rather than a fixed 2,000-step budget.
 
-**Checkpoint position:** the new Yin runs tested Model 2 best epoch 117 (inside stage 10), Developmental VGG snapshot epoch 111 (stage 10), VGG2k snapshot epoch 105 (stage 10), and r20cylblur snapshot epoch 69 (stage 6). The older r20cyl runs tested final epoch 80. The saved `config.json` files for the 10-stage runs show the parser default `epochs: 50`; [`train.py`](../train.py) replaces that value with the sum of `curriculum_epochs`, which is **124**.
+**Checkpoint position:** the new Yin runs tested Model 2 best epoch 117 (inside stage 10), Developmental VGG snapshot epoch 111 (stage 10), VGG2k snapshot epoch 105 (stage 10), and r20cylblur snapshot epoch 69 (stage 6). The older r20cyl runs tested final epoch 80. The saved `config.json` files for the 10-stage runs show the parser default `epochs: 50`; [`train.py`](../training/train.py) replaces that value with the sum of `curriculum_epochs`, which is **124**.
 
-Sources: [`train_r21_dev.sh`](../scripts/train_r21_dev.sh), [`train_r21_vgg2k.sh`](../scripts/train_r21_vgg2k.sh), [`train_r20.sh`](../scripts/train_r20.sh), and the saved run configs linked by the [queue manifest](../runs/yin_orientation_20260925/manifest.json).
+Sources: [`train_r21_dev.sh`](../training/train_r21_dev.sh), [`train_r21_vgg2k.sh`](../training/train_r21_vgg2k.sh), [`train_r20.sh`](../scripts/train_r20.sh), and the saved run configs linked by the [queue manifest](../runs/yin_orientation_20260925/manifest.json).
 
 ## Reading the tables
 
@@ -216,8 +216,8 @@ Queue state: `waiting_for_all_training`; last state update `2026-09-25T09:15:04.
 - [Human reference values](figures/yin_human_vs_models.csv).
 - [Queue manifest](../runs/yin_orientation_20260925/manifest.json) and [queue state](../runs/yin_orientation_20260925/queue_state.json) record immutable checkpoint paths, captured epochs, and SHA-256 hashes.
 - [Queue setup and commands](../runs/yin_orientation_20260925/README.md); [frozen source](../runs/yin_orientation_20260925/source); [smoke checks](../runs/yin_orientation_20260925/smoke_results.json); [unit-test log](../runs/yin_orientation_20260925/unit_tests.log).
-- Model definitions: [model.py](../model.py), [cylconv.py](../cylconv.py), [r20 training](../scripts/train_r20.sh), [developmental training](../scripts/train_r21_dev.sh), [VGG2k training](../scripts/train_r21_vgg2k.sh).
-- Older r20cyl launchers: both phases (retired launcher), [study only](../scripts/run_cyl_battery.sh), [zero added noise](../scripts/run_zeronoise_cyl.sh).
+- Model definitions: [model.py](../training/model.py), [cylconv.py](../training/cylconv.py), [r20 training](../scripts/train_r20.sh), [developmental training](../training/train_r21_dev.sh), [VGG2k training](../training/train_r21_vgg2k.sh).
+- Older r20cyl launchers: both phases (retired launcher), [study only](../yin_tests/run_cyl_battery.sh), [zero added noise](../yin_tests/run_zeronoise_cyl.sh).
 - Failed older calibration log: [own-calibration log](../runs/logs_yin_r21dev_aa_owncal.log).
 
 Verification: recomputed every new-run mean from its per-seed CSV and checked it against the saved summary; checked all 300 r20cyl logs for four conditions and seeds 101–150; matched the older both-phase CSV against its raw logs; checked the complete and partial historical row counts.
