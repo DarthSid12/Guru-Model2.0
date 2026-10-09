@@ -44,7 +44,7 @@ import torchvision.transforms.functional as TF
 from PIL import Image
 
 from model import Model
-
+from salience_trans import OnTheFlyTransform
 
 NUM_STUDY_IMAGES = 2
 NUM_PROBE_IMAGES = 2
@@ -255,200 +255,118 @@ def load_trial_data(
     classes,
     num_images,
     offset,
+    transformer,
+    device,
 ):
     """
-    Loads:
+    Load identical base images and fixation coordinates for CNN and LP.
 
+    Expected structure:
         data/thatcher_data/
             <category>/
-                <variant>/
+                cnn/
                     <upright|inverted>/
                         <normal|thatcher>/
                             <identity>/
+                                image.png
+                lp/
+                    <upright|inverted>/
+                        <normal|thatcher>/
+                            <identity>/
+                                image.txt
 
-    For CNN:
+    The CNN PNGs are used as the source images for BOTH variants.
+    Corresponding LP .txt files provide the fixation coordinates.
 
-        loads CNN base PNGs,
-        finds corresponding LP fixation coordinates,
-        extracts fixation crops.
+    For each selected base image:
+        1. Load the base PNG.
+        2. Load its matching fixation coordinates.
+        3. Extract fixation crops.
+        4. Apply the requested OnTheFlyTransform variant.
 
-    For LP:
-
-        groups _proc fixation images by their underlying base image,
-        then selects requested base images and loads all fixation
-        crops belonging to them.
+    Returns:
+        samples: dict mapping each class to a tensor shaped
+                 [num_images * num_fixations, C, H, W],
+                 assuming each image has the same number of fixations.
     """
-
     samples = {}
 
-    base_dir = os.path.join(
-        processed_root,
-        category,
-        variant
-    )
-
-    orient_dir = os.path.join(
-        base_dir,
-        image_type
-    )
-
-    split_dir = os.path.join(
-        orient_dir,
-        split
-    )
-
     for cls in classes:
-
+        # Base images always come from the CNN directory.
         cls_dir = os.path.join(
-            split_dir,
-            cls
+            processed_root,
+            category,
+            "cnn",
+            image_type,
+            split,
+            cls,
         )
 
-        if not os.path.isdir(
-            cls_dir
-        ):
+        if not os.path.isdir(cls_dir):
+            print(f"{cls_dir} is not a valid directory!")
+            continue
+
+        files = sorted(
+            f for f in os.listdir(cls_dir)
+            if f.lower().endswith(".png")
+        )
+
+        chosen = files[offset:offset + num_images]
+
+        if len(chosen) < num_images:
             print(
-                f"{cls_dir} not a valid directory!"
+                f"Skipping {cls}: requested {num_images} images, "
+                f"but only found {len(chosen)} after offset {offset}."
             )
             continue
 
-        # --------------------------------------------------
-        # CNN
-        # --------------------------------------------------
+        image_batches = []
 
-        if variant == "cnn":
-
-            files = sorted([
-                f
-                for f in os.listdir(cls_dir)
-                if f.lower().endswith(".png")
-            ])
-
-            chosen = files[
-                offset:
-                offset + num_images
-            ]
-
-            if len(chosen) < num_images:
-                continue
-
-            imgs = []
-
-            for filename in chosen:
-
-                # Load CNN base image.
-                img = load_condition_image(
-                    processed_root,
-                    category,
-                    image_type,
-                    split,
-                    cls,
-                    filename,
-                )
-
-                # Find corresponding LP coordinate file.
-                coords_path = get_coords_path(
-                    processed_root,
-                    category,
-                    image_type,
-                    split,
-                    cls,
-                    filename,
-                )
-
-                if not os.path.isfile(
-                    coords_path
-                ):
-                    raise FileNotFoundError(
-                        f"Could not find fixation coordinates:\n"
-                        f"{coords_path}"
-                    )
-
-                coords = read_fixation_coords(
-                    coords_path
-                )
-
-                # Extract the exact same fixation-centered
-                # crops used by the LP pipeline.
-                fixation_crops = extract_fixation_crops(
-                    img,
-                    coords,
-                    crop_size=CROP_SIZE,
-                )
-
-                imgs.append(
-                    fixation_crops
-                )
-
-            imgs = torch.cat(
-                imgs,
-                dim=0
+        for filename in chosen:
+            # Load the source image as uint8 [C, H, W].
+            img = load_condition_image(
+                processed_root,
+                category,
+                image_type,
+                split,
+                cls,
+                filename,
             )
 
-        # --------------------------------------------------
-        # LP
-        # --------------------------------------------------
-
-        else:
-
-            base_dict = {}
-
-            for fname in sorted(
-                os.listdir(cls_dir)
-            ):
-
-                if (
-                    fname.endswith(".png")
-                    and "_proc" in fname
-                ):
-
-                    base = fname.split(
-                        "_proc"
-                    )[0]
-
-                    base_dict.setdefault(
-                        base,
-                        []
-                    ).append(
-                        os.path.join(
-                            cls_dir,
-                            fname
-                        )
-                    )
-
-            base_names = sorted(
-                base_dict
+            # Load the corresponding LP fixation-coordinate file.
+            coords_path = get_coords_path(
+                processed_root,
+                category,
+                image_type,
+                split,
+                cls,
+                filename,
             )
 
-            chosen_bases = base_names[
-                offset:
-                offset + num_images
-            ]
-
-            if len(chosen_bases) < num_images:
-                continue
-
-            imgs = []
-
-            for base in chosen_bases:
-
-                proc_list = sorted(
-                    base_dict[base]
+            if not os.path.isfile(coords_path):
+                raise FileNotFoundError(
+                    f"Missing fixation coordinates for {filename}: "
+                    f"{coords_path}"
                 )
 
-                imgs.extend([
-                    TF.to_tensor(
-                        Image.open(p).convert("RGB")
-                    )
-                    for p in proc_list
-                ])
+            coords = read_fixation_coords(coords_path)
 
-            imgs = torch.stack(
-                imgs,
-                dim=0
+            # Extract the same crops for both variants.
+            crops = extract_fixation_crops(
+                img,
+                coords,
+                crop_size=CROP_SIZE,
             )
 
-        samples[cls] = imgs
+            # Apply foveation alone for CNN, or foveation + log-polar
+            # transformation for LP.
+            with torch.no_grad():
+                transformed = transformer(crops.to(device))
+
+            image_batches.append(transformed.cpu())
+
+        # Concatenate fixation crops from all selected base images.
+        samples[cls] = torch.cat(image_batches, dim=0)
 
     return samples
 
@@ -661,8 +579,19 @@ def get_representations(
 
 def load_all_conditions(
     args,
-    classes
+    classes,
+    device
 ):
+
+    transformer = OnTheFlyTransform(
+        type="valid",
+        variant=variant,  # "cnn" or "lp"
+        device=device,
+        crop_size=CROP_SIZE,
+        output_shape=(CROP_SIZE, CROP_SIZE),
+    ).to(device)
+
+    transformer.eval()
 
     conditions = {
 
@@ -676,6 +605,8 @@ def load_all_conditions(
                 classes=classes,
                 num_images=args.probe_images,
                 offset=args.study_images,
+                transformer=transformer,
+                device=device,
             ),
 
         ("upright", "thatcher"):
@@ -688,6 +619,8 @@ def load_all_conditions(
                 classes=classes,
                 num_images=args.probe_images,
                 offset=args.study_images,
+                transformer=transformer,
+                device=device,
             ),
 
         ("inverted", "normal"):
@@ -700,6 +633,8 @@ def load_all_conditions(
                 classes=classes,
                 num_images=args.probe_images,
                 offset=args.study_images,
+                transformer=transformer,
+                device=device,
             ),
 
         ("inverted", "thatcher"):
@@ -712,6 +647,8 @@ def load_all_conditions(
                 classes=classes,
                 num_images=args.probe_images,
                 offset=args.study_images,
+                transformer=transformer,
+                device=device,
             ),
     }
 
@@ -905,7 +842,8 @@ def main():
 
     condition_data = load_all_conditions(
         args,
-        study_classes
+        study_classes,
+        device
     )
 
     # --------------------------------------------------
