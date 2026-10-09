@@ -585,7 +585,7 @@ def load_all_conditions(
 
     transformer = OnTheFlyTransform(
         type="valid",
-        variant=variant,  # "cnn" or "lp"
+        variant=args.variant,  # "cnn" or "lp"
         device=device,
         crop_size=CROP_SIZE,
         output_shape=(CROP_SIZE, CROP_SIZE),
