@@ -970,7 +970,7 @@ def main():
     upright_distances = {}
     inverted_distances = {}
 
-    results = []
+    results = {}
 
     for cls in common_classes:
 
@@ -1017,14 +1017,26 @@ def main():
             inverted_covariance_inv
         )
 
+        # --------------------------------------------------
+        # Pure distances per neuron for each condition
+        # --------------------------------------------------
+        Ds_U, Ds_I = UT - UN, IT - IN
+
         upright_distances[cls] = D_U
         inverted_distances[cls] = D_I
 
         results.append({
             "identity": cls,
+            "UN": UN,
+            "UT": UT,
+            "IN": IN,
+            "IT": IT,
             "upright_distance": D_U,
             "inverted_distance": D_I,
             "difference_U_minus_I": D_U - D_I,
+            "per_neuron_upright_distances": Ds_U,
+            "per_neuron_inverted_distances": Ds_I,
+            "per_neuron_differences_U_minus_I": Ds_U - Ds_I,
         })
 
     results_df = pd.DataFrame(results)
@@ -1048,6 +1060,26 @@ def main():
     mean_difference = (
         results_df[
             "difference_U_minus_I"
+        ].mean()
+    )
+
+    # Per neuron diffs 
+
+    per_U = (
+        results_df[
+            "per_neuron_upright_distances"
+        ].mean()
+    )
+
+    per_I = (
+        results_df[
+            "per_neuron_inverted_distances"
+        ].mean()
+    )
+
+    per_difference = (
+        results_df[
+            "per_neuron_differences_U_minus_I"
         ].mean()
     )
 
@@ -1079,7 +1111,7 @@ def main():
     )
 
     # ==================================================
-    # STATISTICAL TEST
+    # STATISTICAL TEST: WHOLE DISTANCE
     # ==================================================
 
     from scipy.stats import ttest_1samp
@@ -1106,6 +1138,44 @@ def main():
     print(
         f"df = {len(results_df) - 1}"
     )
+
+    # ==================================================
+    # STATISTICAL TEST: INDIVIDUAL NEURONS
+    # ==================================================
+
+    from statsmodels.stats.multitest import multipletests
+
+    UN = np.stack(results_df["UN"].map(lambda x: x.mean(axis=0)))
+    UT = np.stack(results_df["UT"].map(lambda x: x.mean(axis=0)))
+    IN = np.stack(results_df["IN"].map(lambda x: x.mean(axis=0)))
+    IT = np.stack(results_df["IT"].map(lambda x: x.mean(axis=0)))
+
+    response_U = UT - UN
+    response_I = IT - IN
+    diff = response_U - response_I
+
+    t, p = ttest_1samp(diff, 0, axis=0)
+    sig, q, _, _ = multipletests(p, method="fdr_bh")
+
+    neurons = pd.DataFrame({
+        "dimension": np.arange(diff.shape[1]),
+        "UN": UN.mean(axis=0),
+        "UT": UT.mean(axis=0),
+        "IN": IN.mean(axis=0),
+        "IT": IT.mean(axis=0),
+        "U_response": response_U.mean(axis=0),
+        "I_response": response_I.mean(axis=0),
+        "U_minus_I": diff.mean(axis=0),
+        "t": t,
+        "p": p,
+        "q_FDR": q,
+        "significant": sig,
+    })
+
+    neurons = neurons[neurons["significant"]].sort_values("p")
+    neurons.to_csv(f"significant_dimensions_{category}_{variant}.csv", index=False)
+
+    print(neurons.to_string(index=False))
 
     # ==================================================
     # EFFECT SIZE
