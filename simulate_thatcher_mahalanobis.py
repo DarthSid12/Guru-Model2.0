@@ -1172,7 +1172,7 @@ def main():
     })
 
     neurons = neurons[neurons["significant"]].sort_values("p")
-    neurons.to_csv(f"significant_dimensions_{args.category}_{variant}.csv", index=False)
+    neurons.to_csv(f"significant_dimensions_{args.category}_{args.variant}.csv", index=False)
 
     print(neurons.to_string(index=False))
 
