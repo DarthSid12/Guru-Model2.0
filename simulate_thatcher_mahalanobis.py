@@ -1180,12 +1180,21 @@ def main():
         "U_response": response_U.mean(axis=0),
         "I_response": response_I.mean(axis=0),
         "U_minus_I": diff.mean(axis=0),
-        "direction": np.where(
+        "larger unsigned response": np.where(
+            np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)) > 0,
+            "U",
+            np.where(
+                np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)) < 0,
+                "I",
+                "ZERO"
+            )
+        ),
+        "larger signed response": np.where(
             diff.mean(axis=0) > 0,
-            "POSITIVE: upright interaction larger",
+            "U",
             np.where(
                 diff.mean(axis=0) < 0,
-                "NEGATIVE: inverted interaction larger",
+                "I",
                 "ZERO"
             )
         ),
