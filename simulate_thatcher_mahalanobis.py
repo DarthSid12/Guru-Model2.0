@@ -970,7 +970,7 @@ def main():
     upright_distances = {}
     inverted_distances = {}
 
-    results = {}
+    results = []
 
     for cls in common_classes:
 
@@ -1158,7 +1158,7 @@ def main():
     sig, q, _, _ = multipletests(p, method="fdr_bh")
 
     neurons = pd.DataFrame({
-        "dimension": np.arange(diff.shape[1]),
+": np.arange(diff.shape[1]),
         "UN": UN.mean(axis=0),
         "UT": UT.mean(axis=0),
         "IN": IN.mean(axis=0),
