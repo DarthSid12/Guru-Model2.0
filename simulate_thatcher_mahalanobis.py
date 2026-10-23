@@ -1147,29 +1147,31 @@ def main():
     from scipy.stats import ttest_1samp
     from statsmodels.stats.multitest import multipletests
 
-    UN = np.stack(
-        results_df["UN"].map(lambda x: x.mean(axis=0))
-    )
-    UT = np.stack(
-        results_df["UT"].map(lambda x: x.mean(axis=0))
-    )
-    IN = np.stack(
-        results_df["IN"].map(lambda x: x.mean(axis=0))
-    )
-    IT = np.stack(
-        results_df["IT"].map(lambda x: x.mean(axis=0))
-    )
+    UN = np.stack(results_df["UN"].map(lambda x: x.mean(axis=0)))
+    UT = np.stack(results_df["UT"].map(lambda x: x.mean(axis=0)))
+    IN = np.stack(results_df["IN"].map(lambda x: x.mean(axis=0)))
+    IT = np.stack(results_df["IT"].map(lambda x: x.mean(axis=0)))
 
-    # Rows = identities; columns = original representation dimensions
+    # Rows = identities; columns = representation dimensions
     response_U = UT - UN
     response_I = IT - IN
-    diff = response_U - response_I
 
-    t, p = ttest_1samp(diff, 0, axis=0)
+    # Normalize each response using the corresponding normal-condition
+    # standard deviation across identities, separately for each dimension.
+    sd_UN = np.std(UN, axis=0, ddof=1)
+    sd_IN = np.std(IN, axis=0, ddof=1)
+
+    response_U_norm = response_U / np.maximum(sd_UN, 1e-8)
+    response_I_norm = response_I / np.maximum(sd_IN, 1e-8)
+
+    # Normalized upright-minus-inverted response for each identity
+    diff_norm = response_U_norm - response_I_norm
+
+    # Test the normalized difference across identities
+    t, p = ttest_1samp(diff_norm, 0, axis=0)
     sig, q, _, _ = multipletests(p, method="fdr_bh")
 
-    # Original index of each dimension in the representation vector
-    dimension_indices = np.arange(diff.shape[1])
+    dimension_indices = np.arange(diff_norm.shape[1])
 
     neurons = pd.DataFrame({
         "dimension_index": dimension_indices,
@@ -1177,32 +1179,32 @@ def main():
         "UT": UT.mean(axis=0),
         "IN": IN.mean(axis=0),
         "IT": IT.mean(axis=0),
-        "U_response": response_U.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8), # normalize by normal std; no div by 0
-        "I_response": response_I.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8),
-        "U_minus_I": diff.mean(axis=0),
+        "U_response": response_U_norm.mean(axis=0),
+        "I_response": response_I_norm.mean(axis=0),
+        "U_minus_I": diff_norm.mean(axis=0),
         "larger unsigned response": np.where(
-            np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)),
+            np.abs(response_U_norm.mean(axis=0))
+            > np.abs(response_I_norm.mean(axis=0)),
             "U",
             np.where(
-                np.abs(response_U.mean(axis=0)) < np.abs(response_I.mean(axis=0)),
+                np.abs(response_U_norm.mean(axis=0))
+                < np.abs(response_I_norm.mean(axis=0)),
                 "I",
                 "ZERO"
             )
         ),
         "larger signed response": np.where(
-            diff.mean(axis=0) > 0,
+            diff_norm.mean(axis=0) > 0,
             "U",
-            np.where(
-                diff.mean(axis=0) < 0,
-                "I",
-                "ZERO"
-            )
+            np.where(diff_norm.mean(axis=0) < 0, "I", "ZERO")
         ),
         "t": t,
         "p": p,
         "q_FDR": q,
         "significant_FDR": sig,
     })
+
+    neurons = neurons.sort_values("q_FDR")
 
     # Save ALL dimensions, including nonsignificant ones
     all_dimensions_file = (
