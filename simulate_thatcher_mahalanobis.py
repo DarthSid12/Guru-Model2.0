@@ -1156,22 +1156,19 @@ def main():
     response_U = UT - UN
     response_I = IT - IN
 
-    # Normalize each response using the corresponding normal-condition
-    # standard deviation across identities, separately for each dimension.
-    sd_UN = np.std(UN, axis=0, ddof=1)
-    sd_IN = np.std(IN, axis=0, ddof=1)
+    # Per-identity, per-dimension contributions to squared Mahalanobis distance.
+    # Each row's contributions sum to that identity's squared distance.
+    contrib_U = response_U * (response_U @ upright_covariance_inv)
+    contrib_I = response_I * (response_I @ inverted_covariance_inv)
+        
+    # Upright-minus-inverted contribution for each identity and dimension
+    diff_contrib = contrib_U - contrib_I
 
-    response_U_norm = response_U / np.maximum(sd_UN, 1e-8)
-    response_I_norm = response_I / np.maximum(sd_IN, 1e-8)
-
-    # Normalized upright-minus-inverted response for each identity
-    diff_norm = response_U_norm - response_I_norm
-
-    # Test the normalized difference across identities
-    t, p = ttest_1samp(diff_norm, 0, axis=0)
+    # Test contributions across identities
+    t, p = ttest_1samp(diff_contrib, 0, axis=0)
     sig, q, _, _ = multipletests(p, method="fdr_bh")
 
-    dimension_indices = np.arange(diff_norm.shape[1])
+    dimension_indices = np.arange(diff_contrib.shape[1])
 
     neurons = pd.DataFrame({
         "dimension_index": dimension_indices,
@@ -1179,32 +1176,39 @@ def main():
         "UT": UT.mean(axis=0),
         "IN": IN.mean(axis=0),
         "IT": IT.mean(axis=0),
-        "U_response": response_U_norm.mean(axis=0),
-        "I_response": response_I_norm.mean(axis=0),
-        "U_minus_I": diff_norm.mean(axis=0),
-        "larger unsigned response": np.where(
-            np.abs(response_U_norm.mean(axis=0))
-            > np.abs(response_I_norm.mean(axis=0)),
+
+        # Mean contribution to squared Mahalanobis distance
+        "U_contribution": contrib_U.mean(axis=0),
+        "I_contribution": contrib_I.mean(axis=0),
+
+        # Positive = larger upright contribution; negative = larger inverted
+        "U_minus_I": diff_contrib.mean(axis=0),
+
+        "larger signed contribution": np.where(
+            diff_contrib.mean(axis=0) > 0,
+            "U",
+            np.where(diff_contrib.mean(axis=0) < 0, "I", "ZERO")
+        ),
+
+        "larger unsigned contribution": np.where(
+            np.abs(contrib_U.mean(axis=0)) >
+            np.abs(contrib_I.mean(axis=0)),
             "U",
             np.where(
-                np.abs(response_U_norm.mean(axis=0))
-                < np.abs(response_I_norm.mean(axis=0)),
+                np.abs(contrib_I.mean(axis=0)) >
+                np.abs(contrib_U.mean(axis=0)),
                 "I",
                 "ZERO"
             )
         ),
-        "larger signed response": np.where(
-            diff_norm.mean(axis=0) > 0,
-            "U",
-            np.where(diff_norm.mean(axis=0) < 0, "I", "ZERO")
-        ),
+    
         "t": t,
         "p": p,
         "q_FDR": q,
         "significant_FDR": sig,
     })
 
-    neurons = neurons.sort_values("q_FDR")
+    neurons = neurons.sort_values("p")
 
     # Save ALL dimensions, including nonsignificant ones
     all_dimensions_file = (
