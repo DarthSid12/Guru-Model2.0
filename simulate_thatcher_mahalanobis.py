@@ -1139,17 +1139,28 @@ def main():
         f"df = {len(results_df) - 1}"
     )
 
+
     # ==================================================
-    # STATISTICAL TEST: INDIVIDUAL NEURONS
+    # STATISTICAL TEST: INDIVIDUAL REPRESENTATION DIMENSIONS
     # ==================================================
 
+    from scipy.stats import ttest_1samp
     from statsmodels.stats.multitest import multipletests
 
-    UN = np.stack(results_df["UN"].map(lambda x: x.mean(axis=0)))
-    UT = np.stack(results_df["UT"].map(lambda x: x.mean(axis=0)))
-    IN = np.stack(results_df["IN"].map(lambda x: x.mean(axis=0)))
-    IT = np.stack(results_df["IT"].map(lambda x: x.mean(axis=0)))
+    UN = np.stack(
+        results_df["UN"].map(lambda x: x.mean(axis=0))
+    )
+    UT = np.stack(
+        results_df["UT"].map(lambda x: x.mean(axis=0))
+    )
+    IN = np.stack(
+        results_df["IN"].map(lambda x: x.mean(axis=0))
+    )
+    IT = np.stack(
+        results_df["IT"].map(lambda x: x.mean(axis=0))
+    )
 
+    # Rows = identities; columns = original representation dimensions
     response_U = UT - UN
     response_I = IT - IN
     diff = response_U - response_I
@@ -1157,7 +1168,11 @@ def main():
     t, p = ttest_1samp(diff, 0, axis=0)
     sig, q, _, _ = multipletests(p, method="fdr_bh")
 
+    # Original index of each dimension in the representation vector
+    dimension_indices = np.arange(diff.shape[1])
+
     neurons = pd.DataFrame({
+        "dimension_index": dimension_indices,
         "UN": UN.mean(axis=0),
         "UT": UT.mean(axis=0),
         "IN": IN.mean(axis=0),
@@ -1165,16 +1180,48 @@ def main():
         "U_response": response_U.mean(axis=0),
         "I_response": response_I.mean(axis=0),
         "U_minus_I": diff.mean(axis=0),
+        "direction": np.where(
+            diff.mean(axis=0) > 0,
+            "POSITIVE: upright interaction larger",
+            np.where(
+                diff.mean(axis=0) < 0,
+                "NEGATIVE: inverted interaction larger",
+                "ZERO"
+            )
+        ),
         "t": t,
         "p": p,
         "q_FDR": q,
-        "significant": sig,
+        "significant_FDR": sig,
     })
 
-    neurons = neurons[neurons["significant"]].sort_values("p")
-    neurons.to_csv(f"significant_dimensions_{args.category}_{args.variant}.csv", index=False)
+    # Save ALL dimensions, including nonsignificant ones
+    all_dimensions_file = (
+        f"all_dimensions_{args.category}_{args.variant}.csv"
+    )
+    neurons.sort_values("dimension_index").to_csv(
+        all_dimensions_file, index=False
+    )
 
-    print(neurons.to_string(index=False))
+    # Also save significant dimensions, ranked by p-value
+    significant = (
+        neurons[neurons["significant_FDR"]]
+        .sort_values("p")
+    )
+
+    significant_file = (
+        f"significant_dimensions_{args.category}_{args.variant}.csv"
+    )
+    significant.to_csv(significant_file, index=False)
+
+    print("\nAll dimensions, ranked by original index:")
+    print(neurons.sort_values("dimension_index").to_string(index=False))
+
+    print("\nSignificant dimensions, ranked by p-value:")
+    print(significant.to_string(index=False))
+
+    print(f"\nSaved all dimensions to: {all_dimensions_file}")
+    print(f"Saved significant dimensions to: {significant_file}")
 
     # ==================================================
     # EFFECT SIZE
