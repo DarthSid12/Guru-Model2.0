@@ -1177,8 +1177,8 @@ def main():
         "UT": UT.mean(axis=0),
         "IN": IN.mean(axis=0),
         "IT": IT.mean(axis=0),
-        "U_response": response_U.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8) # normalize by normal std; no div by 0
-        "I_response": response_I.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8)
+        "U_response": response_U.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8), # normalize by normal std; no div by 0
+        "I_response": response_I.mean(axis=0) / np.maximum(np.std(UN, axis=0, ddof=1), 1e-8),
         "U_minus_I": diff.mean(axis=0),
         "larger unsigned response": np.where(
             np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)),
