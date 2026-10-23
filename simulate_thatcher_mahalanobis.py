@@ -1181,10 +1181,10 @@ def main():
         "I_response": response_I.mean(axis=0),
         "U_minus_I": diff.mean(axis=0),
         "larger unsigned response": np.where(
-            np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)) > 0,
+            np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)),
             "U",
             np.where(
-                np.abs(response_U.mean(axis=0)) > np.abs(response_I.mean(axis=0)) < 0,
+                np.abs(response_U.mean(axis=0)) < np.abs(response_I.mean(axis=0)),
                 "I",
                 "ZERO"
             )
