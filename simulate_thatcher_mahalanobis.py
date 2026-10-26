@@ -963,8 +963,17 @@ def main():
         )
     )
 
-    print("upright covariance matrix:", upright_covariance, "\n\n\n")
-    print("inverted covariance matrix:", inverted_covariance, "\n\n\n")
+    print("Mean diagonal variance:")
+    print("Upright:", np.diag(upright_covariance).mean())
+    print("Inverted:", np.diag(inverted_covariance).mean())
+
+    print("\nMean absolute off-diagonal covariance:")
+    for name, cov in [
+        ("Upright", upright_covariance),
+        ("Inverted", inverted_covariance),
+    ]:
+        off = cov[~np.eye(cov.shape[0], dtype=bool)]
+        print(f"{name}: {np.mean(np.abs(off)):.6f}")
 
     # ==================================================
     # MAHALANOBIS DISTANCES
