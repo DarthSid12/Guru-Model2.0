@@ -976,6 +976,66 @@ def main():
         print(f"{name}: {np.mean(np.abs(off)):.6f}")
 
     # ==================================================
+    # COMPARE VARIANCE-ONLY VS FULL-COVARIANCE DISTANCES
+    # ==================================================
+
+    """
+    This precaution was added because 
+    """
+
+    print("\nComparing variance-only and full-covariance distances...")
+
+    for name, orientation, cov, cov_inv in [
+        (
+            "Upright",
+            "upright",
+            upright_covariance,
+            upright_covariance_inv
+        ),
+        (
+            "Inverted",
+            "inverted",
+            inverted_covariance,
+            inverted_covariance_inv
+        ),
+    ]:
+
+        normal_reps = []
+        thatcher_reps = []
+
+        for cls in common_classes:
+
+            normal_reps.extend(
+                condition_reps[(orientation, "normal")][cls]
+                .cpu().numpy()
+            )
+
+            thatcher_reps.extend(
+                condition_reps[(orientation, "thatcher")][cls]
+                .cpu().numpy()
+            )
+
+        normal_reps = np.asarray(normal_reps)
+        thatcher_reps = np.asarray(thatcher_reps)
+
+        # Difference between mean Thatcherized and normal representations
+        delta = thatcher_reps.mean(axis=0) - normal_reps.mean(axis=0)
+
+        # Variance-only normalized squared distance
+        variances = np.diag(cov)
+        d_var_sq = np.sum(delta**2 / variances)
+        d_var = np.sqrt(d_var_sq)
+
+        # Full-covariance normalized squared distance
+        d_cov_sq = delta @ cov_inv @ delta
+        d_cov = np.sqrt(max(float(d_cov_sq), 0.0))
+
+        print(f"\n{name}:")
+        print(f"  Euclidean distance: {np.linalg.norm(delta):.6f}")
+        print(f"  Variance-only distance: {d_var:.6f}")
+        print(f"  Full-covariance distance: {d_cov:.6f}")
+
+    # ==================================================
     # MAHALANOBIS DISTANCES
     # ==================================================
 
