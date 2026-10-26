@@ -963,6 +963,9 @@ def main():
         )
     )
 
+    print("upright covariance matrix:", upright_covariance, "\n\n\n")
+    print("inverted covariance matrix:", inverted_covariance, "\n\n\n")
+
     # ==================================================
     # MAHALANOBIS DISTANCES
     # ==================================================
