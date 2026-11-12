@@ -767,6 +767,126 @@ def mahalanobis_distance(
         squared
     )
 
+# ==================================================
+# PCA ANALYSIS OF NORMAL UPRIGHT + INVERTED CLOUDS
+# ==================================================
+"""
+Here to visually represent stronger covariance structure of 
+Upright Normal vs Inverted Normal faces as a non-feature-based
+explanation of the thatcher effect -
+
+See Covariance_Mystery.pdf
+"""
+
+def plot_pca_cloud(condition_reps, common_classes, output_path=None):
+    """
+    Fit two independent 2D PCAs:
+      - Upright PCA: fit on upright-normal, project UN and UT.
+      - Inverted PCA: fit on inverted-normal, project IN and IT.
+
+    Thatcherized representations never influence PCA fitting.
+  
+    This tests the hypothesis that the covariance structure of the normal faces 
+    independently affects the deviation of thatcherized images of the same orientation.
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklearn.decomposition import PCA
+
+    def collect(condition):
+        return np.concatenate([
+            condition_reps[condition][cls].numpy()
+            for cls in common_classes
+        ], axis=0)
+
+    # Collect all four conditions
+    UN = collect(("upright", "normal"))
+    UT = collect(("upright", "thatcher"))
+    IN = collect(("inverted", "normal"))
+    IT = collect(("inverted", "thatcher"))
+
+    # Fit each PCA independently, using normal images only
+    pca_upright = PCA(n_components=2)
+    pca_inverted = PCA(n_components=2)
+
+    pca_upright.fit(UN)
+    pca_inverted.fit(IN)
+
+    # Project each condition into its own world's PCA space
+    UN_2D = pca_upright.transform(UN)
+    UT_2D = pca_upright.transform(UT)
+
+    IN_2D = pca_inverted.transform(IN)
+    IT_2D = pca_inverted.transform(IT)
+
+    # Report explained variance
+    print("\nUpright PCA explained variance:")
+    print(f"PC1: {pca_upright.explained_variance_ratio_[0]:.2%}")
+    print(f"PC2: {pca_upright.explained_variance_ratio_[1]:.2%}")
+    print(f"Combined: {pca_upright.explained_variance_ratio_.sum():.2%}")
+
+    print("\nInverted PCA explained variance:")
+    print(f"PC1: {pca_inverted.explained_variance_ratio_[0]:.2%}")
+    print(f"PC2: {pca_inverted.explained_variance_ratio_[1]:.2%}")
+    print(f"Combined: {pca_inverted.explained_variance_ratio_.sum():.2%}")
+
+    # Plot side by side
+    fig, axes = plt.subplots(1, 2, figsize=(15, 7))
+
+    plots = [
+        (
+            axes[0], UN_2D, UT_2D,
+            "Upright Representational World",
+            pca_upright
+        ),
+        (
+            axes[1], IN_2D, IT_2D,
+            "Inverted Representational World",
+            pca_inverted
+        )
+    ]
+
+    for ax, normal, thatcher, title, pca in plots:
+        ax.scatter(
+            normal[:, 0], normal[:, 1],
+            label="Normal", color="blue", alpha=0.20, s=12
+        )
+        ax.scatter(
+            thatcher[:, 0], thatcher[:, 1],
+            label="Thatcher", color="orange", alpha=0.20, s=12
+        )
+
+        ax.set_xlabel(
+            f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)"
+        )
+        ax.set_ylabel(
+            f"PC2 ({pca.explained_variance_ratio_[1]:.1%} variance)"
+        )
+        ax.set_title(title)
+        ax.legend()
+        ax.grid(alpha=0.2)
+
+    fig.suptitle("Thatcherization in Independent PCA Spaces")
+    plt.tight_layout()
+
+    if output_path is not None:
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        print(f"\nSaved PCA plot to: {output_path}")
+
+    #plt.show()
+
+    plt.close(fig)
+
+    return {
+        "pca_upright": pca_upright,
+        "pca_inverted": pca_inverted,
+        "coordinates": {
+            "UN": UN_2D,
+            "UT": UT_2D,
+            "IN": IN_2D,
+            "IT": IT_2D
+        }
+    }
 
 # ==================================================
 # MAIN ANALYSIS
@@ -915,6 +1035,21 @@ def main():
     )
 
     # ==================================================
+    # PCA VISUALIZATION
+    # ==================================================
+
+    print("\nPlotting PCA cloud of perceptual spaces - axes chosen based on normal faces only")
+
+    path = f"data/thatcher_data/pca_cloud_{args.category}_{args.variant}.png"
+    pca_upright, pca_inverted, pca_coordinates = plot_pca_cloud(
+        condition_reps,
+        common_classes,
+        output_path=path
+    ) # not sure what if I'm going use these variables later in this code but what the hey
+
+    print(f"\n PCA's saved in {path}.")
+
+    # ==================================================
     # BUILD UPRIGHT AND INVERTED NORMAL COVARIANCES
     # ==================================================
 
@@ -980,7 +1115,9 @@ def main():
     # ==================================================
 
     """
-    This precaution was added because 
+    This precaution was added because without covariance (pure variance) normalization,
+    individual features had larger INVERTED response. Only with covariance did upright thatcherization win.
+    This is to investigate why.
     """
 
     print("\nComparing variance-only and full-covariance distances...")
@@ -1393,7 +1530,6 @@ def main():
             "upright and inverted Thatcherization "
             "distances."
         )
-
 
 if __name__ == "__main__":
     main()
