@@ -1266,6 +1266,18 @@ def main():
         ].mean()
     )
 
+    var_U = (
+        results_df[
+            "upright_distance"
+        ].var()
+    )
+
+    var_I = (
+        results_df[
+            "inverted_distance"
+        ].var()
+    )
+
     mean_difference = (
         results_df[
             "difference_U_minus_I"
@@ -1317,6 +1329,16 @@ def main():
     print(
         f"\nMean (UN-UT) - (IN-IT): "
         f"{mean_difference:.6f}"
+    )
+
+    print(
+        f"\nVariance of UN-UT Mahalanobis distance: "
+        f"{var_U:.6f}"
+    )
+
+    print(
+        f"Variance of IN-IT Mahalanobis distance: "
+        f"{var_I:.6f}"
     )
 
     # ==================================================
