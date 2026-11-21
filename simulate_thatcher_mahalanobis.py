@@ -868,11 +868,11 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     ax = axes[1]
     ax.scatter(
         IN_inverted_2D[:, 0], IN_inverted_2D[:, 1],
-        label="Normal", color="blue", alpha=0.20, s=12
+        label="Normal", color="red", alpha=0.20, s=12
     )
     ax.scatter(
         IT_inverted_2D[:, 0], IT_inverted_2D[:, 1],
-        label="Thatcher", color="orange", alpha=0.20, s=12
+        label="Thatcher", color="green", alpha=0.20, s=12
     )
     ax.set_title("Inverted Representational World")
     ax.set_xlabel(f"PC1 ({pca_inverted.explained_variance_ratio_[0]:.1%})")
@@ -885,13 +885,13 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     ax = axes[2]
 
     ax.scatter(UN_combined_2D[:, 0], UN_combined_2D[:, 1],
-               label="Upright normal", color="blue", marker="o", alpha=0.20, s=12)
+               label="Upright normal", color="blue", alpha=0.20, s=12)
     ax.scatter(UT_combined_2D[:, 0], UT_combined_2D[:, 1],
-               label="Upright Thatcher", color="orange", marker="o", alpha=0.20, s=12)
+               label="Upright Thatcher", color="orange", alpha=0.20, s=12)
     ax.scatter(IN_combined_2D[:, 0], IN_combined_2D[:, 1],
-               label="Inverted normal", color="blue", marker="^", alpha=0.20, s=12)
+               label="Inverted normal", color="red", alpha=0.20, s=12)
     ax.scatter(IT_combined_2D[:, 0], IT_combined_2D[:, 1],
-               label="Inverted Thatcher", color="orange", marker="^", alpha=0.20, s=12)
+               label="Inverted Thatcher", color="green", alpha=0.20, s=12)
   
     ax.set_title("Shared Normal-Face PCA Space")
     ax.set_xlabel(f"PC1 ({pca_combined.explained_variance_ratio_[0]:.1%})")
