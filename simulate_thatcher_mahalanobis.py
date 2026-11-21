@@ -1079,7 +1079,7 @@ def main():
     print("\nPlotting PCA cloud of perceptual spaces - axes chosen based on normal faces only")
 
     path = f"data/thatcher_data/pca_cloud_{args.category}_{args.variant}.png"
-    pca_upright, pca_inverted, pca_coordinates = plot_pca_cloud(
+    pca_upright, pca_inverted, pca_combined, pca_coordinates,  pca_combined_coordinates = plot_pca_cloud(
         condition_reps,
         common_classes,
         output_path=path
