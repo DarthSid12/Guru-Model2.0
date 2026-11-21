@@ -780,14 +780,13 @@ See Covariance_Mystery.pdf
 
 def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     """
-    Fit two independent 2D PCAs:
-      - Upright PCA: fit on upright-normal, project UN and UT.
-      - Inverted PCA: fit on inverted-normal, project IN and IT.
+    Fit three 2D PCAs:
+      - Upright PCA: fit on upright-normal; project UN and UT.
+      - Inverted PCA: fit on inverted-normal; project IN and IT.
+      - Combined PCA: fit on both normal conditions; project UN, UT, IN, IT.
 
-    Thatcherized representations never influence PCA fitting.
-  
-    This tests the hypothesis that the covariance structure of the normal faces 
-    independently affects the deviation of thatcherized images of the same orientation.
+    Thatcherized representations never influence the first two PCA fits.
+    The combined PCA intentionally includes all four conditions.
     """
     import numpy as np
     import matplotlib.pyplot as plt
@@ -805,19 +804,30 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     IN = collect(("inverted", "normal"))
     IT = collect(("inverted", "thatcher"))
 
-    # Fit each PCA independently, using normal images only
+    # Fit the two independent PCAs
     pca_upright = PCA(n_components=2)
     pca_inverted = PCA(n_components=2)
 
     pca_upright.fit(UN)
     pca_inverted.fit(IN)
 
-    # Project each condition into its own world's PCA space
-    UN_2D = pca_upright.transform(UN)
-    UT_2D = pca_upright.transform(UT)
+    # Fit a third PCA on everything
+    pca_combined = PCA(n_components=2)
+    all_reps = np.concatenate([UN, UT, IN, IT], axis=0)
+    pca_combined.fit(all_reps)
 
-    IN_2D = pca_inverted.transform(IN)
-    IT_2D = pca_inverted.transform(IT)
+    # Project into the independent PCA spaces
+    UN_upright_2D = pca_upright.transform(UN)
+    UT_upright_2D = pca_upright.transform(UT)
+
+    IN_inverted_2D = pca_inverted.transform(IN)
+    IT_inverted_2D = pca_inverted.transform(IT)
+
+    # Project everything into the combined PCA space
+    UN_combined_2D = pca_combined.transform(UN)
+    UT_combined_2D = pca_combined.transform(UT)
+    IN_combined_2D = pca_combined.transform(IN)
+    IT_combined_2D = pca_combined.transform(IT)
 
     # Report explained variance
     print("\nUpright PCA explained variance:")
@@ -830,61 +840,89 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     print(f"PC2: {pca_inverted.explained_variance_ratio_[1]:.2%}")
     print(f"Combined: {pca_inverted.explained_variance_ratio_.sum():.2%}")
 
+    print("\nCombined PCA explained variance:")
+    print(f"PC1: {pca_combined.explained_variance_ratio_[0]:.2%}")
+    print(f"PC2: {pca_combined.explained_variance_ratio_[1]:.2%}")
+    print(f"Combined: {pca_combined.explained_variance_ratio_.sum():.2%}")
+
     # Plot side by side
-    fig, axes = plt.subplots(1, 2, figsize=(15, 7))
+    fig, axes = plt.subplots(1, 3, figsize=(22, 7))
 
-    plots = [
-        (
-            axes[0], UN_2D, UT_2D,
-            "Upright Representational World",
-            pca_upright
-        ),
-        (
-            axes[1], IN_2D, IT_2D,
-            "Inverted Representational World",
-            pca_inverted
-        )
-    ]
+    # First panel: upright PCA
+    ax = axes[0]
+    ax.scatter(
+        UN_upright_2D[:, 0], UN_upright_2D[:, 1],
+        label="Normal", color="blue", alpha=0.20, s=12
+    )
+    ax.scatter(
+        UT_upright_2D[:, 0], UT_upright_2D[:, 1],
+        label="Thatcher", color="orange", alpha=0.20, s=12
+    )
+    ax.set_title("Upright Representational World")
+    ax.set_xlabel(f"PC1 ({pca_upright.explained_variance_ratio_[0]:.1%})")
+    ax.set_ylabel(f"PC2 ({pca_upright.explained_variance_ratio_[1]:.1%})")
+    ax.legend()
+    ax.grid(alpha=0.2)
 
-    for ax, normal, thatcher, title, pca in plots:
-        ax.scatter(
-            normal[:, 0], normal[:, 1],
-            label="Normal", color="blue", alpha=0.20, s=12
-        )
-        ax.scatter(
-            thatcher[:, 0], thatcher[:, 1],
-            label="Thatcher", color="orange", alpha=0.20, s=12
-        )
+    # Second panel: inverted PCA
+    ax = axes[1]
+    ax.scatter(
+        IN_inverted_2D[:, 0], IN_inverted_2D[:, 1],
+        label="Normal", color="blue", alpha=0.20, s=12
+    )
+    ax.scatter(
+        IT_inverted_2D[:, 0], IT_inverted_2D[:, 1],
+        label="Thatcher", color="orange", alpha=0.20, s=12
+    )
+    ax.set_title("Inverted Representational World")
+    ax.set_xlabel(f"PC1 ({pca_inverted.explained_variance_ratio_[0]:.1%})")
+    ax.set_ylabel(f"PC2 ({pca_inverted.explained_variance_ratio_[1]:.1%})")
+    ax.legend()
+    ax.grid(alpha=0.2)
 
-        ax.set_xlabel(
-            f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)"
-        )
-        ax.set_ylabel(
-            f"PC2 ({pca.explained_variance_ratio_[1]:.1%} variance)"
-        )
-        ax.set_title(title)
-        ax.legend()
-        ax.grid(alpha=0.2)
+    # Third panel: combined PCA, all four conditions
 
-    fig.suptitle("Thatcherization in Independent PCA Spaces")
+    ax = axes[2]
+
+    ax.scatter(UN_combined_2D[:, 0], UN_combined_2D[:, 1],
+               label="Upright normal", color="blue", marker="o", alpha=0.20, s=12)
+    ax.scatter(UT_combined_2D[:, 0], UT_combined_2D[:, 1],
+               label="Upright Thatcher", color="orange", marker="o", alpha=0.20, s=12)
+    ax.scatter(IN_combined_2D[:, 0], IN_combined_2D[:, 1],
+               label="Inverted normal", color="blue", marker="^", alpha=0.20, s=12)
+    ax.scatter(IT_combined_2D[:, 0], IT_combined_2D[:, 1],
+               label="Inverted Thatcher", color="orange", marker="^", alpha=0.20, s=12)
+  
+    ax.set_title("Shared Normal-Face PCA Space")
+    ax.set_xlabel(f"PC1 ({pca_combined.explained_variance_ratio_[0]:.1%})")
+    ax.set_ylabel(f"PC2 ({pca_combined.explained_variance_ratio_[1]:.1%})")
+    ax.legend()
+    ax.grid(alpha=0.2)
+
+    fig.suptitle("Thatcherization in Independent and Combined PCA Spaces")
     plt.tight_layout()
 
     if output_path is not None:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         print(f"\nSaved PCA plot to: {output_path}")
 
-    #plt.show()
-
     plt.close(fig)
 
     return {
         "pca_upright": pca_upright,
         "pca_inverted": pca_inverted,
+        "pca_combined": pca_combined,
         "coordinates": {
-            "UN": UN_2D,
-            "UT": UT_2D,
-            "IN": IN_2D,
-            "IT": IT_2D
+            "UN": UN_upright_2D,
+            "UT": UT_upright_2D,
+            "IN": IN_inverted_2D,
+            "IT": IT_inverted_2D,
+        },
+        "combined_coordinates": {
+            "UN": UN_combined_2D,
+            "UT": UT_combined_2D,
+            "IN": IN_combined_2D,
+            "IT": IT_combined_2D,
         }
     }
 
