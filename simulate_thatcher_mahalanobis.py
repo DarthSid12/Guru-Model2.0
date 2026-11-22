@@ -854,11 +854,11 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     ax = axes[0]
     ax.scatter(
         UN_upright_2D[:, 0], UN_upright_2D[:, 1],
-        label="Normal", color=color[0], alpha=0.20, s=12
+        label="Normal", color=colors[0], alpha=0.20, s=12
     )
     ax.scatter(
         UT_upright_2D[:, 0], UT_upright_2D[:, 1],
-        label="Thatcher", color=color[1], alpha=0.20, s=12
+        label="Thatcher", color=colors[1], alpha=0.20, s=12
     )
     ax.set_title("Upright Representational World")
     ax.set_xlabel(f"PC1 ({pca_upright.explained_variance_ratio_[0]:.1%})")
@@ -870,11 +870,11 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     ax = axes[1]
     ax.scatter(
         IN_inverted_2D[:, 0], IN_inverted_2D[:, 1],
-        label="Normal", color=color[2], alpha=0.20, s=12
+        label="Normal", color=colors[2], alpha=0.20, s=12
     )
     ax.scatter(
         IT_inverted_2D[:, 0], IT_inverted_2D[:, 1],
-        label="Thatcher", color=color[3], alpha=0.20, s=12
+        label="Thatcher", color=colors[3], alpha=0.20, s=12
     )
     ax.set_title("Inverted Representational World")
     ax.set_xlabel(f"PC1 ({pca_inverted.explained_variance_ratio_[0]:.1%})")
@@ -887,13 +887,13 @@ def plot_pca_cloud(condition_reps, common_classes, output_path=None):
     ax = axes[2]
 
     ax.scatter(UN_combined_2D[:, 0], UN_combined_2D[:, 1],
-               label="Upright normal", color=color[0], alpha=0.20, s=12)
+               label="Upright normal", color=colors[0], alpha=0.20, s=12)
     ax.scatter(UT_combined_2D[:, 0], UT_combined_2D[:, 1],
-               label="Upright Thatcher", color=color[1], alpha=0.20, s=12)
+               label="Upright Thatcher", color=colors[1], alpha=0.20, s=12)
     ax.scatter(IN_combined_2D[:, 0], IN_combined_2D[:, 1],
-               label="Inverted normal", color=color[2], alpha=0.20, s=12)
+               label="Inverted normal", color=colors[2], alpha=0.20, s=12)
     ax.scatter(IT_combined_2D[:, 0], IT_combined_2D[:, 1],
-               label="Inverted Thatcher", color=color[3], alpha=0.20, s=12)
+               label="Inverted Thatcher", color=colors[3], alpha=0.20, s=12)
   
     ax.set_title("Shared Normal-Face PCA Space")
     ax.set_xlabel(f"PC1 ({pca_combined.explained_variance_ratio_[0]:.1%})")
