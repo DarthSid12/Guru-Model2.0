@@ -1,0 +1,13 @@
+{
+  "status": "COMPLETED_LOCAL_INDEPENDENTLY_VERIFIED",
+  "checked_utc": "2026-11-17T06:04:00.981106+00:00",
+  "same_checkpoints_for_both_experiments": true,
+  "report_seed_set": "calibration101-150",
+  "independent_validation": false,
+  "spec_sha256": "078a242c77204ab2ad3f5b5e1b14fdb488e9b50484d2d8cc0674717f6601f0f9",
+  "tables_error_points": "/Users/darthsid/Documents/ChatGPT/GURU/output/yin-two-sigma-anchored-tables-20261116/TABLES_ERRORS.md",
+  "tables_accuracy": "/Users/darthsid/Documents/ChatGPT/GURU/output/yin-two-sigma-anchored-tables-20261116/TABLES_ACCURACY.md",
+  "same_checkpoint_comparison": true,
+  "report_seeds": "calibration101-150",
+  "active_baseline_unchanged": true
+}

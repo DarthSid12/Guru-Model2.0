@@ -882,6 +882,12 @@ def main():
             resume_epoch = ck["epoch"]
             resume_stage = ck["stage_idx"]
             resume_ep_in_stage = ck["ep_in_stage"] + 1
+            # The checkpoint is saved before an early-stopping break. A kill
+            # between that save and the next stage must still honour the break.
+            # Skip this stage's remaining epochs, then snapshot/advance through
+            # the normal loop (or finalize if this was the final stage).
+            if ck["patience_counter"] >= args.patience:
+                resume_ep_in_stage = stages[resume_stage - 1]["epochs"]
             best_val, best_epoch = ck["best_val"], ck["best_epoch"]
             patience_counter = ck["patience_counter"]
             history = ck.get("history", [])

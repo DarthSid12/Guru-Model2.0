@@ -1,0 +1,39 @@
+{
+  "job_id": "55556897",
+  "cluster": "SDSC",
+  "root": "/expanse/lustre/projects/sdp159/sagrawal5/kanwisher-setA-resnet18-20261106",
+  "submitted_utc": "2026-11-06T10:10:22.529108+00:00",
+  "spec_sha256": "29927ffc3c84e92f098ff7787e7cc7225c9a29a8e9e6db6726e1356e6c7ab84a",
+  "submit_command": [
+    "sbatch",
+    "--hold",
+    "--parsable",
+    "--job-name=kanw-setA-r18-sdsc-20261106",
+    "--output=/expanse/lustre/projects/sdp159/sagrawal5/kanwisher-setA-resnet18-20261106/logs/run-%j.log",
+    "/expanse/lustre/projects/sdp159/sagrawal5/kanwisher-setA-resnet18-20261106/job-v2.sbatch"
+  ],
+  "models": [
+    {
+      "model": "resnet18_lp_e124_s45",
+      "variant": "lp",
+      "run_dir": "/expanse/lustre/projects/sdp159/sagrawal5/kanwisher-setA-resnet18-20261106/models/resnet18_lp_e124_s45",
+      "checkpoint_sha256": "874c52d7264c43ef587d24e0be16783404efd428bad3aba0ee6d361b8e322a72",
+      "epoch": 124,
+      "training_seed": 45
+    },
+    {
+      "model": "resnet18_cnn_e124_s45",
+      "variant": "cnn",
+      "run_dir": "/expanse/lustre/projects/sdp159/sagrawal5/kanwisher-setA-resnet18-20261106/models/resnet18_cnn_e124_s45",
+      "checkpoint_sha256": "aee175bcd2f972eeab14e938d28377aed9ac1a4a1643b5a7579d10e41a480f6a",
+      "epoch": 124,
+      "training_seed": 45
+    }
+  ],
+  "maximum_gpu_hours": 0.5,
+  "expected_rows": 200,
+  "status": "REGISTERED_HELD",
+  "job_script_sha256": "46514188b05ccdb360f3f6a9093dae33d9091203f9bcb5c33658f98e4d5eedf3",
+  "submit_script_sha256": "57891d2eec16e2c1a6bff5860dd62226799eec5fae4324cd820d7500678c37e0",
+  "scheduler_recovery": "Original unsubmitted wrapper used --gres; SDSC requires --gpus=1. Scientific specification preserved unchanged."
+}

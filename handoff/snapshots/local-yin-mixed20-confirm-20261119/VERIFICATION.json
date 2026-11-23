@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "completed_utc": "2026-11-20T02:12:46.397515+00:00",
+  "spec_sha256": "7394e448d98936fde2e8e3126b8b0812bbe3b5d857af2634cc58bfbe0e6f19dd",
+  "records": 3200,
+  "trials": 38400,
+  "plans": 100,
+  "seeds_per_cell": 50,
+  "twenty_study_items_per_category_verified": true,
+  "twelve_within_category_test_pairs_verified": true,
+  "noise_transfer_unchanged": true,
+  "all_counts_match_previous": true,
+  "records_sha256": "ea42d7e3d367317ddd7bb0725972eea029cb7ece525d194ee48eb6844c994f33",
+  "trials_sha256": "14937a55a1d988831cbd96d990dcdd12474cb24fd58ef137bbaee1ba83ff6327"
+}

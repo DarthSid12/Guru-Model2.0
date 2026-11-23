@@ -1,0 +1,8 @@
+{
+  "registration_complete": true,
+  "job_id": "55695122",
+  "spec_sha256": "13c5d561a61c18122337fcb519bfb06cd9e1a29f86378b341052ba20e600d1da",
+  "created_utc": "2026-11-12T05:57:16.565086+00:00",
+  "maximum_cpu_core_hours": 1,
+  "scope": "Authorized finer20point alpha exploration with unchanged noise, frozen LP/CNN codes and new simulation-seed validation; no retraining"
+}

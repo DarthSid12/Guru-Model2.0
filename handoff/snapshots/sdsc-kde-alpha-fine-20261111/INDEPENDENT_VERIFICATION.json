@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "verified_utc": "2026-11-12T05:59:51.805530+00:00",
+  "job_id": "55695122",
+  "rows": 33600,
+  "cells": 672,
+  "seeds_per_cell": 50,
+  "legacy_control_rows_replayed": 800,
+  "parent_rows_and_masks_replayed": 4800,
+  "development_only_selection_recomputed": true,
+  "validation_paired_effects_recomputed": true,
+  "source_external_hashes_and_distance_references_verified": true,
+  "all_moments_recomputed": true,
+  "spec_sha256": "13c5d561a61c18122337fcb519bfb06cd9e1a29f86378b341052ba20e600d1da",
+  "csv_sha256": "1ef9449ada2690db4c7dd329a364106171061d382e7a3ad14e21a963e00ec1cf"
+}

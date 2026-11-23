@@ -1,0 +1,14 @@
+{
+  "registration_complete": true,
+  "execution_id": "local-yin-two-sigma-tables-20261116",
+  "spec_sha256": "078a242c77204ab2ad3f5b5e1b14fdb488e9b50484d2d8cc0674717f6601f0f9",
+  "created_utc": "2026-11-17T05:58:59.771131+00:00",
+  "maximum_walltime_seconds": 1800,
+  "parallel_model_workers": 2,
+  "threads_per_worker": 1,
+  "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+  "python_executable": "/tmp/guru-alpha-zero-py312/bin/python",
+  "torch_version": "2.5.1",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "scope": "Two requested anchored tablesets:same newer checkpoints/data,seeds/calibration method;fixedsigma2versusadjustedsigma;no training/default change"
+}

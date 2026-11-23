@@ -1,0 +1,5 @@
+{
+  "reason": "Original simulation completed and saved all raw rows; reporting failed on an unescaped percent sign. Rebuilt report from unchanged raw results.",
+  "source_runner_sha256": "b46ab1b79b78f71b28864d5c0689fb8238065b552ff81bd683bfebe35a6cc037",
+  "report_runner_sha256": "6e7d9c7c36a8361f70a6438baaa6c26de11828fd186cbd6a86a0d190f1ceebf3"
+}

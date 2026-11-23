@@ -1,0 +1,100 @@
+{
+  "criterion": "Human visual review confirms a manufactured stuffed teddy-bear toy, clearly visible, without a real animal; consistent with the user allowing actual objects including stuffed toys",
+  "review_sheet": "../../output/wordbank-object-curation-20261106/toy-review/01.jpg",
+  "images": [
+    {
+      "image_id": "009390276fbe0c61",
+      "class_name": "teddybear",
+      "review_index": 5,
+      "png_sha256": "c38eae3172cf4fde565e585677f06aba49f4e71b9861ff67be373df4b5d3152d",
+      "animal_labels": [
+        {
+          "label": "/m/01dxs",
+          "name": "Brown bear"
+        },
+        {
+          "label": "/m/01dws",
+          "name": "Bear"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    },
+    {
+      "image_id": "01bc35d2688c51f6",
+      "class_name": "teddybear",
+      "review_index": 8,
+      "png_sha256": "c5285c559badadb80ef87b1ccfda19bd117a93581376f87b6952d857ac48443d",
+      "animal_labels": [
+        {
+          "label": "/m/0jbk",
+          "name": "Animal"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    },
+    {
+      "image_id": "01e43cf225118f4d",
+      "class_name": "teddybear",
+      "review_index": 10,
+      "png_sha256": "e7b8213953e4a296c7d223c6170416026dddef66233abbc5245450f24e0558e0",
+      "animal_labels": [
+        {
+          "label": "/m/01dws",
+          "name": "Bear"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    },
+    {
+      "image_id": "01fbaa046c685d41",
+      "class_name": "teddybear",
+      "review_index": 11,
+      "png_sha256": "867a74d271f74a1cd6f4e551fb7c2ad1ac98b2900612a4bba26f83fc65eff4cb",
+      "animal_labels": [
+        {
+          "label": "/m/01dws",
+          "name": "Bear"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    },
+    {
+      "image_id": "020d98abdef235fc",
+      "class_name": "teddybear",
+      "review_index": 13,
+      "png_sha256": "1da992e796f0c337a110116598a842c210280aeb4440ee56b54f27dffa945adc",
+      "animal_labels": [
+        {
+          "label": "/m/04rky",
+          "name": "Mammal"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    },
+    {
+      "image_id": "04ab57deeaa84383",
+      "class_name": "teddybear",
+      "review_index": 21,
+      "png_sha256": "d32ca09d45ec507091994d12623d6b87eaffb85f8a1e690af1315a3423808c94",
+      "animal_labels": [
+        {
+          "label": "/m/01dws",
+          "name": "Bear"
+        },
+        {
+          "label": "/m/0jbk",
+          "name": "Animal"
+        },
+        {
+          "label": "/m/01lrl",
+          "name": "Carnivore"
+        },
+        {
+          "label": "/m/0bt9lr",
+          "name": "Dog"
+        }
+      ],
+      "decision": "physical stuffed toy, not a real animal"
+    }
+  ]
+}

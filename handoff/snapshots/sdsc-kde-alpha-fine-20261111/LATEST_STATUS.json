@@ -1,0 +1,50 @@
+{
+  "status": "COMPLETED_DOWNLOADED_INDEPENDENTLY_VERIFIED",
+  "checked_utc": "2026-11-12T05:59:51.805530+00:00",
+  "remote_root": "/expanse/lustre/projects/sdp159/sagrawal5/yin-kde-alpha-fine-20261111",
+  "sdsc_master": "/tmp/guru-sdsc-yin-nogen-20261111-mac.sock",
+  "alpha_grid_points": 20,
+  "development_seeds": "101-150",
+  "validation_seeds": "151-200",
+  "source_compilation": "passed",
+  "job_id": "55695122",
+  "spec_sha256": "13c5d561a61c18122337fcb519bfb06cd9e1a29f86378b341052ba20e600d1da",
+  "independent_verification": {
+    "passed": true,
+    "verified_utc": "2026-11-12T05:59:51.805530+00:00",
+    "job_id": "55695122",
+    "rows": 33600,
+    "cells": 672,
+    "seeds_per_cell": 50,
+    "legacy_control_rows_replayed": 800,
+    "parent_rows_and_masks_replayed": 4800,
+    "development_only_selection_recomputed": true,
+    "validation_paired_effects_recomputed": true,
+    "source_external_hashes_and_distance_references_verified": true,
+    "all_moments_recomputed": true,
+    "spec_sha256": "13c5d561a61c18122337fcb519bfb06cd9e1a29f86378b341052ba20e600d1da",
+    "csv_sha256": "1ef9449ada2690db4c7dd329a364106171061d382e7a3ad14e21a963e00ec1cf"
+  },
+  "accounting_state": "COMPLETED",
+  "accounting_exit_code": "0:0",
+  "elapsed": "00:01:13",
+  "results_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/sdsc-kde-alpha-fine-20261111/RESULTS.md",
+  "outcome": {
+    "selected_alpha": {
+      "lp": 0.4,
+      "cnn": 0.15
+    },
+    "validation_house_UU_errors": {
+      "lp": {
+        "sigma2": 5.36,
+        "selected": 5.38
+      },
+      "cnn": {
+        "sigma2": 5.6,
+        "selected": 5.42
+      }
+    },
+    "validation_any_alpha_UU_better_than_II": false,
+    "recommendation": "Preserve sigma2 as registered baseline; no established optimal alpha or clear reproducible house gain"
+  }
+}

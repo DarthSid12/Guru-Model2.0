@@ -1,0 +1,14 @@
+{
+  "status": "COMPLETED_VERIFIED",
+  "passed": true,
+  "completed_utc": "2026-11-20T04:34:57.326662+00:00",
+  "spec_sha256": "012013b49240e8a3c407fbfa79e52f27ffe6166b2457478e91acb219290097ee",
+  "records": 1200,
+  "trials": 14400,
+  "original_control_category_masks": 400,
+  "pooled_scores_independently_verified": 9600,
+  "max_score_difference": 0.0,
+  "all_source_hashes_verified": true,
+  "records_sha256": "42a097ecb31ecf062edf7c47c4a9bc0bdec5e38371252ae7c67e8a6011903e8d",
+  "trials_sha256": "f0a18ca84ce9f81c38a47998681bca3c478bca5f5f9fd2751ee7c6d09df6f62a"
+}

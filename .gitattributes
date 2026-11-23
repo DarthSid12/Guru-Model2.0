@@ -1,0 +1,2 @@
+# Historical evidence stays byte-identical, including CSV CRLF and old whitespace.
+handoff/snapshots/** -text whitespace=-trailing-space

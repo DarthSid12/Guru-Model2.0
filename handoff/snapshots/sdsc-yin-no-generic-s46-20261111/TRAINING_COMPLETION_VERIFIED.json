@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "verified_utc": "2026-11-12T02:40:09.921968+00:00",
+  "models": {
+    "lp": {
+      "state": "COMPLETED",
+      "epochs": 124,
+      "training_seed": 46,
+      "checkpoint_sha256": "cf516526e48eed6b6769fef3faf85b94cf3192527b29c38a988d36a3825a05ea",
+      "remote_checkpoint_hash_verified": true,
+      "summary_sha256": "7b2f3505748be0b4b9d5785dc297049601a1a8dda82309d155c9729a0817412c",
+      "epoch_history_verified_1_to_124": true,
+      "results": {
+        "epochs_run": 124,
+        "best_epoch": 124,
+        "best_valid_acc": 0.6693029835390947,
+        "test_acc_at_best_epoch": 0.19737011316872427,
+        "final_train_acc": 0.7647734375,
+        "final_valid_acc": 0.6693029835390947,
+        "final_test_acc": 0.19737011316872427,
+        "valid_acc_by_category": {
+          "faces_vgg2k": 0.7057698567708334,
+          "objects_wordbank64": 0.5228125,
+          "houses_synthetic128": 0.9921875
+        },
+        "test_acc_by_category": {
+          "faces_vgg2k": 0.15181477864583334,
+          "objects_wordbank64": 0.369375,
+          "houses_synthetic128": 0.34375
+        },
+        "wall_time_sec": 29408.6,
+        "sec_per_epoch": 237.2
+      }
+    },
+    "cnn": {
+      "state": "COMPLETED",
+      "epochs": 124,
+      "training_seed": 46,
+      "checkpoint_sha256": "e39d54ad778c50df1c0a4820836762916c73f2bac702f13c3ef50321f50b90ad",
+      "remote_checkpoint_hash_verified": true,
+      "summary_sha256": "dabc1ad21086d5c2efdf3ffad77c27b80f457b60d5a5b281f7dce196bac9d5e6",
+      "epoch_history_verified_1_to_124": true,
+      "results": {
+        "epochs_run": 124,
+        "best_epoch": 124,
+        "best_valid_acc": 0.8289930555555556,
+        "test_acc_at_best_epoch": 0.07796424897119342,
+        "final_train_acc": 0.9265859375,
+        "final_valid_acc": 0.8289930555555556,
+        "final_test_acc": 0.07796424897119342,
+        "valid_acc_by_category": {
+          "faces_vgg2k": 0.8819986979166666,
+          "objects_wordbank64": 0.6221875,
+          "houses_synthetic128": 0.9921875
+        },
+        "test_acc_by_category": {
+          "faces_vgg2k": 0.006998697916666667,
+          "objects_wordbank64": 0.351875,
+          "houses_synthetic128": 0.0078125
+        },
+        "wall_time_sec": 27945.3,
+        "sec_per_epoch": 225.4
+      }
+    }
+  },
+  "classes": 2240,
+  "generic_house_images": 0,
+  "registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05"
+}

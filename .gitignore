@@ -10,3 +10,10 @@ runs/
 fixation_data/
 fixation_pca/
 logs/
+
+# Local reproduction environments and untracked large artifacts
+.venv*/
+*.npy
+*.npz
+*.pt
+*.tar

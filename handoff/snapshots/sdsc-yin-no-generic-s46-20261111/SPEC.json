@@ -1,0 +1,256 @@
+{
+  "schema": 4,
+  "remote_root": "/expanse/lustre/projects/sdp159/sagrawal5/yin-no-generic-s46-20261111",
+  "models": [
+    {
+      "model": "resnet18_lp_nogeneric_e124_s46",
+      "label": "Delta no-generic ResNet18 LP",
+      "variant": "lp",
+      "backbone": "resnet18",
+      "epoch": 124,
+      "training_seed": 46,
+      "run_dir": "models/resnet18_lp_nogeneric_e124_s46",
+      "sha256": "cf516526e48eed6b6769fef3faf85b94cf3192527b29c38a988d36a3825a05ea",
+      "training_registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+      "source_run": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_lp_objects64clean_h128_nogeneric_s46",
+      "training_output_classes": 2240,
+      "generic_house_training_images": 0
+    },
+    {
+      "model": "resnet18_cnn_nogeneric_e124_s46",
+      "label": "Delta no-generic ResNet18 CNN",
+      "variant": "cnn",
+      "backbone": "resnet18",
+      "epoch": 124,
+      "training_seed": 46,
+      "run_dir": "models/resnet18_cnn_nogeneric_e124_s46",
+      "sha256": "e39d54ad778c50df1c0a4820836762916c73f2bac702f13c3ef50321f50b90ad",
+      "training_registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+      "source_run": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46",
+      "training_output_classes": 2240,
+      "generic_house_training_images": 0
+    }
+  ],
+  "source_commit": "2c362b4f56399edf737af22d9f39413e6334862c",
+  "external_files": {},
+  "data_roots": {
+    "faces_cfdWM64": "/expanse/lustre/projects/sdp159/sagrawal5/yin-no-generic-s46-20261111/eval-data",
+    "houses_dal64": "/expanse/lustre/projects/sdp159/sagrawal5/yin-no-generic-s46-20261111/eval-data",
+    "objects_wordbank64": "/expanse/lustre/projects/sdp159/sagrawal5/yin-no-generic-s46-20261111/eval-data"
+  },
+  "pool_sizes": {
+    "faces": 64,
+    "houses": 64,
+    "objects": 64
+  },
+  "seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150
+  ],
+  "protocols": [
+    "single_uu",
+    "study_only_fitted",
+    "two_cross"
+  ],
+  "conditions": [
+    "UU",
+    "UI",
+    "II",
+    "IU"
+  ],
+  "designs": {
+    "faces_only": {
+      "faces": {
+        "pool": 64,
+        "study": 40,
+        "trials": 24
+      }
+    },
+    "houses_only": {
+      "houses": {
+        "pool": 64,
+        "study": 40,
+        "trials": 24
+      }
+    },
+    "objects_only": {
+      "objects": {
+        "pool": 64,
+        "study": 40,
+        "trials": 24
+      }
+    },
+    "faces_houses": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "houses": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    },
+    "faces_objects": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "objects": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    },
+    "houses_objects": {
+      "houses": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "objects": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    },
+    "faces_houses_objects": {
+      "faces": {
+        "pool": 22,
+        "study": 14,
+        "trials": 8
+      },
+      "houses": {
+        "pool": 21,
+        "study": 13,
+        "trials": 8
+      },
+      "objects": {
+        "pool": 21,
+        "study": 13,
+        "trials": 8
+      }
+    }
+  },
+  "study_fixations": 10,
+  "test_fixations": 32,
+  "sigma": 2,
+  "expected_rows": 14400,
+  "checkpoint_selection": "Both final epoch124 checkpoint_last files; both best epochs also124",
+  "parent_spec_sha256": "6ad58e5619a697bcfc6a617c78c37190b2d72f37d8506b1c296416818a0483ae",
+  "house_pool": "64 distinct visually screened DalHouses residential identities, independent of Houses535/Places training sources; documented cross-training duplicate search",
+  "object_bank_note": "Prior fixed evaluation bank retained, including16 categories removed from revised training diet",
+  "noise_calibration": "Fresh per-model face UU/II fits by face-containing design; face40 transfer to designs without faces",
+  "training_generic_house_images": 0,
+  "training_output_classes": 2240,
+  "files": {
+    "OBJECT_CATEGORY_OVERLAP.json": "9d24ecb0adb73f90d5b042249e4d96a84af0da47559e818ec7bb31a1b081101b",
+    "pack_houses.py": "16b07c5cbd2ca16698f55f0d1cd31546efeedea32901115147714e28795d9efb",
+    "engine.py": "15c34b37900230122c1b99f43dc7aa15dbdbd4bf151567192e39023319847b11",
+    "PARENT_PACKED_HOUSES.json": "2c97e810c77002716152e04f536cb170613ab0f79111e3d620f94703a998ce13",
+    "add_human_reference.py": "62f747a803d4093dfb4c64c3796129e22686bd545c79b54282c923ba5d3b210c",
+    "HUMAN_SOURCE.json": "c694551c169fda564ec2f5e55481921783276c32692775d013713b42d5de858a",
+    "TRAINING_REGISTRATION.json": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+    "common.py": "79459fbcffa78523f094bd69cee8b3c17a16add993b584bf9c870f979d3940bc",
+    "LOCAL_CHECKS.json": "c7dedab765680d4f4b2bb36f54fa7bf0e6b238f648514e87b606e747c0bf4579",
+    "prepare.py": "59dc4f4fb8cb53a1afe1797055d062ee2b1a63ed40dd8041973b627fad21c30a",
+    "cache.py": "1598a69b500239016ad7f281d4b83da3e4b94d8e043fbae0e5defb82721e9d1b",
+    "job.sbatch": "86715fbf06c2d73b1e3698536596cc5127b574d900d69da4dc111819c120fd0a",
+    "TRAINING_COMPLETION_VERIFIED.json": "3ded3daa1d77a35f7247687035b81ab429fa85862902f6d6af5f999b1064d3ae",
+    "STIMULUS_PLANS.json": "be5eb6401d80b4eb3efeae4faa3424a740555adcf6a25b996b7ef6c1431e836f",
+    "HUMAN_SOURCE_METADATA.json": "71a8deb62ea789e5714ab1db101a118908f63fceb16702d47d310a2ca2999b03",
+    "submit.py": "4b21bd8e81e181637b568eb29cabe24c1a80a11184dfb4cb5cc3ad94ab0c18d0",
+    "design.py": "fc07e579c746acf9a04fd973358727f346a5ba5f842d9b7d402a2838abeacf2c",
+    "run.py": "497a1753edf27bf5a003811d1cbec248af6c4851ffa2aff11bcdb3e615da6456",
+    "README.md": "5bdd82958f466e2cb9e9c223cb37375cb136d4bb1eab1b29fdf83f4484309e4b",
+    "PARENT_SPEC.json": "6ad58e5619a697bcfc6a617c78c37190b2d72f37d8506b1c296416818a0483ae",
+    "test_science.py": "ea7690df3620ef68bba66d674c58f31d22b3c80de12930a6a4564f0ee1d2121d",
+    "models/resnet18_cnn_nogeneric_e124_s46/config.json": "620eeb6a8e7ac92f92c7ada1f14fd5a7937ed0091680bdd052cf69d00da8bd1b",
+    "models/resnet18_cnn_nogeneric_e124_s46/label_map.json": "4bf4de12368ba0a325d14238a361e4f9ee1f0da7162e7dc1832d01b19c982396",
+    "models/resnet18_cnn_nogeneric_e124_s46/training_recipe.json": "0966e0393b69050788250a53d4de02a48f2d581e26c019b9828cc1e92d45e756",
+    "models/resnet18_cnn_nogeneric_e124_s46/checkpoint_last.pth": "e39d54ad778c50df1c0a4820836762916c73f2bac702f13c3ef50321f50b90ad",
+    "models/resnet18_cnn_nogeneric_e124_s46/run_provenance.json": "703bae292379dc59798f3e19371e54702a2c514f5285e1ead5621c4466b2df1f",
+    "models/resnet18_cnn_nogeneric_e124_s46/training_history_20261111_071727.csv": "47c2d2f0290411c84745f260d7ac5197a4d4453571380188265c0b7c77cd88db",
+    "models/resnet18_cnn_nogeneric_e124_s46/summary.json": "dabc1ad21086d5c2efdf3ffad77c27b80f457b60d5a5b281f7dce196bac9d5e6",
+    "models/resnet18_cnn_nogeneric_e124_s46/COMPLETE": "16c10fd558c64595d75533e84e11ac2d05623a575cc54a47939677835f58df25",
+    "models/resnet18_lp_nogeneric_e124_s46/checkpoint_last.pth": "cf516526e48eed6b6769fef3faf85b94cf3192527b29c38a988d36a3825a05ea",
+    "models/resnet18_lp_nogeneric_e124_s46/training_recipe.json": "25cc663df62bebad8831b23962b5c89532830d930924b4ed8c09eec69f905751",
+    "models/resnet18_lp_nogeneric_e124_s46/label_map.json": "4bf4de12368ba0a325d14238a361e4f9ee1f0da7162e7dc1832d01b19c982396",
+    "models/resnet18_lp_nogeneric_e124_s46/training_history_20261111_074128.csv": "215935f543706f0c8e2043ab0b3ca8ade87e2d2094c7b95561d44366afc13c3d",
+    "models/resnet18_lp_nogeneric_e124_s46/run_provenance.json": "a5588cef94041bed42e8c38c26f91aea521e420f4a00b125f2beae4f65ab0b80",
+    "models/resnet18_lp_nogeneric_e124_s46/summary.json": "7b2f3505748be0b4b9d5785dc297049601a1a8dda82309d155c9729a0817412c",
+    "models/resnet18_lp_nogeneric_e124_s46/config.json": "6b2687343e3ee67b98cf031047ceffbcb6f35423bde8add47f806a7f0c1a0393",
+    "models/resnet18_lp_nogeneric_e124_s46/COMPLETE": "2b2a04c7dc603f92022cbcbcaf319bf2d8f00761aa451b8efacbc1418769b969",
+    "source/yin_tests/simulate_yin1969_bothnoise.py": "78e534ad15027538cbc90f543e4140244426b1e71a526d19f259183bf49b15f9",
+    "source/training/run_experiments.py": "f8a28cf5589c2f01d731c1796323339fc5a350f14ff9273d3b493fbed48b7e39",
+    "source/training/utils.py": "57968b3c9df2aa088d4a80c1ef557624219bc371e91f87adbaec4f460da60313",
+    "source/training/cylconv.py": "bee5a167764704e1389ad8660ee3a8b6b8fbb8b2067686d217e7a1d6fa0f4b2c",
+    "source/training/salience_trans.py": "f6b51eaefa06a2dbdb0c2e747083989dad34fd0ab6cc87fd5619a60b5b6b4169",
+    "source/training/datasets.py": "dfbad20e444ef5ef2cc117656d33b33452654bca640eb039beb0f77025f9121f",
+    "source/training/train.py": "d559c845399bd5edbf77cb4863d529475b01c290724a45d45b467b04999f9d0e",
+    "source/training/paths.py": "22dfa86a9824481c00ddf30a6fb8a6bdafaebdd21506d5850b18fa3a78792683",
+    "source/training/evaluate_vgg_training_checkpoints.py": "35d581d11cffaa8ba72fbd2e6c868d60960079e884cf5d82a20ff1cb5b78ec44",
+    "source/training/trans.py": "987190db7b1e2f2961d9f521d7c4e7fbfba680b18bc7da528c73178e3ea86681",
+    "source/training/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source/training/model.py": "170a69a9b21d78bab57d7418f03fa2f47f7cc633505f40ad58e395c4ff90b21e",
+    "eval-data/faces_cfdWM64/valid/images.npy": "2ce81d37aced93740fb974a388dbffa9d096d4aab43ef447408095b0e499ccf6",
+    "eval-data/faces_cfdWM64/valid/meta.json": "8c7dc554bfca2b1128442203e23d1493e97eb4a0497870bc14dad896e4dd068b",
+    "eval-data/faces_cfdWM64/valid/coords.npy": "76cabce9a08d3028177b161d8a484cd1a17e115928b7594c396a4e157088e292",
+    "eval-data/houses_dal64/valid/images.npy": "0e70351c3aeb5b944fe8eadda15013a2877efea12a9cc4fb357a4f2750453ef6",
+    "eval-data/houses_dal64/valid/coords.npy": "2e4e0586dd8f52fe2707399ef2858640e9d20c352cffb5850cec4f4e1797f049",
+    "eval-data/houses_dal64/valid/meta.json": "3217905992dd62c39c9a777bf5d5a6f7717bf2730a17515d5b4dee40eab83f3b",
+    "eval-data/objects_wordbank64/valid/coords.npy": "2313871e98c8f0162f57d9a01c3482b0273479ca5d9b4abdfe5abeb948ffec29",
+    "eval-data/objects_wordbank64/valid/meta.json": "bd6fe019c0f10806002e595b5cccb5364d3e1aba424127ebbf0fc470f41e2c54",
+    "eval-data/objects_wordbank64/valid/images.npy": "984d4da48d369ee22d977e36ac758e26cd1507511376f1cce1cefe9bbacf13d7"
+  }
+}

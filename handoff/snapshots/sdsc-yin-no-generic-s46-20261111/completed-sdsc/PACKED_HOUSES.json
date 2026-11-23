@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "spec_sha256": "73fc1ccecc0600eada6568d5a6b6c1a33b4d959aa66f395a306ac8d95514b799",
+  "files": {
+    "eval-data/houses_dal64/valid/images.npy": "0e70351c3aeb5b944fe8eadda15013a2877efea12a9cc4fb357a4f2750453ef6",
+    "eval-data/houses_dal64/valid/coords.npy": "2e4e0586dd8f52fe2707399ef2858640e9d20c352cffb5850cec4f4e1797f049",
+    "eval-data/houses_dal64/valid/meta.json": "3217905992dd62c39c9a777bf5d5a6f7717bf2730a17515d5b4dee40eab83f3b"
+  },
+  "seed": 20261103,
+  "torch": "2.5.1+cu121",
+  "method": "Frozen training SaliencePipeline, valid orientation,32 Gabor-salience coordinates,edge_margin=.15,batch16",
+  "house_source": "DalHouses colour release; independent evaluation identities",
+  "parent_spec_sha256": "6ad58e5619a697bcfc6a617c78c37190b2d72f37d8506b1c296416818a0483ae",
+  "reused_parent_receipt_sha256": "2c97e810c77002716152e04f536cb170613ab0f79111e3d620f94703a998ce13"
+}

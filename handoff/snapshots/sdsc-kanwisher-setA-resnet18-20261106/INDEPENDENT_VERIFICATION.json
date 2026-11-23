@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "checked_utc": "2026-11-06T18:11:29.861080+00:00",
+  "job_id": "55556897",
+  "archive_sha256": "15652ff06faa520f24c497b4b80cdf181be0e45eeb3a55b756ef44115464a886",
+  "spec_sha256": "29927ffc3c84e92f098ff7787e7cc7225c9a29a8e9e6db6726e1356e6c7ab84a",
+  "frozen_files_verified": 290,
+  "all_200_source_hashes_and_packed_pixels_verified": true,
+  "checkpoint_hashes_verified_remotely_at_export": {
+    "lp": "874c52d7264c43ef587d24e0be16783404efd428bad3aba0ee6d361b8e322a72",
+    "cnn": "aee175bcd2f972eeab14e938d28377aed9ac1a4a1643b5a7579d10e41a480f6a"
+  },
+  "result_rows": 200,
+  "all_cells_n50": true,
+  "trial_counts": 156000,
+  "means_sample_sds_sems_and_paired_contrasts_recomputed": true,
+  "cells": [
+    {
+      "variant": "lp",
+      "condition": "Upright",
+      "noise": 0.31,
+      "n": 50,
+      "accuracy_mean_pct": 87.36367948717948,
+      "accuracy_sd_pct": 0.39423094174501544,
+      "error_mean_pct": 12.636320512820513,
+      "error_sd_pct": 0.3942309417450155,
+      "sem_pct": 0.05575267445229184
+    },
+    {
+      "variant": "lp",
+      "condition": "Inverted",
+      "noise": 0.31,
+      "n": 50,
+      "accuracy_mean_pct": 76.58642307692308,
+      "accuracy_sd_pct": 0.9394865401073021,
+      "error_mean_pct": 23.413576923076924,
+      "error_sd_pct": 0.9394865401073019,
+      "sem_pct": 0.13286346066867213
+    },
+    {
+      "variant": "cnn",
+      "condition": "Upright",
+      "noise": 0.37,
+      "n": 50,
+      "accuracy_mean_pct": 89.09615384615385,
+      "accuracy_sd_pct": 0.7426333981669865,
+      "error_mean_pct": 10.903846153846153,
+      "error_sd_pct": 0.7426333981669861,
+      "sem_pct": 0.1050242223558971
+    },
+    {
+      "variant": "cnn",
+      "condition": "Inverted",
+      "noise": 0.37,
+      "n": 50,
+      "accuracy_mean_pct": 60.85224358974359,
+      "accuracy_sd_pct": 1.057237436480136,
+      "error_mean_pct": 39.14775641025641,
+      "error_sd_pct": 1.057237436480136,
+      "sem_pct": 0.14951595213187718
+    }
+  ],
+  "paired_inversion_effects": [
+    {
+      "variant": "lp",
+      "upright_minus_inverted_accuracy_pp": 10.77725641025641,
+      "sd_pp": 0.929626076704047
+    },
+    {
+      "variant": "cnn",
+      "upright_minus_inverted_accuracy_pp": 28.243910256410256,
+      "sd_pp": 1.2249092002430413
+    }
+  ],
+  "gpu": "Tesla V100-SXM2-32GB",
+  "torch": "2.5.1+cu121",
+  "numpy": "2.2.6"
+}

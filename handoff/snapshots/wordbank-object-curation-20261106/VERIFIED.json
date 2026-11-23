@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "active_images": 44800,
+  "classes": 64,
+  "counts_per_class": {
+    "train": 500,
+    "valid": 100,
+    "test": 100
+  },
+  "new_photos": 4045,
+  "parent_photos_replaced": 2445,
+  "parent_photos_retained": 42355,
+  "reserve_photos": 1600,
+  "reserve_classes": 16,
+  "unresolved_animal_annotation_flags": 0,
+  "animal_annotation_flags_visually_resolved_as_stuffed_toys": 6,
+  "animal_label_screen_size": 110,
+  "word_classes_and_comprehension_order_unchanged": true,
+  "orientation_filter": false,
+  "inherited_splits_unchanged": true,
+  "source_label_membership_verified": true,
+  "all_new_png_and_pixel_hashes_verified": true,
+  "exact_source_and_pixel_duplicates": 0,
+  "parent_manifest_sha256": "00e505b56ebf4fa4097548fe55affa472aeaab0a4e677e9ec06e26d721c64b98",
+  "photo_manifest_sha256": "01a1c077b6dea1f532b692239db3f2607a36c7008860468b4b534df80aaaa88b",
+  "reserve_manifest_sha256": "ebcb60dff286f4f7625c97857cfed72804e21407809446b46e29136d53ae4466",
+  "exhaustive_manual_visual_review": false,
+  "training_or_yin_run": false
+}

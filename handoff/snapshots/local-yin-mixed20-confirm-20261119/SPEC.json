@@ -1,0 +1,143 @@
+{
+  "parent": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-yin-two-sigma-tables-20261116",
+  "parent_spec_sha256": "078a242c77204ab2ad3f5b5e1b14fdb488e9b50484d2d8cc0674717f6601f0f9",
+  "runner_sha256": "f307dddf24f7e7cfa3f4c6d8650789fb8e89918eaba3e921b66a3cf926689bdc",
+  "seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150
+  ],
+  "designs": {
+    "faces_houses": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "houses": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    },
+    "faces_objects": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "objects": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    }
+  },
+  "fits": {
+    "lp": {
+      "fixed_sigma": {
+        "sigma": 2.0,
+        "p1": 0.373,
+        "p2": 0.369
+      },
+      "adjusted_sigma": {
+        "sigma": 4.509564323062932,
+        "p1": 0.377,
+        "p2": 0.378
+      }
+    },
+    "cnn": {
+      "fixed_sigma": {
+        "sigma": 2.0,
+        "p1": 0.364,
+        "p2": 0.354
+      },
+      "adjusted_sigma": {
+        "sigma": 6.753987849071428,
+        "p1": 0.366,
+        "p2": 0.365
+      }
+    }
+  },
+  "models": [
+    {
+      "model": "resnet18_lp_nogeneric_e124_s46",
+      "label": "Delta no-generic ResNet18 LP",
+      "variant": "lp",
+      "backbone": "resnet18",
+      "epoch": 124,
+      "training_seed": 46,
+      "run_dir": "models/resnet18_lp_nogeneric_e124_s46",
+      "sha256": "cf516526e48eed6b6769fef3faf85b94cf3192527b29c38a988d36a3825a05ea",
+      "training_registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+      "source_run": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_lp_objects64clean_h128_nogeneric_s46",
+      "training_output_classes": 2240,
+      "generic_house_training_images": 0
+    },
+    {
+      "model": "resnet18_cnn_nogeneric_e124_s46",
+      "label": "Delta no-generic ResNet18 CNN",
+      "variant": "cnn",
+      "backbone": "resnet18",
+      "epoch": 124,
+      "training_seed": 46,
+      "run_dir": "models/resnet18_cnn_nogeneric_e124_s46",
+      "sha256": "e39d54ad778c50df1c0a4820836762916c73f2bac702f13c3ef50321f50b90ad",
+      "training_registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+      "source_run": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46",
+      "training_output_classes": 2240,
+      "generic_house_training_images": 0
+    }
+  ],
+  "noise": "UU/UI: study p1,test p1; IU/II: study p2,test p1; transfer unchanged from faces_houses to faces_objects",
+  "calibration": "Reuse frozen face UU/II fits; no refitting",
+  "reporting": "Same 50 fitting/report seeds, not independent validation",
+  "created_utc": "2026-11-20T02:12:41.889306+00:00"
+}

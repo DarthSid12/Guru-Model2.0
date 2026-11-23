@@ -1,0 +1,45 @@
+{
+  "status": "COMPLETED_DOWNLOADED_INDEPENDENTLY_VERIFIED",
+  "remote_root": "/expanse/lustre/projects/sdp159/sagrawal5/yin-kde-sigma-sweep-20261111",
+  "checked_utc": "2026-11-12T05:27:28.940925+00:00",
+  "sdsc_master": "/tmp/guru-sdsc-yin-nogen-20261111-mac.sock",
+  "source_compilation": "passed",
+  "shell_syntax": "passed",
+  "prior_runs_preserved": true,
+  "job_id": "55694699",
+  "spec_sha256": "957700c77e1e1f2e6d1639ee5dac92cbd8367c08aec0628cb3056bdb50e627c8",
+  "independent_verification": {
+    "passed": true,
+    "verified_utc": "2026-11-12T05:27:28.940925+00:00",
+    "rows": 19200,
+    "cells": 384,
+    "seeds_per_cell": 50,
+    "baseline_rows_reproduced_exactly": 1600,
+    "distance_histograms_and_scales_recomputed": true,
+    "means_sample_sd_sem_recomputed": true,
+    "source_and_external_hashes_verified": true,
+    "spec_sha256": "957700c77e1e1f2e6d1639ee5dac92cbd8367c08aec0628cb3056bdb50e627c8",
+    "csv_sha256": "0d68946f600c5d40b25366e1de0290d643b6afa90f0f56db8cea409c87f2a3e0",
+    "summary_sha256": "9b9f2f4fe454396afd6d5ebe91c8fe95fefc310976e2993b6c14c78e607f56a7"
+  },
+  "accounting_state": "COMPLETED",
+  "accounting_exit_code": "0:0",
+  "elapsed": "00:00:46",
+  "results_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/sdsc-kde-sigma-sweep-20261111/RESULTS.md",
+  "diagnostic_comparisons": [
+    {
+      "variant": "lp",
+      "contrast": "House UU errors at sigma2 minus errors at half mean distance, stable readout, original face-calibrated noise",
+      "mean_improvement_errors": 0.3,
+      "paired_sd_errors": 1.1293848786315641,
+      "paired_sem_errors": 0.15971914124998499
+    },
+    {
+      "variant": "cnn",
+      "contrast": "House UU errors at sigma2 minus errors at half mean distance, stable readout, original face-calibrated noise",
+      "mean_improvement_errors": -0.02,
+      "paired_sd_errors": 0.8449127475783569,
+      "paired_sem_errors": 0.11948870666472276
+    }
+  ]
+}

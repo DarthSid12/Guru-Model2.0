@@ -1,0 +1,2410 @@
+{
+  "source": "Authors original OSF Set_A_female_faces_200_stim/upright",
+  "source_url": "https://osf.io/dbks3/",
+  "listing_sha256": "b975ccc336d1523877837918c4caf8302b5a11a8381bc45545bf585115c7a42e",
+  "identities": 40,
+  "photos_per_identity": 5,
+  "files": [
+    {
+      "identity": "setA_00",
+      "name": "000.jpg",
+      "path": "raw/faces_setA/valid/setA_00/000.jpg",
+      "osf_id": "644256aa40b2c11d39e8fe69",
+      "url": "https://osf.io/download/a3mkr/",
+      "sha256": "6706449311e17c6ab9df38e268141d5c8a0fdde0e8cdd45bb884b22858807f19",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_00",
+      "name": "001.jpg",
+      "path": "raw/faces_setA/valid/setA_00/001.jpg",
+      "osf_id": "644256ae9e8e1c1cf11e2f2a",
+      "url": "https://osf.io/download/k6s34/",
+      "sha256": "f0d2fc94a1e08efe83cabeb860657e37afc13b9d3274c5571c1df725de86c646",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_00",
+      "name": "002.jpg",
+      "path": "raw/faces_setA/valid/setA_00/002.jpg",
+      "osf_id": "644256ae40b2c11d39e8fe7f",
+      "url": "https://osf.io/download/644256ae40b2c11d39e8fe7f/",
+      "sha256": "74c43acb98897b8abd59dc4fb6274a491a517586bcc3114841fee60a360e5de9",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_00",
+      "name": "003.jpg",
+      "path": "raw/faces_setA/valid/setA_00/003.jpg",
+      "osf_id": "644256af9e8e1c1ced1e2cbd",
+      "url": "https://osf.io/download/huvq9/",
+      "sha256": "77a2ce18b1905a73938179bc89f2ebf60cb18315204526d793c8a57b7d6ff497",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_00",
+      "name": "004.jpg",
+      "path": "raw/faces_setA/valid/setA_00/004.jpg",
+      "osf_id": "644256bc9e8e1c1cea1e2c7e",
+      "url": "https://osf.io/download/644256bc9e8e1c1cea1e2c7e/",
+      "sha256": "e22418cd844ce427bdc6567e03b800b49bcf2a49e7280c0ee63e8ea9b172ec00",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_01",
+      "name": "010.jpg",
+      "path": "raw/faces_setA/valid/setA_01/010.jpg",
+      "osf_id": "644256b5c76c0722f0135da7",
+      "url": "https://osf.io/download/644256b5c76c0722f0135da7/",
+      "sha256": "5b336d7d8ceb7690a9d8419434dba9683588aa87a8e29cc08ff0eb72cb552096",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_01",
+      "name": "011.jpg",
+      "path": "raw/faces_setA/valid/setA_01/011.jpg",
+      "osf_id": "644256b518ff911cdc0484dc",
+      "url": "https://osf.io/download/kgh9y/",
+      "sha256": "909a4343288ac046d14aee587f1fc5b3320e9eaf3242d87c526524f535b1936d",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_01",
+      "name": "012.jpg",
+      "path": "raw/faces_setA/valid/setA_01/012.jpg",
+      "osf_id": "644256b39e8e1c1ced1e2cc6",
+      "url": "https://osf.io/download/644256b39e8e1c1ced1e2cc6/",
+      "sha256": "f8fb24ddb7fd05858c55be4582449574d613b48ac89eca8eeac5e01671c94ed2",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_01",
+      "name": "013.jpg",
+      "path": "raw/faces_setA/valid/setA_01/013.jpg",
+      "osf_id": "644256b6c76c0722f3135f07",
+      "url": "https://osf.io/download/644256b6c76c0722f3135f07/",
+      "sha256": "c83c8e136613cca706464c7d24676ba1cc09fab5fa7c52f6ca044c4ba823297e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_01",
+      "name": "014.jpg",
+      "path": "raw/faces_setA/valid/setA_01/014.jpg",
+      "osf_id": "644256b940b2c11d2de8fe42",
+      "url": "https://osf.io/download/644256b940b2c11d2de8fe42/",
+      "sha256": "3d2afa6e9e347ecead26b313dff5bcdaac5654585865500ef6cdc8a79b93a1d0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_02",
+      "name": "020.jpg",
+      "path": "raw/faces_setA/valid/setA_02/020.jpg",
+      "osf_id": "644256109e8e1c1cee1e2cd3",
+      "url": "https://osf.io/download/644256109e8e1c1cee1e2cd3/",
+      "sha256": "0cbedd06941a634c93a0a3668c28c79d2e4df68156ec090d23073606273b23cd",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_02",
+      "name": "021.jpg",
+      "path": "raw/faces_setA/valid/setA_02/021.jpg",
+      "osf_id": "644255f440b2c11d35e8fa8d",
+      "url": "https://osf.io/download/644255f440b2c11d35e8fa8d/",
+      "sha256": "ff47c5d54a073b62c1c66dace9f8fdb96f93caeef1851520c5c5ae35e1c3250e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_02",
+      "name": "022.jpg",
+      "path": "raw/faces_setA/valid/setA_02/022.jpg",
+      "osf_id": "644255f918ff911cd90482ec",
+      "url": "https://osf.io/download/644255f918ff911cd90482ec/",
+      "sha256": "f82c7e1923d13fbb36d3f818be0b194f860dded551f9cb5305a41384baabadc3",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_02",
+      "name": "023.jpg",
+      "path": "raw/faces_setA/valid/setA_02/023.jpg",
+      "osf_id": "6442561cc76c0722f3135d78",
+      "url": "https://osf.io/download/6442561cc76c0722f3135d78/",
+      "sha256": "d37af58b0112772080d6f9f75ec9ca90549c8987c558d6b2b62275e36b9f80d4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_02",
+      "name": "024.jpg",
+      "path": "raw/faces_setA/valid/setA_02/024.jpg",
+      "osf_id": "644255fd40b2c11d39e8fbf0",
+      "url": "https://osf.io/download/644255fd40b2c11d39e8fbf0/",
+      "sha256": "0bc5faa1cc8e423b02568710305fb4c1d0369bf9f704677ccd5a35d323dd5c5a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_03",
+      "name": "030.jpg",
+      "path": "raw/faces_setA/valid/setA_03/030.jpg",
+      "osf_id": "644255e440b2c11d39e8fba4",
+      "url": "https://osf.io/download/644255e440b2c11d39e8fba4/",
+      "sha256": "a5b4386e67e0a7b3346d1d9c81feec49a59d617f2073a452c05baa36918d1edb",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_03",
+      "name": "031.jpg",
+      "path": "raw/faces_setA/valid/setA_03/031.jpg",
+      "osf_id": "64425602c76c0722f4135e08",
+      "url": "https://osf.io/download/64425602c76c0722f4135e08/",
+      "sha256": "327e012de0a0fbf96d732040e92e6eb6bdd2aa9ae540e2f0b58a1069bee10a4e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_03",
+      "name": "032.jpg",
+      "path": "raw/faces_setA/valid/setA_03/032.jpg",
+      "osf_id": "644255e138485321fc4957f2",
+      "url": "https://osf.io/download/644255e138485321fc4957f2/",
+      "sha256": "17a991c560ceee64379f490540de4af76332b1fd2283749927e05819191d4416",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_03",
+      "name": "033.jpg",
+      "path": "raw/faces_setA/valid/setA_03/033.jpg",
+      "osf_id": "64425607c76c0722f0135cb7",
+      "url": "https://osf.io/download/64425607c76c0722f0135cb7/",
+      "sha256": "432ebda86a45efca9c50be448a950e443d779d3949d081454c55db18aeae4151",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_03",
+      "name": "034.jpg",
+      "path": "raw/faces_setA/valid/setA_03/034.jpg",
+      "osf_id": "6442560a9e8e1c1cf11e2d73",
+      "url": "https://osf.io/download/6442560a9e8e1c1cf11e2d73/",
+      "sha256": "f8d8cb074855504d2dac29871ef99a821d32ba6ae11d7f7eec52a72a72fd86ad",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_04",
+      "name": "040.jpg",
+      "path": "raw/faces_setA/valid/setA_04/040.jpg",
+      "osf_id": "644256b9c76c0722f41360d4",
+      "url": "https://osf.io/download/644256b9c76c0722f41360d4/",
+      "sha256": "a16989e00f88f59591c72df401e50aca8f144b83558fce449e25a8e64b640394",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_04",
+      "name": "041.jpg",
+      "path": "raw/faces_setA/valid/setA_04/041.jpg",
+      "osf_id": "644256bc9e8e1c1cf21e308f",
+      "url": "https://osf.io/download/644256bc9e8e1c1cf21e308f/",
+      "sha256": "7cb4eddb15e05d9ca4f7714e2503e61a3dc2ce67a536982dfcf564e7854e8f51",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_04",
+      "name": "042.jpg",
+      "path": "raw/faces_setA/valid/setA_04/042.jpg",
+      "osf_id": "6442560c9e8e1c1cf11e2d78",
+      "url": "https://osf.io/download/6442560c9e8e1c1cf11e2d78/",
+      "sha256": "72b72f96aefd226686066e767de40bc8811b94af9955a00eebd92e5c49377a10",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_04",
+      "name": "043.jpg",
+      "path": "raw/faces_setA/valid/setA_04/043.jpg",
+      "osf_id": "644256109e8e1c1cf21e2df0",
+      "url": "https://osf.io/download/644256109e8e1c1cf21e2df0/",
+      "sha256": "b90b4a1cffc42df9587a85b96e79e21e63e464897cb7330cb420a59649e5b9dd",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_04",
+      "name": "044.jpg",
+      "path": "raw/faces_setA/valid/setA_04/044.jpg",
+      "osf_id": "6442561140b2c11d38e8fb93",
+      "url": "https://osf.io/download/6442561140b2c11d38e8fb93/",
+      "sha256": "18e6ca9e509b7dd5ebc64c78012d80439cf285c4e40827d2b40caf8da1d35d6c",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_05",
+      "name": "050.jpg",
+      "path": "raw/faces_setA/valid/setA_05/050.jpg",
+      "osf_id": "6442561318ff911cdc04835c",
+      "url": "https://osf.io/download/6442561318ff911cdc04835c/",
+      "sha256": "fea7227ce95f4a94e543dac8d48be63721bc980bb35c1107859da241dc972be9",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_05",
+      "name": "051.jpg",
+      "path": "raw/faces_setA/valid/setA_05/051.jpg",
+      "osf_id": "6442561340b2c11d35e8fab8",
+      "url": "https://osf.io/download/6442561340b2c11d35e8fab8/",
+      "sha256": "260d7a23c7d061ffd2dbfcd92cda611703b55afd6719d35aea4314433bfadef9",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_05",
+      "name": "052.jpg",
+      "path": "raw/faces_setA/valid/setA_05/052.jpg",
+      "osf_id": "6442561640b2c11d38e8fbaf",
+      "url": "https://osf.io/download/6442561640b2c11d38e8fbaf/",
+      "sha256": "fbadb003f1866d8c210d698d95c6a97813fd4bfdb813bf1b3d6018a6b199d909",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_05",
+      "name": "053.jpg",
+      "path": "raw/faces_setA/valid/setA_05/053.jpg",
+      "osf_id": "64425615c76c0722f3135d6a",
+      "url": "https://osf.io/download/64425615c76c0722f3135d6a/",
+      "sha256": "e7b20a22ed56e258ce72b514f3cbdd838257475e9f5c511e1e89b7d084743540",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_05",
+      "name": "054.jpg",
+      "path": "raw/faces_setA/valid/setA_05/054.jpg",
+      "osf_id": "644255e29e8e1c1cf21e2d50",
+      "url": "https://osf.io/download/644255e29e8e1c1cf21e2d50/",
+      "sha256": "e189efaa0bd81606901477f333f51c769f61c2f8a1a3d3bf1aaf2608ed42d95c",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_06",
+      "name": "060.jpg",
+      "path": "raw/faces_setA/valid/setA_06/060.jpg",
+      "osf_id": "644256ba18ff911cd804833b",
+      "url": "https://osf.io/download/644256ba18ff911cd804833b/",
+      "sha256": "4a4e89082ed9fd2ee0fd0639ffe2cfd2db59e22db376876acc0bd66d73baeb6f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_06",
+      "name": "061.jpg",
+      "path": "raw/faces_setA/valid/setA_06/061.jpg",
+      "osf_id": "644256bdc76c0722f3135f19",
+      "url": "https://osf.io/download/644256bdc76c0722f3135f19/",
+      "sha256": "a150634ba6cdad3d180caa2b8f58677e0da727ea71ac4311a5b416781ecbca77",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_06",
+      "name": "062.jpg",
+      "path": "raw/faces_setA/valid/setA_06/062.jpg",
+      "osf_id": "644256c7c76c0722f4136127",
+      "url": "https://osf.io/download/644256c7c76c0722f4136127/",
+      "sha256": "4d3a5b296ef9be0ef6d5dce38307c64e9d74721257d2a0c303be3261a9064f86",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_06",
+      "name": "063.jpg",
+      "path": "raw/faces_setA/valid/setA_06/063.jpg",
+      "osf_id": "644256bf9e8e1c1cf21e30a2",
+      "url": "https://osf.io/download/644256bf9e8e1c1cf21e30a2/",
+      "sha256": "9707bac6c4e3f5b5f2f0d1b9494919be52c0b23369e96542a75b275c8348939e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_06",
+      "name": "064.jpg",
+      "path": "raw/faces_setA/valid/setA_06/064.jpg",
+      "osf_id": "644256c118ff911cdc048521",
+      "url": "https://osf.io/download/644256c118ff911cdc048521/",
+      "sha256": "8d47c222644eaa628d315dbd7b9f87edee4e0783a807625cc5131a549f194655",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_07",
+      "name": "070.jpg",
+      "path": "raw/faces_setA/valid/setA_07/070.jpg",
+      "osf_id": "644256ca40b2c11d39e8ff1f",
+      "url": "https://osf.io/download/644256ca40b2c11d39e8ff1f/",
+      "sha256": "2d91e19c4676203d5824f87cd7ee92f3b3498c9dd0d5e53c2accc8228c3a7fe0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_07",
+      "name": "071.jpg",
+      "path": "raw/faces_setA/valid/setA_07/071.jpg",
+      "osf_id": "644255e240b2c11d39e8fb91",
+      "url": "https://osf.io/download/644255e240b2c11d39e8fb91/",
+      "sha256": "a1c3376fbe583672af1c7b5f23f0494595255465c861cf330c9f5844d01018a7",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_07",
+      "name": "072.jpg",
+      "path": "raw/faces_setA/valid/setA_07/072.jpg",
+      "osf_id": "644256c340b2c11d38e8fd84",
+      "url": "https://osf.io/download/644256c340b2c11d38e8fd84/",
+      "sha256": "73c21798f4346acc394bce1bee6c6643290d99f4938586e6beb18e7bd99ff87a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_07",
+      "name": "073.jpg",
+      "path": "raw/faces_setA/valid/setA_07/073.jpg",
+      "osf_id": "644256c540b2c11d35e8fbd3",
+      "url": "https://osf.io/download/644256c540b2c11d35e8fbd3/",
+      "sha256": "a7cea54bd2e6f3b195edb3ce1d790497d7c9db4d798335bb9db6ddfd17c61916",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_07",
+      "name": "074.jpg",
+      "path": "raw/faces_setA/valid/setA_07/074.jpg",
+      "osf_id": "644256c640b2c11d38e8fd96",
+      "url": "https://osf.io/download/644256c640b2c11d38e8fd96/",
+      "sha256": "73f1b7edf98f9b48285e84b3049416e1f4cd4a1ee5fb251a919981f56051ed60",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_08",
+      "name": "080.jpg",
+      "path": "raw/faces_setA/valid/setA_08/080.jpg",
+      "osf_id": "64425619c76c0722f4135e6f",
+      "url": "https://osf.io/download/64425619c76c0722f4135e6f/",
+      "sha256": "ab94530f32d3b137460a0fd892dbbbec671314f6fe26f9ef857d49dc6922688f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_08",
+      "name": "081.jpg",
+      "path": "raw/faces_setA/valid/setA_08/081.jpg",
+      "osf_id": "64425618c76c0722f3135d72",
+      "url": "https://osf.io/download/64425618c76c0722f3135d72/",
+      "sha256": "e1d58ff2273f7182c09bbfc8ac3cf77326f1a56eff43b56abcace0fa0ee10723",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_08",
+      "name": "082.jpg",
+      "path": "raw/faces_setA/valid/setA_08/082.jpg",
+      "osf_id": "644256c818ff911cd904842e",
+      "url": "https://osf.io/download/644256c818ff911cd904842e/",
+      "sha256": "ac321c698b75f7f87dd4065698e1db92181e12fa71e82095114b5382ac8afc40",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_08",
+      "name": "083.jpg",
+      "path": "raw/faces_setA/valid/setA_08/083.jpg",
+      "osf_id": "644256cb9e8e1c1cee1e2e32",
+      "url": "https://osf.io/download/644256cb9e8e1c1cee1e2e32/",
+      "sha256": "e75180afaf8a308917da9778348e0c2bc83ee71c2215ef61fb5e49ee2bff238f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_08",
+      "name": "084.jpg",
+      "path": "raw/faces_setA/valid/setA_08/084.jpg",
+      "osf_id": "6442563840b2c11d35e8faf7",
+      "url": "https://osf.io/download/6442563840b2c11d35e8faf7/",
+      "sha256": "ae8e0ea846b47f5143a937e591447535687621397df1e73de35042bbcef186c4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_09",
+      "name": "090.jpg",
+      "path": "raw/faces_setA/valid/setA_09/090.jpg",
+      "osf_id": "644255e038485321f6495742",
+      "url": "https://osf.io/download/644255e038485321f6495742/",
+      "sha256": "5f80d4acf270da4adb49c997f5ef584d72faf9675095e6b13375f68f456e264e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_09",
+      "name": "091.jpg",
+      "path": "raw/faces_setA/valid/setA_09/091.jpg",
+      "osf_id": "644255dbc76c0722e6135c13",
+      "url": "https://osf.io/download/644255dbc76c0722e6135c13/",
+      "sha256": "588ab99c4a73953d3809bff5cce695ba37b44eda2cd92aa680624e8aa174793e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_09",
+      "name": "092.jpg",
+      "path": "raw/faces_setA/valid/setA_09/092.jpg",
+      "osf_id": "644255c140b2c11d38e8fac7",
+      "url": "https://osf.io/download/644255c140b2c11d38e8fac7/",
+      "sha256": "771b3e99d3ff7c4f16ef37c76b4a68d06e6f52a43960efbd83c595440b38224c",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_09",
+      "name": "093.jpg",
+      "path": "raw/faces_setA/valid/setA_09/093.jpg",
+      "osf_id": "6442563838485321fd49599b",
+      "url": "https://osf.io/download/6442563838485321fd49599b/",
+      "sha256": "8c55ae67514762bd4b70699321ecc82a2c49d05211916103225e6b9eea8ba02f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_09",
+      "name": "094.jpg",
+      "path": "raw/faces_setA/valid/setA_09/094.jpg",
+      "osf_id": "6442561e9e8e1c1cf21e2e28",
+      "url": "https://osf.io/download/6442561e9e8e1c1cf21e2e28/",
+      "sha256": "029a5ce83c204241bd73510cc15382dd22237016cb37627c3c8c8141edd403bc",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_10",
+      "name": "100.jpg",
+      "path": "raw/faces_setA/valid/setA_10/100.jpg",
+      "osf_id": "644256ccc76c0722f3135f69",
+      "url": "https://osf.io/download/644256ccc76c0722f3135f69/",
+      "sha256": "38cd2579b9a239a15fd6d34b842fd4087c62f4bc396ead59f2469fa05ad435ca",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_10",
+      "name": "101.jpg",
+      "path": "raw/faces_setA/valid/setA_10/101.jpg",
+      "osf_id": "644256d818ff911cdc04857c",
+      "url": "https://osf.io/download/644256d818ff911cdc04857c/",
+      "sha256": "d2ac567c74d54ed1a00fcc37422f28e3f0656a466b768541ab06b93df2a650be",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_10",
+      "name": "102.jpg",
+      "path": "raw/faces_setA/valid/setA_10/102.jpg",
+      "osf_id": "644256cc38485321fc495a98",
+      "url": "https://osf.io/download/644256cc38485321fc495a98/",
+      "sha256": "6c81d86cd84985afaaea6ac17cfdb2d433ad62403c361c02900bc91f1d099f77",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_10",
+      "name": "103.jpg",
+      "path": "raw/faces_setA/valid/setA_10/103.jpg",
+      "osf_id": "644256d09e8e1c1cee1e2e41",
+      "url": "https://osf.io/download/644256d09e8e1c1cee1e2e41/",
+      "sha256": "8c6505dd4b409bdc58aefd503e36ad3848e56b6b04af3759dab2c63a9aa744a0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_10",
+      "name": "104.jpg",
+      "path": "raw/faces_setA/valid/setA_10/104.jpg",
+      "osf_id": "644256db38485321f74958d7",
+      "url": "https://osf.io/download/644256db38485321f74958d7/",
+      "sha256": "ca6b3e4de69b9dc538829e9dfc4287be9e0f09d25b13c9bb31c78b78ff25b22b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_11",
+      "name": "110.jpg",
+      "path": "raw/faces_setA/valid/setA_11/110.jpg",
+      "osf_id": "644256d138485321f74958ca",
+      "url": "https://osf.io/download/644256d138485321f74958ca/",
+      "sha256": "a217b2f740d9dbf3cb34394b289fd07a619d84de1e8b355b5bd01fd797b77f3f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_11",
+      "name": "111.jpg",
+      "path": "raw/faces_setA/valid/setA_11/111.jpg",
+      "osf_id": "644256d140b2c11d35e8fbe9",
+      "url": "https://osf.io/download/644256d140b2c11d35e8fbe9/",
+      "sha256": "58ed67de242c0a432485401b9c8275a63430f799ab4ed7f1520bcec46afd0af8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_11",
+      "name": "112.jpg",
+      "path": "raw/faces_setA/valid/setA_11/112.jpg",
+      "osf_id": "644256d49e8e1c1cf11e2f77",
+      "url": "https://osf.io/download/644256d49e8e1c1cf11e2f77/",
+      "sha256": "6e707784ef8839ba6bcce8f965fc0b46f8dbba25a0d595f7c5c2cc9c8abd726c",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_11",
+      "name": "113.jpg",
+      "path": "raw/faces_setA/valid/setA_11/113.jpg",
+      "osf_id": "644256e2c76c0722f4136182",
+      "url": "https://osf.io/download/644256e2c76c0722f4136182/",
+      "sha256": "2f9c314024e8792e3a1762dfb6dc7b932ae4e872efc735b4de03e0a6335e13dc",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_11",
+      "name": "114.jpg",
+      "path": "raw/faces_setA/valid/setA_11/114.jpg",
+      "osf_id": "644256d838485321fc495ab2",
+      "url": "https://osf.io/download/644256d838485321fc495ab2/",
+      "sha256": "4072ef11ee5dc9b558cc8bdaff375b132743b3e2fff20e0ec64c38dfded04fdd",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_12",
+      "name": "120.jpg",
+      "path": "raw/faces_setA/valid/setA_12/120.jpg",
+      "osf_id": "644256d940b2c11d2de8fe49",
+      "url": "https://osf.io/download/644256d940b2c11d2de8fe49/",
+      "sha256": "c10526ed0fe8fe8422ca111e4df30b87a69c331891efa5f3cb18e4c9b2037873",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_12",
+      "name": "121.jpg",
+      "path": "raw/faces_setA/valid/setA_12/121.jpg",
+      "osf_id": "6442561e18ff911cdc04836b",
+      "url": "https://osf.io/download/6442561e18ff911cdc04836b/",
+      "sha256": "6718e64436cafef163d4acb1bcfe0edd29ca0a1d17ab86d7389473091cb71021",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_12",
+      "name": "122.jpg",
+      "path": "raw/faces_setA/valid/setA_12/122.jpg",
+      "osf_id": "64425621c76c0722f0135cda",
+      "url": "https://osf.io/download/64425621c76c0722f0135cda/",
+      "sha256": "87f8e140e93bcb85ec03a3192a2b3bcaf0f694d43d077352931293de1651d230",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_12",
+      "name": "123.jpg",
+      "path": "raw/faces_setA/valid/setA_12/123.jpg",
+      "osf_id": "6442562240b2c11d38e8fbcc",
+      "url": "https://osf.io/download/6442562240b2c11d38e8fbcc/",
+      "sha256": "359e537fd07129c2d640e8a417edbf7cc838ac179152cf4cdab77a07b5806dc8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_12",
+      "name": "124.jpg",
+      "path": "raw/faces_setA/valid/setA_12/124.jpg",
+      "osf_id": "6442563f9e8e1c1cee1e2d23",
+      "url": "https://osf.io/download/6442563f9e8e1c1cee1e2d23/",
+      "sha256": "a792b3e8a868ded7370f5540220e39de0ccee1949fa5b8b355655f91f40b20ba",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_13",
+      "name": "130.jpg",
+      "path": "raw/faces_setA/valid/setA_13/130.jpg",
+      "osf_id": "644255de18ff911cdc0482c5",
+      "url": "https://osf.io/download/644255de18ff911cdc0482c5/",
+      "sha256": "e8f40b68f0a4ccc122f84654f74a0838a805fecb05e48e5fc87fc3015fc9307b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_13",
+      "name": "131.jpg",
+      "path": "raw/faces_setA/valid/setA_13/131.jpg",
+      "osf_id": "644255f5c76c0722f4135dd2",
+      "url": "https://osf.io/download/644255f5c76c0722f4135dd2/",
+      "sha256": "213beb6f42139157786ce9308c84d72222a5627d5c39e1e101e5a0f06e3d09e4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_13",
+      "name": "132.jpg",
+      "path": "raw/faces_setA/valid/setA_13/132.jpg",
+      "osf_id": "644255d8c76c0722ef135c40",
+      "url": "https://osf.io/download/644255d8c76c0722ef135c40/",
+      "sha256": "e6c182458b227494b10848bcf4b814f72c30f08346be4968830f7dc02d54e3e6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_13",
+      "name": "133.jpg",
+      "path": "raw/faces_setA/valid/setA_13/133.jpg",
+      "osf_id": "644255d3c76c0722f4135d3b",
+      "url": "https://osf.io/download/644255d3c76c0722f4135d3b/",
+      "sha256": "cec9c9d317f389e0d4466a53037c2dfd7cf9bf185a54c9661455b263ec0b0a96",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_13",
+      "name": "134.jpg",
+      "path": "raw/faces_setA/valid/setA_13/134.jpg",
+      "osf_id": "644255cf18ff911cdd0482c9",
+      "url": "https://osf.io/download/644255cf18ff911cdd0482c9/",
+      "sha256": "b6f9ec35b728e43f573b9e30bc474bebfb1be62da9811818281c3966d1760015",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_14",
+      "name": "140.jpg",
+      "path": "raw/faces_setA/valid/setA_14/140.jpg",
+      "osf_id": "6442562618ff911cdd0483bf",
+      "url": "https://osf.io/download/6442562618ff911cdd0483bf/",
+      "sha256": "9ca22746636becebfa28811f2b9743c5aaede595a24bc91cde6766a17555351b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_14",
+      "name": "141.jpg",
+      "path": "raw/faces_setA/valid/setA_14/141.jpg",
+      "osf_id": "6442562640b2c11d2de8fe14",
+      "url": "https://osf.io/download/6442562640b2c11d2de8fe14/",
+      "sha256": "32e4a8d9d3a61d44c4adfb6f7c2a7884125f3995ac8156ab5eb0a6a83eb4e195",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_14",
+      "name": "142.jpg",
+      "path": "raw/faces_setA/valid/setA_14/142.jpg",
+      "osf_id": "644255ca40b2c11d34e8fa27",
+      "url": "https://osf.io/download/644255ca40b2c11d34e8fa27/",
+      "sha256": "f2883c5ffc75a98537aa189b836aafd06cc6af347005d21316318405df1f8933",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_14",
+      "name": "143.jpg",
+      "path": "raw/faces_setA/valid/setA_14/143.jpg",
+      "osf_id": "6442564540b2c11d34e8fa92",
+      "url": "https://osf.io/download/6442564540b2c11d34e8fa92/",
+      "sha256": "e14b205a78809958843c5076c5108970e161bcea622a9e35e416756a93b645fd",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_14",
+      "name": "144.jpg",
+      "path": "raw/faces_setA/valid/setA_14/144.jpg",
+      "osf_id": "6442562b40b2c11d38e8fbdc",
+      "url": "https://osf.io/download/6442562b40b2c11d38e8fbdc/",
+      "sha256": "9900c103fd810bff50772679ac5412e2886f6340be295ddccd7562360c94491f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_15",
+      "name": "150.jpg",
+      "path": "raw/faces_setA/valid/setA_15/150.jpg",
+      "osf_id": "6442562f40b2c11d39e8fc94",
+      "url": "https://osf.io/download/6442562f40b2c11d39e8fc94/",
+      "sha256": "3381e4b93e977fe98b92010bfd52d391a296958d86a3c31713621041a7d4c6a8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_15",
+      "name": "151.jpg",
+      "path": "raw/faces_setA/valid/setA_15/151.jpg",
+      "osf_id": "6442564a40b2c11d38e8fc34",
+      "url": "https://osf.io/download/6442564a40b2c11d38e8fc34/",
+      "sha256": "63def531809ba1c0ed6d0c718b968e9d4b408e2d3bfaed109798f543fc2cb1c0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_15",
+      "name": "152.jpg",
+      "path": "raw/faces_setA/valid/setA_15/152.jpg",
+      "osf_id": "6442563f38485321fc4958dc",
+      "url": "https://osf.io/download/6442563f38485321fc4958dc/",
+      "sha256": "893221d052defe3a40d2395318c4571a47425079c8a11ed5b18a6818a54482d0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_15",
+      "name": "153.jpg",
+      "path": "raw/faces_setA/valid/setA_15/153.jpg",
+      "osf_id": "6442563f38485321fd4959b8",
+      "url": "https://osf.io/download/6442563f38485321fd4959b8/",
+      "sha256": "89e8850589c7446c9bf468047a6c5ac432293bd27f83296ff0aea9319965411f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_15",
+      "name": "154.jpg",
+      "path": "raw/faces_setA/valid/setA_15/154.jpg",
+      "osf_id": "6442560640b2c11d39e8fc09",
+      "url": "https://osf.io/download/6442560640b2c11d39e8fc09/",
+      "sha256": "2314cc17fd0ab36100c07f875cc6d4ad38fa7b0f768cf7e4b361246ebbf6e526",
+      "dimensions": [
+        200,
+        200
+      ]
+    },
+    {
+      "identity": "setA_16",
+      "name": "160.jpg",
+      "path": "raw/faces_setA/valid/setA_16/160.jpg",
+      "osf_id": "644256e89e8e1c1cea1e2c98",
+      "url": "https://osf.io/download/644256e89e8e1c1cea1e2c98/",
+      "sha256": "b45d405bd640d93e6523429f5ea8da1226294f62b3b437aadc3bdbaf0fe5ef1b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_16",
+      "name": "161.jpg",
+      "path": "raw/faces_setA/valid/setA_16/161.jpg",
+      "osf_id": "644256df18ff911cdd048656",
+      "url": "https://osf.io/download/644256df18ff911cdd048656/",
+      "sha256": "01326715331512b811e248e08512f6d5a80559853b04e8d3df10637ad89737a0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_16",
+      "name": "162.jpg",
+      "path": "raw/faces_setA/valid/setA_16/162.jpg",
+      "osf_id": "644256de18ff911cdc048593",
+      "url": "https://osf.io/download/644256de18ff911cdc048593/",
+      "sha256": "bf936a306732d3795745a929d979be6cfdb90f335430f7579585dc5230d4fe9e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_16",
+      "name": "163.jpg",
+      "path": "raw/faces_setA/valid/setA_16/163.jpg",
+      "osf_id": "644256e138485321ee495736",
+      "url": "https://osf.io/download/644256e138485321ee495736/",
+      "sha256": "48c61a7bd35d2fdbf771fe5003910dc57a062a3eeda517f09930b270229d4090",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_16",
+      "name": "164.jpg",
+      "path": "raw/faces_setA/valid/setA_16/164.jpg",
+      "osf_id": "644256e39e8e1c1cf21e311e",
+      "url": "https://osf.io/download/644256e39e8e1c1cf21e311e/",
+      "sha256": "048e297585f8c730d4228035273c74162b73f815b32f641ff1862420672ce710",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_17",
+      "name": "170.jpg",
+      "path": "raw/faces_setA/valid/setA_17/170.jpg",
+      "osf_id": "644256e338485321fc495ac5",
+      "url": "https://osf.io/download/644256e338485321fc495ac5/",
+      "sha256": "855824beb05804bf2380fe0276bf8555241928e6413986dbd84c0fa0293c5f13",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_17",
+      "name": "171.jpg",
+      "path": "raw/faces_setA/valid/setA_17/171.jpg",
+      "osf_id": "644256ed38485322054956fa",
+      "url": "https://osf.io/download/644256ed38485322054956fa/",
+      "sha256": "71ae2d4259bc68571df11fe1be4c96e4467583a18dfdd2d31d4bfb15aef88b54",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_17",
+      "name": "172.jpg",
+      "path": "raw/faces_setA/valid/setA_17/172.jpg",
+      "osf_id": "644256e738485321fc495ace",
+      "url": "https://osf.io/download/644256e738485321fc495ace/",
+      "sha256": "b35f039b6152f83d11b8453e4ccbf98b51796852be540a016e1b9ce81ad31c56",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_17",
+      "name": "173.jpg",
+      "path": "raw/faces_setA/valid/setA_17/173.jpg",
+      "osf_id": "644255c19e8e1c1cee1e2c55",
+      "url": "https://osf.io/download/644255c19e8e1c1cee1e2c55/",
+      "sha256": "247ae757bb13e86680e8841b21bf8dc51bd64baa664ee6cd86a91f5e4fa7bf63",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_17",
+      "name": "174.jpg",
+      "path": "raw/faces_setA/valid/setA_17/174.jpg",
+      "osf_id": "644255d7c76c0722f4135d55",
+      "url": "https://osf.io/download/644255d7c76c0722f4135d55/",
+      "sha256": "24e14dbd9eeb94bae208364f99ac9cede559b2938b3b762e8ca058030d6a3933",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_18",
+      "name": "180.jpg",
+      "path": "raw/faces_setA/valid/setA_18/180.jpg",
+      "osf_id": "64425646c76c0722f4135f1e",
+      "url": "https://osf.io/download/64425646c76c0722f4135f1e/",
+      "sha256": "e2a9dc57e2156061433362ff289960949c6a10a0e35e46b5e3f4bb06de84990d",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_18",
+      "name": "181.jpg",
+      "path": "raw/faces_setA/valid/setA_18/181.jpg",
+      "osf_id": "6442564240b2c11d39e8fcdb",
+      "url": "https://osf.io/download/6442564240b2c11d39e8fcdb/",
+      "sha256": "f55f44608b8b785f6749194d706db0089f25e6d15c0c0453c8e80cda90cf2ecc",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_18",
+      "name": "182.jpg",
+      "path": "raw/faces_setA/valid/setA_18/182.jpg",
+      "osf_id": "64425646c76c0722f4135f20",
+      "url": "https://osf.io/download/64425646c76c0722f4135f20/",
+      "sha256": "4fa06218f13399b2b9f48b39a4d93339ec0f058edba9f6b8e39ee78325c1736a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_18",
+      "name": "183.jpg",
+      "path": "raw/faces_setA/valid/setA_18/183.jpg",
+      "osf_id": "64425654c76c0722f4135f57",
+      "url": "https://osf.io/download/64425654c76c0722f4135f57/",
+      "sha256": "fe785a9966b37f4a2dd7ebc53d36977718150c87980e308a70428c699e50a246",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_18",
+      "name": "184.jpg",
+      "path": "raw/faces_setA/valid/setA_18/184.jpg",
+      "osf_id": "6442564c40b2c11d38e8fc3d",
+      "url": "https://osf.io/download/6442564c40b2c11d38e8fc3d/",
+      "sha256": "a3807514caaf13c5a045629255bd31ca735c9e8013bc1f561643c9f04581ae29",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_19",
+      "name": "190.jpg",
+      "path": "raw/faces_setA/valid/setA_19/190.jpg",
+      "osf_id": "6442565718ff911cd1048a9c",
+      "url": "https://osf.io/download/6442565718ff911cd1048a9c/",
+      "sha256": "c095eac4e586a4c93aad9d7b7cccbf5015dc7388e632fd7284892b560ab5a4e6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_19",
+      "name": "191.jpg",
+      "path": "raw/faces_setA/valid/setA_19/191.jpg",
+      "osf_id": "6442564dc76c0722f4135f39",
+      "url": "https://osf.io/download/6442564dc76c0722f4135f39/",
+      "sha256": "72f6402c234b4b3f75d1cdca1129b2fb738011b7f84bf15e8c0e7bf40e4017c5",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_19",
+      "name": "192.jpg",
+      "path": "raw/faces_setA/valid/setA_19/192.jpg",
+      "osf_id": "6442565018ff911cdc0483d0",
+      "url": "https://osf.io/download/6442565018ff911cdc0483d0/",
+      "sha256": "45f25912ce98e1c8365f7d82283a3d3425bbe3b7ac9402095949125124478fdb",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_19",
+      "name": "193.jpg",
+      "path": "raw/faces_setA/valid/setA_19/193.jpg",
+      "osf_id": "6442565138485321f7495818",
+      "url": "https://osf.io/download/6442565138485321f7495818/",
+      "sha256": "e6e248e1bcd492434e1759eee7f3119c2d0b6cf07cc069e9d428f04f74f1e0a5",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_19",
+      "name": "194.jpg",
+      "path": "raw/faces_setA/valid/setA_19/194.jpg",
+      "osf_id": "644256519e8e1c1cf11e2e27",
+      "url": "https://osf.io/download/644256519e8e1c1cf11e2e27/",
+      "sha256": "45350a71d74ec0aab6ac4bbb158084729e2fa9b028f7d75ada340e24a7b98da7",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_20",
+      "name": "200.jpg",
+      "path": "raw/faces_setA/valid/setA_20/200.jpg",
+      "osf_id": "644256f140b2c11d38e8fe0d",
+      "url": "https://osf.io/download/644256f140b2c11d38e8fe0d/",
+      "sha256": "e93aac86d99e94acf395dbb8c1015e8200a8e484d78383a69e6ab922ff25e646",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_20",
+      "name": "201.jpg",
+      "path": "raw/faces_setA/valid/setA_20/201.jpg",
+      "osf_id": "644256e938485321f1495757",
+      "url": "https://osf.io/download/644256e938485321f1495757/",
+      "sha256": "2f977e799513cf8117fd173828bd75aef9950b9265c0fff15c93a4831d5ec129",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_20",
+      "name": "202.jpg",
+      "path": "raw/faces_setA/valid/setA_20/202.jpg",
+      "osf_id": "644256ef384853220d4956ee",
+      "url": "https://osf.io/download/644256ef384853220d4956ee/",
+      "sha256": "b0d846cb42e956413be32709c1936123543d94929ccf2a5e71023dbfed3c16a8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_20",
+      "name": "203.jpg",
+      "path": "raw/faces_setA/valid/setA_20/203.jpg",
+      "osf_id": "644255e9c76c0722f4135da5",
+      "url": "https://osf.io/download/644255e9c76c0722f4135da5/",
+      "sha256": "8a0abfdb0c656b14ff502cd0ec6ed38ebe34cd022b2d98e9d9336482d4db42ae",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_20",
+      "name": "204.jpg",
+      "path": "raw/faces_setA/valid/setA_20/204.jpg",
+      "osf_id": "64425609c76c0722f4135e2d",
+      "url": "https://osf.io/download/64425609c76c0722f4135e2d/",
+      "sha256": "c1b49e8d808ee8b29545c11db62bde374a3e68de08a867ecc78ebd244263963f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_21",
+      "name": "210.jpg",
+      "path": "raw/faces_setA/valid/setA_21/210.jpg",
+      "osf_id": "644255d718ff911cdc0482b1",
+      "url": "https://osf.io/download/644255d718ff911cdc0482b1/",
+      "sha256": "f5b73b2040bed256b331dca9519defdcf7d745e882b4968290e096fd2c97f553",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_21",
+      "name": "211.jpg",
+      "path": "raw/faces_setA/valid/setA_21/211.jpg",
+      "osf_id": "644256f19e8e1c1cee1e2e9a",
+      "url": "https://osf.io/download/644256f19e8e1c1cee1e2e9a/",
+      "sha256": "e13fb6f1c53d451556bdba7085f0e36da74d19e2813aaca39b0227f749b5895b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_21",
+      "name": "212.jpg",
+      "path": "raw/faces_setA/valid/setA_21/212.jpg",
+      "osf_id": "644256f0c76c0722f8135c09",
+      "url": "https://osf.io/download/644256f0c76c0722f8135c09/",
+      "sha256": "89ce1e740396f0d0b0944a5e72f2039e86dba30370e7f3407bc2e222cf1eaea0",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_21",
+      "name": "213.jpg",
+      "path": "raw/faces_setA/valid/setA_21/213.jpg",
+      "osf_id": "644255c738485321f6495731",
+      "url": "https://osf.io/download/644255c738485321f6495731/",
+      "sha256": "98bd8364ef28fd604835313fa60e62e57e1b17669a43fe38fd02a7f8e99fd8d6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_21",
+      "name": "214.jpg",
+      "path": "raw/faces_setA/valid/setA_21/214.jpg",
+      "osf_id": "644256f418ff911cf10481da",
+      "url": "https://osf.io/download/644256f418ff911cf10481da/",
+      "sha256": "3a562276bf8ec0f5ef55352d0a6f8a5778198810a5fe8bb5ff7d59c2091fe0bb",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_22",
+      "name": "220.jpg",
+      "path": "raw/faces_setA/valid/setA_22/220.jpg",
+      "osf_id": "644255e6c76c0722f4135d9c",
+      "url": "https://osf.io/download/644255e6c76c0722f4135d9c/",
+      "sha256": "3b4da09519dec56dbfa134935a4f50e01618848f630db3c83c2cbd24272575d1",
+      "dimensions": [
+        200,
+        200
+      ]
+    },
+    {
+      "identity": "setA_22",
+      "name": "221.jpg",
+      "path": "raw/faces_setA/valid/setA_22/221.jpg",
+      "osf_id": "644255d4c76c0722ef135c37",
+      "url": "https://osf.io/download/644255d4c76c0722ef135c37/",
+      "sha256": "a91e6af212c200e554f4fbbfc221f640acad797b7d448c609af65a2d372d7e8b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_22",
+      "name": "222.jpg",
+      "path": "raw/faces_setA/valid/setA_22/222.jpg",
+      "osf_id": "6442565618ff911cdd048473",
+      "url": "https://osf.io/download/6442565618ff911cdd048473/",
+      "sha256": "795c50b0de9110bf91e2f513f39120533e598b200d0ebfa7b5da32b9ea9e7f25",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_22",
+      "name": "223.jpg",
+      "path": "raw/faces_setA/valid/setA_22/223.jpg",
+      "osf_id": "644255da18ff911cd9048291",
+      "url": "https://osf.io/download/644255da18ff911cd9048291/",
+      "sha256": "3b5481de5216598f1fcc634bff2a1e6877100c60a925b4f3099566bab50ef2af",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_22",
+      "name": "224.jpg",
+      "path": "raw/faces_setA/valid/setA_22/224.jpg",
+      "osf_id": "644256559e8e1c1cf21e2f04",
+      "url": "https://osf.io/download/644256559e8e1c1cf21e2f04/",
+      "sha256": "952a771bbd017c7e67e6b400765bc7adfb5886512b5a7c33dcc882426644f691",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_23",
+      "name": "230.jpg",
+      "path": "raw/faces_setA/valid/setA_23/230.jpg",
+      "osf_id": "644255be18ff911cdc048278",
+      "url": "https://osf.io/download/644255be18ff911cdc048278/",
+      "sha256": "010434f7f3f3c54a8b5e65c3d33371397ad446edc956b519cea7517b32da0fb1",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_23",
+      "name": "231.jpg",
+      "path": "raw/faces_setA/valid/setA_23/231.jpg",
+      "osf_id": "644255ea9e8e1c1cee1e2c96",
+      "url": "https://osf.io/download/644255ea9e8e1c1cee1e2c96/",
+      "sha256": "80a6455900795978acb1d04c13e1b71cc9594885be562f98836f9a5004d96767",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_23",
+      "name": "232.jpg",
+      "path": "raw/faces_setA/valid/setA_23/232.jpg",
+      "osf_id": "644256579e8e1c1cf11e2e3d",
+      "url": "https://osf.io/download/644256579e8e1c1cf11e2e3d/",
+      "sha256": "fa9de418dc17a5a01de65ce3b687061f6653297a7a0fa67269296b006f0a2e3b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_23",
+      "name": "233.jpg",
+      "path": "raw/faces_setA/valid/setA_23/233.jpg",
+      "osf_id": "6442565818ff911cd00488a7",
+      "url": "https://osf.io/download/6442565818ff911cd00488a7/",
+      "sha256": "8e54289bcbcc2e4efaf80738766aa8ecfa5c20f406d8e49075a042fc2d7b4290",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_23",
+      "name": "234.jpg",
+      "path": "raw/faces_setA/valid/setA_23/234.jpg",
+      "osf_id": "6442565c9e8e1c1cf21e2f21",
+      "url": "https://osf.io/download/6442565c9e8e1c1cf21e2f21/",
+      "sha256": "f409913acd8f064f17df6d3f6342e7d394fa0ae995120c16300c2146b73dfea8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_24",
+      "name": "240.jpg",
+      "path": "raw/faces_setA/valid/setA_24/240.jpg",
+      "osf_id": "6442566038485321fc49594d",
+      "url": "https://osf.io/download/6442566038485321fc49594d/",
+      "sha256": "1ae19dd626f4af7c7eb45ebb0f697f6ad0e47e25fd6168d38702b35b29ce2a9b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_24",
+      "name": "241.jpg",
+      "path": "raw/faces_setA/valid/setA_24/241.jpg",
+      "osf_id": "6442565b38485321fd495a2d",
+      "url": "https://osf.io/download/6442565b38485321fd495a2d/",
+      "sha256": "d66ec085bdf9f6ca33194fd04c8daa11ba77b2775a0cfeaa10c108da5f698658",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_24",
+      "name": "242.jpg",
+      "path": "raw/faces_setA/valid/setA_24/242.jpg",
+      "osf_id": "644256ffc76c072305135bfe",
+      "url": "https://osf.io/download/644256ffc76c072305135bfe/",
+      "sha256": "1680c59714d7e58dd7ca422c083eb87e47a1447a31418a0aa185e745ed210070",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_24",
+      "name": "243.jpg",
+      "path": "raw/faces_setA/valid/setA_24/243.jpg",
+      "osf_id": "6442570618ff911cf2048228",
+      "url": "https://osf.io/download/6442570618ff911cf2048228/",
+      "sha256": "7517877d7e118284b87a88f6753d9285f0237b5418fa08fee7da1be22fafff3b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_24",
+      "name": "244.jpg",
+      "path": "raw/faces_setA/valid/setA_24/244.jpg",
+      "osf_id": "644255ed18ff911cdd048347",
+      "url": "https://osf.io/download/644255ed18ff911cdd048347/",
+      "sha256": "5f941c306ef532aa6c5eba488587d869cf016d7cacecc1de3fddd50e8b20932e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_25",
+      "name": "250.jpg",
+      "path": "raw/faces_setA/valid/setA_25/250.jpg",
+      "osf_id": "6442565bc76c0722f4135f84",
+      "url": "https://osf.io/download/6442565bc76c0722f4135f84/",
+      "sha256": "de974212897965693fe224fae238639f9ece1404d5a7ecae1c03b9ccfa422cd4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_25",
+      "name": "251.jpg",
+      "path": "raw/faces_setA/valid/setA_25/251.jpg",
+      "osf_id": "6442565dc76c0722f3135e19",
+      "url": "https://osf.io/download/6442565dc76c0722f3135e19/",
+      "sha256": "2876fadd487d9dd7b46322b02440568fc57ff449b7cc935546901fad3d2a2062",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_25",
+      "name": "252.jpg",
+      "path": "raw/faces_setA/valid/setA_25/252.jpg",
+      "osf_id": "6442565f18ff911cdc048401",
+      "url": "https://osf.io/download/6442565f18ff911cdc048401/",
+      "sha256": "750e88f1af869e41fb4614e0a491945223d55e19e46d19614d6f30ffe759c356",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_25",
+      "name": "253.jpg",
+      "path": "raw/faces_setA/valid/setA_25/253.jpg",
+      "osf_id": "644256679e8e1c1cf21e2f4f",
+      "url": "https://osf.io/download/644256679e8e1c1cf21e2f4f/",
+      "sha256": "95e2b7944e16bfc5f4e8c2e066bc2b9ad06a69c83e4735cd715877ebdb968355",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_25",
+      "name": "254.jpg",
+      "path": "raw/faces_setA/valid/setA_25/254.jpg",
+      "osf_id": "6442566840b2c11d39e8fd69",
+      "url": "https://osf.io/download/6442566840b2c11d39e8fd69/",
+      "sha256": "ec73f7242c396b9835623f7769e2dec0b0c4f24fa0a993848a99d7651e595820",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_26",
+      "name": "260.jpg",
+      "path": "raw/faces_setA/valid/setA_26/260.jpg",
+      "osf_id": "64425701c76c07230a135c17",
+      "url": "https://osf.io/download/64425701c76c07230a135c17/",
+      "sha256": "6d2729842e16e8abb59e6b81421a57894e1f7f2b9cdcb563f783d96b150935ab",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_26",
+      "name": "261.jpg",
+      "path": "raw/faces_setA/valid/setA_26/261.jpg",
+      "osf_id": "6442570440b2c11d49e8f9ee",
+      "url": "https://osf.io/download/6442570440b2c11d49e8f9ee/",
+      "sha256": "319e6dd31ff966ca85d1818627ba54049ed64f47f36caffdaf1090bb9855d361",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_26",
+      "name": "262.jpg",
+      "path": "raw/faces_setA/valid/setA_26/262.jpg",
+      "osf_id": "64425704384853220d495702",
+      "url": "https://osf.io/download/64425704384853220d495702/",
+      "sha256": "ba9af283d6be719539994e6f036d8a176b1c3f76c825962a4ac85fb75acc3a0d",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_26",
+      "name": "263.jpg",
+      "path": "raw/faces_setA/valid/setA_26/263.jpg",
+      "osf_id": "644255c79e8e1c1cf11e2c6a",
+      "url": "https://osf.io/download/644255c79e8e1c1cf11e2c6a/",
+      "sha256": "19d1e5a8db01114e520fb66f53c6f17fe2dc02dbab176ebe89d2a830dbcbc080",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_26",
+      "name": "264.jpg",
+      "path": "raw/faces_setA/valid/setA_26/264.jpg",
+      "osf_id": "6442570518ff911ce10481e5",
+      "url": "https://osf.io/download/6442570518ff911ce10481e5/",
+      "sha256": "5e73cd56409d87f8edd475d029f211b3d86cebef1c1d4e3b618ecb7f85988df3",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_27",
+      "name": "270.jpg",
+      "path": "raw/faces_setA/valid/setA_27/270.jpg",
+      "osf_id": "64425706c76c07230a135c2c",
+      "url": "https://osf.io/download/64425706c76c07230a135c2c/",
+      "sha256": "1d944be7a2dca158d52875b10721b2655773f666382e78dd665e5f7a408d5f1c",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_27",
+      "name": "271.jpg",
+      "path": "raw/faces_setA/valid/setA_27/271.jpg",
+      "osf_id": "644257169e8e1c1d061e2bee",
+      "url": "https://osf.io/download/644257169e8e1c1d061e2bee/",
+      "sha256": "e1d7e3a4a78370d606b01e8d5c2d76931c02be5fb8581bc1c3131e62423c619a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_27",
+      "name": "272.jpg",
+      "path": "raw/faces_setA/valid/setA_27/272.jpg",
+      "osf_id": "64425715384853221949574d",
+      "url": "https://osf.io/download/64425715384853221949574d/",
+      "sha256": "e543ce07cb8eacf67835f41b9891a53c30058f27e82d4035e92e39cf33c0f3a8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_27",
+      "name": "273.jpg",
+      "path": "raw/faces_setA/valid/setA_27/273.jpg",
+      "osf_id": "644257169e8e1c1d0a1e2c43",
+      "url": "https://osf.io/download/644257169e8e1c1d0a1e2c43/",
+      "sha256": "f81f6c63325e66e38dcff510e434f206ab8102f6bbaf753419ba2f8d51ba6ba6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_27",
+      "name": "274.jpg",
+      "path": "raw/faces_setA/valid/setA_27/274.jpg",
+      "osf_id": "6442570b9e8e1c1d0a1e2c21",
+      "url": "https://osf.io/download/6442570b9e8e1c1d0a1e2c21/",
+      "sha256": "bc166cf3b7f5045986f1fde9bee879080fdb75a2401eb303b883675931a529a5",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_28",
+      "name": "280.jpg",
+      "path": "raw/faces_setA/valid/setA_28/280.jpg",
+      "osf_id": "64425727384853221949579a",
+      "url": "https://osf.io/download/64425727384853221949579a/",
+      "sha256": "88d4c3e1366e83ac95d3252e35a1513242cef63974287bd4d07f74f0e7df69c3",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_28",
+      "name": "281.jpg",
+      "path": "raw/faces_setA/valid/setA_28/281.jpg",
+      "osf_id": "6442572bc76c072309135c61",
+      "url": "https://osf.io/download/6442572bc76c072309135c61/",
+      "sha256": "43e48115b9a1c9c6769da9b0124cf98040d1f9e8ee85a069397b8965ba564ab3",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_28",
+      "name": "282.jpg",
+      "path": "raw/faces_setA/valid/setA_28/282.jpg",
+      "osf_id": "64425662c76c0722f4135f9c",
+      "url": "https://osf.io/download/64425662c76c0722f4135f9c/",
+      "sha256": "e58e4068489424e1d291400843edf9dc9504ab24259ce2497cdd1057a3176d5d",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_28",
+      "name": "283.jpg",
+      "path": "raw/faces_setA/valid/setA_28/283.jpg",
+      "osf_id": "6442567338485321f24957f7",
+      "url": "https://osf.io/download/6442567338485321f24957f7/",
+      "sha256": "4741c7d4ac7317135962134579b740f15b71c6e40546b603cb03189fae2d4d15",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_28",
+      "name": "284.jpg",
+      "path": "raw/faces_setA/valid/setA_28/284.jpg",
+      "osf_id": "6442566f38485321fd495a70",
+      "url": "https://osf.io/download/6442566f38485321fd495a70/",
+      "sha256": "9b4ebe83dc8a839c513ee22d27edfcdd18a628c50352fabf74f7f6fa7fc050f4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_29",
+      "name": "290.jpg",
+      "path": "raw/faces_setA/valid/setA_29/290.jpg",
+      "osf_id": "6442567538485321fd495a81",
+      "url": "https://osf.io/download/6442567538485321fd495a81/",
+      "sha256": "4d033ec8ebb5e49205ab8071eff8a393d82b3f4eb24c8bc875667c8039d9fa50",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_29",
+      "name": "291.jpg",
+      "path": "raw/faces_setA/valid/setA_29/291.jpg",
+      "osf_id": "6442567c9e8e1c1cf21e2f99",
+      "url": "https://osf.io/download/6442567c9e8e1c1cf21e2f99/",
+      "sha256": "6417ff0309643886d9aecae4d0f437842899376ebc422cfe80071a316a2b171e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_29",
+      "name": "292.jpg",
+      "path": "raw/faces_setA/valid/setA_29/292.jpg",
+      "osf_id": "6442566c9e8e1c1ced1e2c7b",
+      "url": "https://osf.io/download/6442566c9e8e1c1ced1e2c7b/",
+      "sha256": "a6de0851b1e4207b4a209ca9929158154e109127ae6896f932d7d08a542a8afa",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_29",
+      "name": "293.jpg",
+      "path": "raw/faces_setA/valid/setA_29/293.jpg",
+      "osf_id": "6442567d18ff911cdd0484fd",
+      "url": "https://osf.io/download/6442567d18ff911cdd0484fd/",
+      "sha256": "afa0916aad02b9aafa7a159ac3b62babce98eca118587efa8f56a7b503220b5e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_29",
+      "name": "294.jpg",
+      "path": "raw/faces_setA/valid/setA_29/294.jpg",
+      "osf_id": "6442571ac76c072305135c1f",
+      "url": "https://osf.io/download/6442571ac76c072305135c1f/",
+      "sha256": "7196c90c6e0ae41d7f48693521bf0b3ae027870db9f94089b0aecbd374dece55",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_30",
+      "name": "300.jpg",
+      "path": "raw/faces_setA/valid/setA_30/300.jpg",
+      "osf_id": "64425725c76c0722fd135c11",
+      "url": "https://osf.io/download/64425725c76c0722fd135c11/",
+      "sha256": "41618bc5325b628ac04111ce5eb1655d37c3ea44bd9a3fd49c9f4c8e4a91b826",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_30",
+      "name": "301.jpg",
+      "path": "raw/faces_setA/valid/setA_30/301.jpg",
+      "osf_id": "6442571cc76c072309135c41",
+      "url": "https://osf.io/download/6442571cc76c072309135c41/",
+      "sha256": "7b805f3f8e9c4dc509ab6a6e4e3b89e804241d2cf2fa634336f0c2d66ff4e4e7",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_30",
+      "name": "302.jpg",
+      "path": "raw/faces_setA/valid/setA_30/302.jpg",
+      "osf_id": "6442572840b2c11d38e8fe16",
+      "url": "https://osf.io/download/6442572840b2c11d38e8fe16/",
+      "sha256": "5a690dd0c53a6846c319d88b2e5081c83e9ef337c39f244960d88e36192a1008",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_30",
+      "name": "303.jpg",
+      "path": "raw/faces_setA/valid/setA_30/303.jpg",
+      "osf_id": "6442572bc76c07230a135c9b",
+      "url": "https://osf.io/download/6442572bc76c07230a135c9b/",
+      "sha256": "7f441a7573c70dec11df26d8beba14ce8ba4f6422cd99403b700dee2aedb0e44",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_30",
+      "name": "304.jpg",
+      "path": "raw/faces_setA/valid/setA_30/304.jpg",
+      "osf_id": "6442573cc76c072302135c16",
+      "url": "https://osf.io/download/6442573cc76c072302135c16/",
+      "sha256": "ac25356a50312022734618fdbb4e9dee18e2eef8587bcb3c94bac2b5b4734678",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_31",
+      "name": "310.jpg",
+      "path": "raw/faces_setA/valid/setA_31/310.jpg",
+      "osf_id": "6442573bc76c07230a135ccc",
+      "url": "https://osf.io/download/6442573bc76c07230a135ccc/",
+      "sha256": "b7057c3d52ad28ee23012bb23ce4610c976615b62c5f5f1bcad7cd9cd170deec",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_31",
+      "name": "311.jpg",
+      "path": "raw/faces_setA/valid/setA_31/311.jpg",
+      "osf_id": "6442573dc76c072302135c19",
+      "url": "https://osf.io/download/6442573dc76c072302135c19/",
+      "sha256": "2ce4be366bf44afdf7f456cacf02698aa2ab9fb75cbeb7c6c28c0e2eca73eb1d",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_31",
+      "name": "312.jpg",
+      "path": "raw/faces_setA/valid/setA_31/312.jpg",
+      "osf_id": "644257313848532215495734",
+      "url": "https://osf.io/download/644257313848532215495734/",
+      "sha256": "e16ba3370205af21d2afc9029968aebf11bb8a5be4ee7c0b1ebfb42ca181d8f9",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_31",
+      "name": "313.jpg",
+      "path": "raw/faces_setA/valid/setA_31/313.jpg",
+      "osf_id": "644257309e8e1c1d0b1e2ca7",
+      "url": "https://osf.io/download/644257309e8e1c1d0b1e2ca7/",
+      "sha256": "caa3e061aa5e186ef8ce1279cd7f0bf15c9c97b6577a537fa5cad81fa8dca81a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_31",
+      "name": "314.jpg",
+      "path": "raw/faces_setA/valid/setA_31/314.jpg",
+      "osf_id": "6442573640b2c11d43e8f9d4",
+      "url": "https://osf.io/download/6442573640b2c11d43e8f9d4/",
+      "sha256": "47489257165a2c02f0d71740350bdda732ffff2efd86dce7f6d49c80d33bdf31",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_32",
+      "name": "320.jpg",
+      "path": "raw/faces_setA/valid/setA_32/320.jpg",
+      "osf_id": "6442567dc76c0722f4135ff8",
+      "url": "https://osf.io/download/6442567dc76c0722f4135ff8/",
+      "sha256": "c3fba6c95d7880445a5c4bcc395bb2945d370a66b4abf04de9cd5f77f523b807",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_32",
+      "name": "321.jpg",
+      "path": "raw/faces_setA/valid/setA_32/321.jpg",
+      "osf_id": "64425677c76c0722f3135e46",
+      "url": "https://osf.io/download/64425677c76c0722f3135e46/",
+      "sha256": "0b28dd48b375b369d83ea01837b8f7fbbb28d9de98c4b783790ecc1229306fa1",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_32",
+      "name": "322.jpg",
+      "path": "raw/faces_setA/valid/setA_32/322.jpg",
+      "osf_id": "6442573f40b2c11d43e8f9da",
+      "url": "https://osf.io/download/6442573f40b2c11d43e8f9da/",
+      "sha256": "8c93db2fc0cedc490cfdb062c29102e8175c47c45784a26d4204effc54c6314f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_32",
+      "name": "323.jpg",
+      "path": "raw/faces_setA/valid/setA_32/323.jpg",
+      "osf_id": "64425682c76c0722f4136010",
+      "url": "https://osf.io/download/64425682c76c0722f4136010/",
+      "sha256": "84684f91a9127b63dcb8b3fce9e528669c55bcefdaefa42483fd9bb7f2e206b4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_32",
+      "name": "324.jpg",
+      "path": "raw/faces_setA/valid/setA_32/324.jpg",
+      "osf_id": "6442567bc76c0722f3135e50",
+      "url": "https://osf.io/download/6442567bc76c0722f3135e50/",
+      "sha256": "7cf9d60116ad55919449c3d558c2224b57ab31fff0be010e12dd2113306ddbc2",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_33",
+      "name": "330.jpg",
+      "path": "raw/faces_setA/valid/setA_33/330.jpg",
+      "osf_id": "6442567fc76c0722f3135e61",
+      "url": "https://osf.io/download/6442567fc76c0722f3135e61/",
+      "sha256": "5dffc64404d83546dfeb2e63b6260f9caf3b3362d36e2d736d039ca00c8bc6aa",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_33",
+      "name": "331.jpg",
+      "path": "raw/faces_setA/valid/setA_33/331.jpg",
+      "osf_id": "6442568f38485321fc4959d3",
+      "url": "https://osf.io/download/6442568f38485321fc4959d3/",
+      "sha256": "9f5919bb6b0be7105d54c0db8308a0bef2ac39d8d26ab18b2c63bdae33b9b36b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_33",
+      "name": "332.jpg",
+      "path": "raw/faces_setA/valid/setA_33/332.jpg",
+      "osf_id": "6442568f9e8e1c1cee1e2d96",
+      "url": "https://osf.io/download/6442568f9e8e1c1cee1e2d96/",
+      "sha256": "24f531246d8b9399f865efccbededbe155cb23b499f068b5ad38a4430b13dcd7",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_33",
+      "name": "333.jpg",
+      "path": "raw/faces_setA/valid/setA_33/333.jpg",
+      "osf_id": "6442568f9e8e1c1cf21e2fe6",
+      "url": "https://osf.io/download/6442568f9e8e1c1cf21e2fe6/",
+      "sha256": "bc6831310da6bfa7ff2281e7d6a8a19774011019fa8483900b7ba45508556d58",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_33",
+      "name": "334.jpg",
+      "path": "raw/faces_setA/valid/setA_33/334.jpg",
+      "osf_id": "6442568240b2c11d38e8fcd4",
+      "url": "https://osf.io/download/6442568240b2c11d38e8fcd4/",
+      "sha256": "80c58e72a2c8d216c2b12b8149226d709508f3cd991c7873ca3add073ad7cc34",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_34",
+      "name": "340.jpg",
+      "path": "raw/faces_setA/valid/setA_34/340.jpg",
+      "osf_id": "6442568c18ff911cd90483c4",
+      "url": "https://osf.io/download/6442568c18ff911cd90483c4/",
+      "sha256": "39a7e75a00274c6122f6285a8e4871d5298303a9dfc9296cb466d746be823492",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_34",
+      "name": "341.jpg",
+      "path": "raw/faces_setA/valid/setA_34/341.jpg",
+      "osf_id": "6442568718ff911cdd048522",
+      "url": "https://osf.io/download/6442568718ff911cdd048522/",
+      "sha256": "05a13c74a4c07c9ac04da5ae65cce211684b9eaee049d277e5fee4e404262598",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_34",
+      "name": "342.jpg",
+      "path": "raw/faces_setA/valid/setA_34/342.jpg",
+      "osf_id": "64425692c76c0722f4136059",
+      "url": "https://osf.io/download/64425692c76c0722f4136059/",
+      "sha256": "f13e407c2b72bae276ae40471273b9023a2c7ac0372555bfbe587955503b0bdf",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_34",
+      "name": "343.jpg",
+      "path": "raw/faces_setA/valid/setA_34/343.jpg",
+      "osf_id": "6442569c18ff911cdc04849e",
+      "url": "https://osf.io/download/6442569c18ff911cdc04849e/",
+      "sha256": "91f1b05567ff1e96aa7f7258b8402003999ccd02bd7dee669b7d2c9a721d055f",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_34",
+      "name": "344.jpg",
+      "path": "raw/faces_setA/valid/setA_34/344.jpg",
+      "osf_id": "6442569318ff911cdd04854c",
+      "url": "https://osf.io/download/6442569318ff911cdd04854c/",
+      "sha256": "6884b902ffc21243a27eedf79c09feeffee57f4480749a9a14f2f66b64724a78",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_35",
+      "name": "350.jpg",
+      "path": "raw/faces_setA/valid/setA_35/350.jpg",
+      "osf_id": "6442569418ff911cdd048552",
+      "url": "https://osf.io/download/6442569418ff911cdd048552/",
+      "sha256": "9a65c20fa6a3d65ddb2a79ea218872a47e9ce1f78625ab1de3fadb7f57ef8fb1",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_35",
+      "name": "351.jpg",
+      "path": "raw/faces_setA/valid/setA_35/351.jpg",
+      "osf_id": "644255c238485321fd4957a4",
+      "url": "https://osf.io/download/644255c238485321fd4957a4/",
+      "sha256": "76d4306badf48475b07d1fb8a0da5b1928882c2d33571db4ac2337d7322572d8",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_35",
+      "name": "352.jpg",
+      "path": "raw/faces_setA/valid/setA_35/352.jpg",
+      "osf_id": "6442569e9e8e1c1cee1e2dc4",
+      "url": "https://osf.io/download/y7856/",
+      "sha256": "f3c668301e8221b90459a117eb18fc21e99a2a2511e0de14316c40f9e953656a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_35",
+      "name": "353.jpg",
+      "path": "raw/faces_setA/valid/setA_35/353.jpg",
+      "osf_id": "6442569740b2c11d39e8fe0a",
+      "url": "https://osf.io/download/6442569740b2c11d39e8fe0a/",
+      "sha256": "82903229ab473b75d28779342db71ae5dc458caec6efb72cff95b1a76c6def0b",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_35",
+      "name": "354.jpg",
+      "path": "raw/faces_setA/valid/setA_35/354.jpg",
+      "osf_id": "6442569a9e8e1c1cee1e2db6",
+      "url": "https://osf.io/download/6442569a9e8e1c1cee1e2db6/",
+      "sha256": "37c1da9c670a3c83f39248a2baa6d049380028f82c631123f94c86656f077b8e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_36",
+      "name": "360.jpg",
+      "path": "raw/faces_setA/valid/setA_36/360.jpg",
+      "osf_id": "6442574318ff911cf1048282",
+      "url": "https://osf.io/download/6442574318ff911cf1048282/",
+      "sha256": "14fa47cae9e4078a6dff0c9d66eeaca6b5254d99616d3250b076728ad7f8dd60",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_36",
+      "name": "361.jpg",
+      "path": "raw/faces_setA/valid/setA_36/361.jpg",
+      "osf_id": "64425741c76c072306135c16",
+      "url": "https://osf.io/download/64425741c76c072306135c16/",
+      "sha256": "77d7ac207c54d3e670bf1914a08a0ecfa371063dce837d0674c672774ce27dc3",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_36",
+      "name": "362.jpg",
+      "path": "raw/faces_setA/valid/setA_36/362.jpg",
+      "osf_id": "6442574c3848532215495763",
+      "url": "https://osf.io/download/6442574c3848532215495763/",
+      "sha256": "bc4cd50cabfeb1c06db69ec3037272b5f8b7f3688cc4964a5f20a5192033f38a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_36",
+      "name": "363.jpg",
+      "path": "raw/faces_setA/valid/setA_36/363.jpg",
+      "osf_id": "6442574d18ff911cea04820c",
+      "url": "https://osf.io/download/6442574d18ff911cea04820c/",
+      "sha256": "4da2e86b97eb9b2f16c903b584b9119d5b19bb6b0c6499f042d98fd706373d10",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_36",
+      "name": "364.jpg",
+      "path": "raw/faces_setA/valid/setA_36/364.jpg",
+      "osf_id": "6442574438485322194957f1",
+      "url": "https://osf.io/download/6442574438485322194957f1/",
+      "sha256": "74150e8e94df97e53eeb14556ef4c9ba82576dc0422c301aaea15c32d32b10b6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_37",
+      "name": "370.jpg",
+      "path": "raw/faces_setA/valid/setA_37/370.jpg",
+      "osf_id": "644257503848532214495745",
+      "url": "https://osf.io/download/644257503848532214495745/",
+      "sha256": "fed0cb9784b3b0e0552a5d5829437bc8bc1806e7156d7423a4e3549f2a55240a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_37",
+      "name": "371.jpg",
+      "path": "raw/faces_setA/valid/setA_37/371.jpg",
+      "osf_id": "6442574840b2c11d4de8fae0",
+      "url": "https://osf.io/download/6442574840b2c11d4de8fae0/",
+      "sha256": "84126e624f29015b370359286e69d6485f4db2b525df1a2a7e5d4f50c0452014",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_37",
+      "name": "372.jpg",
+      "path": "raw/faces_setA/valid/setA_37/372.jpg",
+      "osf_id": "6442574d18ff911cee04823a",
+      "url": "https://osf.io/download/6442574d18ff911cee04823a/",
+      "sha256": "1db33b977d4bb86850ceb4dc2cfeca5dc108e2f7a7ba7e718663e4bdd007b1e6",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_37",
+      "name": "373.jpg",
+      "path": "raw/faces_setA/valid/setA_37/373.jpg",
+      "osf_id": "6442574dc76c07230a135d06",
+      "url": "https://osf.io/download/6442574dc76c07230a135d06/",
+      "sha256": "9ed912db93fa806a1b6f5aa96e96d83aae8e9558732407554bb566c85fe5c8d9",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_37",
+      "name": "374.jpg",
+      "path": "raw/faces_setA/valid/setA_37/374.jpg",
+      "osf_id": "6442575b18ff911cf2048351",
+      "url": "https://osf.io/download/6442575b18ff911cf2048351/",
+      "sha256": "53953f520c87d831a51b9036698e5a76a23143f60fb126d49e9cfb22677b061e",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_38",
+      "name": "380.jpg",
+      "path": "raw/faces_setA/valid/setA_38/380.jpg",
+      "osf_id": "6442569b40b2c11d39e8fe1e",
+      "url": "https://osf.io/download/6442569b40b2c11d39e8fe1e/",
+      "sha256": "4fc99b93ab0fa5fdcc29d0159597a8bbef8fcc49201edcfcaccdbfec5006176a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_38",
+      "name": "381.jpg",
+      "path": "raw/faces_setA/valid/setA_38/381.jpg",
+      "osf_id": "644256a6c76c0722f41360a3",
+      "url": "https://osf.io/download/644256a6c76c0722f41360a3/",
+      "sha256": "733a82c449b322fe741ca600463b9f2a12f6ea113ebc68482363b7ff6f8ea60a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_38",
+      "name": "382.jpg",
+      "path": "raw/faces_setA/valid/setA_38/382.jpg",
+      "osf_id": "6442569e40b2c11d35e8fb9b",
+      "url": "https://osf.io/download/6442569e40b2c11d35e8fb9b/",
+      "sha256": "ba249566b51a58155a973a6e2d15bb7413176a23925c3a3efee3b3158718e2d5",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_38",
+      "name": "383.jpg",
+      "path": "raw/faces_setA/valid/setA_38/383.jpg",
+      "osf_id": "644256a938485321f7495880",
+      "url": "https://osf.io/download/644256a938485321f7495880/",
+      "sha256": "443b1f7e31a6d92181c36ecaecdfdf6a5c2fad66e9b82e774655a303541ba08a",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_38",
+      "name": "384.jpg",
+      "path": "raw/faces_setA/valid/setA_38/384.jpg",
+      "osf_id": "644256a138485321fc495a18",
+      "url": "https://osf.io/download/644256a138485321fc495a18/",
+      "sha256": "aae0b5c6598854df4cc021dcc3983bb73b921dc14ce15592bedf2e3d321bb594",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_39",
+      "name": "390.jpg",
+      "path": "raw/faces_setA/valid/setA_39/390.jpg",
+      "osf_id": "644256ae38485321f7495897",
+      "url": "https://osf.io/download/644256ae38485321f7495897/",
+      "sha256": "86872dcf54fe749c352d93cd05ccd4487c6f074be45b06dc101e3a65ceaccfa4",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_39",
+      "name": "391.jpg",
+      "path": "raw/faces_setA/valid/setA_39/391.jpg",
+      "osf_id": "644256a3c76c0722f0135d7c",
+      "url": "https://osf.io/download/644256a3c76c0722f0135d7c/",
+      "sha256": "01041c6f0f1a79b91fac23a42ce762ee7328180062737aba7d6b10f07ab81390",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_39",
+      "name": "392.jpg",
+      "path": "raw/faces_setA/valid/setA_39/392.jpg",
+      "osf_id": "644256a540b2c11d38e8fd3d",
+      "url": "https://osf.io/download/644256a540b2c11d38e8fd3d/",
+      "sha256": "3693e2498e47ce9359fc4e6c937f796ac9e1b82fa8734c2ef3277c413dbb77ee",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_39",
+      "name": "393.jpg",
+      "path": "raw/faces_setA/valid/setA_39/393.jpg",
+      "osf_id": "644256a9c76c0722f0135d85",
+      "url": "https://osf.io/download/644256a9c76c0722f0135d85/",
+      "sha256": "9736531f884c48b3cb81a3cfa5d6301e99153b80c01abc2d2c931260acdb41f7",
+      "dimensions": [
+        250,
+        250
+      ]
+    },
+    {
+      "identity": "setA_39",
+      "name": "394.jpg",
+      "path": "raw/faces_setA/valid/setA_39/394.jpg",
+      "osf_id": "644256b638485321f149573b",
+      "url": "https://osf.io/download/644256b638485321f149573b/",
+      "sha256": "801bfe2979b9825e0f2e6ef5735589b3e8210e546a3775657edefeacfe25e1f1",
+      "dimensions": [
+        250,
+        250
+      ]
+    }
+  ],
+  "note": "Fresh verified staging from the authors archive; not claimed byte-identical to the unavailable historical project packed Set A store."
+}

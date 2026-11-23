@@ -1,5 +1,16 @@
 # Instructions for agents working in combined_lpnet
 
+## Current handoff branch
+
+Read the root README first. As of November 23, 2026 this branch concerns the
+ResNet18 no-generic-house models and fixed-sigma single-noise Yin evaluation.
+Use `yin_tests/current_kde/run.py` for portable cached-feature replay. The VGG16-BN
+workflow described below is historical. `handoff/snapshots/` is frozen evidence;
+do not edit it or execute its absolute-path launchers without preparing a new
+version. Current rates are LP 0.373 and CNN 0.364, sigma 2, fit only on face UU.
+The pooled-house and nearest-memory alternatives are not the active baseline.
+Read `handoff/DATA_AND_OPERATIONS.md` before cluster work. No delegation is required.
+
 ## Start here
 
 Read `README.md` for the pipeline and `instructions/hpc-onboarding.md` before preparing

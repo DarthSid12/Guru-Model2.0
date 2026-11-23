@@ -1,0 +1,19 @@
+{
+  "site": "delta",
+  "root": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109",
+  "seed": 46,
+  "python": "/work/nvme/bjaa/sagrawal5/lpnet-env/env/bin/python",
+  "account": "bjaa-delta-gpu",
+  "partition": "gpuA100x4",
+  "baseline_code": "/projects/bjaa/sagrawal5/guru-manualhouses128-wordbank-lp-20261028/incoming/code",
+  "baseline_source_record": "/projects/bjaa/sagrawal5/guru-manualhouses128-wordbank-lp-20261028/incoming/SOURCE_BASELINE.json",
+  "baseline_data": "/work/nvme/bjaa/sagrawal5/guru-manualhouses128-wordbank-20261028/data",
+  "baseline_data_receipt": "/projects/bjaa/sagrawal5/guru-manualhouses128-wordbank-20261028/data/DATA_READY.json",
+  "pack_here": true,
+  "chunk_hours": 12,
+  "baseline_persistent_data": "/projects/bjaa/sagrawal5/guru-manualhouses128-wordbank-20261028/data",
+  "expected_receipt": "/projects/bjaa/sagrawal5/guru-manualhouses128-wordbank-20261028/data/DATA_READY.json",
+  "expected_receipt_sha256": "facf4d5a31d4bdf02908c7c21354df96fbe567a4323f0a4f6652e3cf98a4a234",
+  "parent_root": "/projects/bjaa/sagrawal5/guru-resnet18-objects64-20261106",
+  "object_store": "/projects/bjaa/sagrawal5/guru-resnet18-objects64-20261106/data/fixation_data/objects_wordbank64"
+}

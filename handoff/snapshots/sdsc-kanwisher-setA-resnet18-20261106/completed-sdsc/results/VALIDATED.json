@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "spec_sha256": "29927ffc3c84e92f098ff7787e7cc7225c9a29a8e9e6db6726e1356e6c7ab84a",
+  "packing_receipt_sha256": "60eaa2d66bd764cb18cc38bc8a02fcffabc863e60e11a22e8356eb47ad363841",
+  "source_manifest_sha256": "36cd90ce985341fb45f1aa86b251ffb266910cee6ddb3f99e07724490313d101",
+  "all_trials_sha256": "8bdac6a11d38dff7d3dc16d2b2441bdd1b4a53d05bf7b831963237cf18623c90",
+  "summary_sha256": "69640d784bc7b3ec5313f995da9edb07dcb7beab50e1edcd68286a3a9ab53b5f",
+  "rows": 200,
+  "all_cells_n50": true,
+  "triplets_per_condition": 156000
+}

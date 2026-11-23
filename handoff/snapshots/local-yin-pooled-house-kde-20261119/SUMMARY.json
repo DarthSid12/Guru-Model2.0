@@ -1,0 +1,278 @@
+{
+  "cells": [
+    {
+      "variant": "lp",
+      "method": "original_max40",
+      "condition": "UU",
+      "mean": 57.333333333333336,
+      "sd": 12.670604472047687,
+      "sem": 1.7918940687835028,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_max20",
+      "condition": "UU",
+      "mean": 57.333333333333336,
+      "sd": 12.670604472047687,
+      "sem": 1.7918940687835028,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_pool200",
+      "condition": "UU",
+      "mean": 53.833333333333336,
+      "sd": 13.063815112979917,
+      "sem": 1.8475024509110805,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "original_max40",
+      "condition": "UI",
+      "mean": 53.166666666666664,
+      "sd": 12.698536705743706,
+      "sem": 1.7958442831555312,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_max20",
+      "condition": "UI",
+      "mean": 53.166666666666664,
+      "sd": 12.698536705743706,
+      "sem": 1.7958442831555312,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_pool200",
+      "condition": "UI",
+      "mean": 51.833333333333336,
+      "sd": 12.963624321753372,
+      "sem": 1.8333333333333333,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "original_max40",
+      "condition": "IU",
+      "mean": 54.0,
+      "sd": 12.051476890327395,
+      "sem": 1.7043362064926935,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_max20",
+      "condition": "IU",
+      "mean": 54.0,
+      "sd": 12.051476890327395,
+      "sem": 1.7043362064926935,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_pool200",
+      "condition": "IU",
+      "mean": 53.166666666666664,
+      "sd": 12.243976722715319,
+      "sem": 1.7315597938644482,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "original_max40",
+      "condition": "II",
+      "mean": 58.333333333333336,
+      "sd": 13.36306209562122,
+      "sem": 1.8898223650461363,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_max20",
+      "condition": "II",
+      "mean": 58.333333333333336,
+      "sd": 13.36306209562122,
+      "sem": 1.8898223650461363,
+      "ties": 0
+    },
+    {
+      "variant": "lp",
+      "method": "house_pool200",
+      "condition": "II",
+      "mean": 55.5,
+      "sd": 13.214821953941582,
+      "sem": 1.868858043160991,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "original_max40",
+      "condition": "UU",
+      "mean": 52.5,
+      "sd": 15.8158693518886,
+      "sem": 2.236701693816183,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_max20",
+      "condition": "UU",
+      "mean": 52.5,
+      "sd": 15.8158693518886,
+      "sem": 2.236701693816183,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_pool200",
+      "condition": "UU",
+      "mean": 53.5,
+      "sd": 13.26620003965203,
+      "sem": 1.8761240017230392,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "original_max40",
+      "condition": "UI",
+      "mean": 50.166666666666664,
+      "sd": 13.094155799431029,
+      "sem": 1.8517932719381676,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_max20",
+      "condition": "UI",
+      "mean": 50.166666666666664,
+      "sd": 13.094155799431029,
+      "sem": 1.8517932719381676,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_pool200",
+      "condition": "UI",
+      "mean": 51.166666666666664,
+      "sd": 15.153223465846985,
+      "sem": 2.142989413907104,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "original_max40",
+      "condition": "IU",
+      "mean": 50.166666666666664,
+      "sd": 14.915673778379526,
+      "sem": 2.109394814931707,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_max20",
+      "condition": "IU",
+      "mean": 50.333333333333336,
+      "sd": 15.14854640055892,
+      "sem": 2.1423279769908556,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_pool200",
+      "condition": "IU",
+      "mean": 50.333333333333336,
+      "sd": 14.182164392224221,
+      "sem": 2.005660922728828,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "original_max40",
+      "condition": "II",
+      "mean": 62.0,
+      "sd": 13.485525960482187,
+      "sem": 1.9071413709048368,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_max20",
+      "condition": "II",
+      "mean": 62.0,
+      "sd": 13.485525960482187,
+      "sem": 1.9071413709048368,
+      "ties": 0
+    },
+    {
+      "variant": "cnn",
+      "method": "house_pool200",
+      "condition": "II",
+      "mean": 56.16666666666667,
+      "sd": 15.04057249115465,
+      "sem": 2.127058160284659,
+      "ties": 0
+    }
+  ],
+  "pooled_minus_original": [
+    {
+      "variant": "lp",
+      "condition": "UU",
+      "mean": -3.500000000000001,
+      "sd": 13.994046353122222,
+      "sem": 1.9790570145063195
+    },
+    {
+      "variant": "lp",
+      "condition": "UI",
+      "mean": -1.3333333333333335,
+      "sd": 11.586214343425182,
+      "sem": 1.6385381461033577
+    },
+    {
+      "variant": "lp",
+      "condition": "IU",
+      "mean": -0.8333333333333336,
+      "sd": 13.806444648503813,
+      "sem": 1.952526127006753
+    },
+    {
+      "variant": "lp",
+      "condition": "II",
+      "mean": -2.8333333333333335,
+      "sd": 14.927071391182542,
+      "sem": 2.1110066807921775
+    },
+    {
+      "variant": "cnn",
+      "condition": "UU",
+      "mean": 1.0000000000000002,
+      "sd": 13.110380855177338,
+      "sem": 1.8540878413268367
+    },
+    {
+      "variant": "cnn",
+      "condition": "UI",
+      "mean": 1.0000000000000002,
+      "sd": 10.190921218586999,
+      "sem": 1.4412139000401483
+    },
+    {
+      "variant": "cnn",
+      "condition": "IU",
+      "mean": 0.16666666666666685,
+      "sd": 14.2350291331549,
+      "sem": 2.013137126088378
+    },
+    {
+      "variant": "cnn",
+      "condition": "II",
+      "mean": -5.833333333333333,
+      "sd": 12.514164310493237,
+      "sem": 1.7697700889664887
+    }
+  ]
+}

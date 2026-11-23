@@ -1,0 +1,21 @@
+{
+  "status": "SOURCES_COMPLETE_MANIFEST_VERIFIED",
+  "classes": 64,
+  "retained_classes": 48,
+  "replacement_classes": 16,
+  "image_entries": 44800,
+  "new_downloaded_photos": 11200,
+  "retained_photo_references": 33600,
+  "photos_per_class": {
+    "train": 500,
+    "valid": 100,
+    "test": 100
+  },
+  "animal_word_classes": 0,
+  "orientation_filter": false,
+  "new_training_or_yin_run": false,
+  "exhaustive_manual_image_review": false,
+  "source_review": "SOURCE_REVIEW.json",
+  "verification": "PHOTO_MANIFEST_VERIFIED.json",
+  "gallery": "../../output/wordbank-inanimate-20261105/index.html"
+}

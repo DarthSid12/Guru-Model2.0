@@ -1,0 +1,48 @@
+{
+  "status": "COMPLETED_LOCAL_INDEPENDENTLY_VERIFIED",
+  "checked_utc": "2026-11-13T06:37:08.415292+00:00",
+  "execution_platform": "macOS arm64 CPU",
+  "source_compilation": "passed",
+  "previous_attempt": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-kde-alpha-zero-20261112",
+  "recovery_reason": "Permit1e-10 moment tolerance with exact binary histograms and reuse stored original parent floats",
+  "noise_rate": 0,
+  "alpha_grid_points": 23,
+  "independent_verification": {
+    "passed": true,
+    "verified_utc": "2026-11-13T06:37:08.415292+00:00",
+    "execution_id": "local-alpha-zero-20261112-v2",
+    "rows": 38400,
+    "cells": 768,
+    "seeds_per_cell": 50,
+    "legacy_control_rows_replayed": 800,
+    "parent_rows_and_masks_replayed": 4800,
+    "development_only_selection_recomputed": true,
+    "validation_paired_effects_recomputed": true,
+    "source_external_hashes_and_distance_references_verified": true,
+    "all_moments_recomputed": true,
+    "spec_sha256": "467904686e16b2c9a6300886a3b9daee7d21fecfd7add4265ac51851bf4e54cd",
+    "csv_sha256": "2973681a1db029587dae01e84631a0abd7b82b982cfca0803120495abdd20645"
+  },
+  "results_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-kde-alpha-zero-20261112-v2/RESULTS.md",
+  "elapsed_seconds": 41.96026012499351,
+  "SDSC_authentication_required": false,
+  "outcome": {
+    "noise_rate": 0,
+    "selected_alpha": {
+      "lp": 0.005,
+      "cnn": 0.005
+    },
+    "small_alpha_plateau": true,
+    "validation_house_UU_errors": {
+      "lp": {
+        "sigma2": 3.4,
+        "selected": 3.0
+      },
+      "cnn": {
+        "sigma2": 5.16,
+        "selected": 4.74
+      }
+    },
+    "validation_any_alpha_UU_better_than_II": false
+  }
+}

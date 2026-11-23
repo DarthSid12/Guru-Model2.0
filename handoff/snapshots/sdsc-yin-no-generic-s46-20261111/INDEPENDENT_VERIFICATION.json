@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "verified_utc": "2026-11-12T04:46:32.010735+00:00",
+  "spec_sha256": "73fc1ccecc0600eada6568d5a6b6c1a33b4d959aa66f395a306ac8d95514b799",
+  "rows": 14400,
+  "cells": 288,
+  "paired_contrasts": 72,
+  "simulation_seeds_per_cell": 50,
+  "simulation_seed_range": [
+    101,
+    150
+  ],
+  "training_seed": 46,
+  "epoch": 124,
+  "verified_frozen_inputs": 47,
+  "probability_cache_arrays_verified": 12,
+  "pilot_checks": 56,
+  "calibration_range_flags": [],
+  "means_sample_sd_sem_recomputed": true,
+  "noise_and_trial_count_checks_passed": true,
+  "human_report_hashes_verified": true,
+  "csv_sha256": "150b8a8ae0b180a3c9ecfc8a3c9a9caeeefcbb32970f23aeef74304a267c30bd",
+  "summary_sha256": "291f6f532b5fbddee75d4f569e03b133b0227bacb13fcdac91f7613bdc9fd534"
+}

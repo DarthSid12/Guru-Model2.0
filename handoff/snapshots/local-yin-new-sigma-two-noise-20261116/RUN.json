@@ -1,0 +1,14 @@
+{
+  "registration_complete": true,
+  "execution_id": "local-yin-new-sigma-two-noise-20261116",
+  "spec_sha256": "ea22b2ff2ff7968b67ae414ed19e850a1b7a57d1b5d375e9277c51923e575111",
+  "created_utc": "2026-11-17T03:21:40.787524+00:00",
+  "maximum_walltime_seconds": 1800,
+  "parallel_model_workers": 2,
+  "threads_per_worker": 1,
+  "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+  "python_executable": "/tmp/guru-alpha-zero-py312/bin/python",
+  "torch_version": "2.5.1",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "scope": "User-authorized newer LP/CNN+selected newKDEsigmas+two faceanchors;fixed absolute sigma;fresh201-250evaluation;no training or activebaseline change"
+}

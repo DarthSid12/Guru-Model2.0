@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "status": "COMPLETED_VERIFIED",
+  "completed_utc": "2026-11-20T02:33:27.824626+00:00",
+  "spec_sha256": "3465a3452055f394cbe05787128c90daf9cbde66740a4a3539249f235e4dcad2",
+  "records": 1600,
+  "trial_decisions": 19200,
+  "seeds_per_cell": 50,
+  "UU_UI_parent_masks_verified": 800,
+  "twenty_study_per_category": true,
+  "twelve_test_pairs_per_category": true,
+  "single_noise_study_and_test_all_conditions": true,
+  "noise_transfer_unchanged": true,
+  "records_sha256": "0a312f911a7ad765e9aeb042f7745805febaedcc0469af990779b067d9d17025"
+}

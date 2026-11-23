@@ -1,0 +1,19 @@
+{
+  "site": "anvil",
+  "root": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-no-generic-20261109",
+  "seed": 45,
+  "python": "/anvil/projects/x-cis260738/x-sagrawal5/guru-cnn/lpnet-env/env/bin/python",
+  "account": "cis260738-ai",
+  "partition": "ai",
+  "baseline_code": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/code",
+  "baseline_source_record": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/incoming/SOURCE_BASELINE.json",
+  "baseline_data": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/data",
+  "baseline_data_receipt": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/data/DATA_READY.json",
+  "pack_here": false,
+  "chunk_hours": 24,
+  "baseline_persistent_data": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/data",
+  "expected_receipt": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-manualhouses128-20261030/incoming/DELTA_DATA_READY.json",
+  "expected_receipt_sha256": "facf4d5a31d4bdf02908c7c21354df96fbe567a4323f0a4f6652e3cf98a4a234",
+  "parent_root": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-objects64-20261106",
+  "object_store": null
+}

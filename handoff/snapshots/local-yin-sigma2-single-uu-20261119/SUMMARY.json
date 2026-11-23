@@ -1,0 +1,292 @@
+{
+  "cells": [
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "UU",
+      "mean": 92.5,
+      "sd": 6.574619653087656,
+      "sem": 0.9297916280841256
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "UU",
+      "mean": 57.333333333333336,
+      "sd": 12.670604472047687,
+      "sem": 1.7918940687835028
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "UI",
+      "mean": 63.666666666666664,
+      "sd": 12.684019620825907,
+      "sem": 1.793791257317844
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "UI",
+      "mean": 53.166666666666664,
+      "sd": 12.698536705743706,
+      "sem": 1.7958442831555312
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "IU",
+      "mean": 62.5,
+      "sd": 14.010240828499786,
+      "sem": 1.9813472591777663
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "IU",
+      "mean": 54.0,
+      "sd": 12.051476890327395,
+      "sem": 1.7043362064926935
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "II",
+      "mean": 63.16666666666667,
+      "sd": 13.892403183508314,
+      "sem": 1.9646824996072618
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "II",
+      "mean": 58.333333333333336,
+      "sd": 13.36306209562122,
+      "sem": 1.8898223650461363
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "UU",
+      "mean": 91.16666666666667,
+      "sd": 8.145850187883811,
+      "sem": 1.1519971812764709
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "UU",
+      "mean": 85.83333333333333,
+      "sd": 10.813036978919614,
+      "sem": 1.5291943546029916
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "UI",
+      "mean": 61.5,
+      "sd": 16.313433664125778,
+      "sem": 2.3070679136680488
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "UI",
+      "mean": 75.16666666666667,
+      "sd": 12.197589070727131,
+      "sem": 1.7249995892076146
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "IU",
+      "mean": 61.166666666666664,
+      "sd": 17.301678316347182,
+      "sem": 2.446826812679468
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "IU",
+      "mean": 74.83333333333333,
+      "sd": 11.355171037771829,
+      "sem": 1.6058636884683093
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "II",
+      "mean": 64.66666666666667,
+      "sd": 13.735433430339006,
+      "sem": 1.9424836242258225
+    },
+    {
+      "variant": "lp",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "II",
+      "mean": 83.83333333333333,
+      "sd": 8.8143487430537,
+      "sem": 1.2465371535912784
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "UU",
+      "mean": 92.66666666666667,
+      "sd": 6.441785361175564,
+      "sem": 0.9110060223670949
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "UU",
+      "mean": 52.5,
+      "sd": 15.8158693518886,
+      "sem": 2.236701693816183
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "UI",
+      "mean": 47.0,
+      "sd": 12.905552602731099,
+      "sem": 1.8251207520701715
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "UI",
+      "mean": 50.166666666666664,
+      "sd": 13.094155799431029,
+      "sem": 1.8517932719381676
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "IU",
+      "mean": 50.0,
+      "sd": 13.468700594029478,
+      "sem": 1.9047619047619049
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "IU",
+      "mean": 50.166666666666664,
+      "sd": 14.915673778379526,
+      "sem": 2.109394814931707
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "faces",
+      "condition": "II",
+      "mean": 61.833333333333336,
+      "sd": 11.795931117538167,
+      "sem": 1.6681965767241296
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "category": "houses",
+      "condition": "II",
+      "mean": 62.0,
+      "sd": 13.485525960482187,
+      "sem": 1.9071413709048368
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "UU",
+      "mean": 95.16666666666667,
+      "sd": 6.540038902295415,
+      "sem": 0.9249011714073825
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "UU",
+      "mean": 86.33333333333333,
+      "sd": 10.481600334788162,
+      "sem": 1.4823221348831792
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "UI",
+      "mean": 50.666666666666664,
+      "sd": 15.23065294449474,
+      "sem": 2.1539395957902174
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "UI",
+      "mean": 69.16666666666667,
+      "sd": 12.626906806902634,
+      "sem": 1.7857142857142856
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "IU",
+      "mean": 47.0,
+      "sd": 15.223207012519792,
+      "sem": 2.1528865819918694
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "IU",
+      "mean": 70.5,
+      "sd": 11.444681106242443,
+      "sem": 1.618522323748318
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "faces",
+      "condition": "II",
+      "mean": 62.66666666666667,
+      "sd": 15.54380832757092,
+      "sem": 2.198226454777865
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_objects",
+      "category": "objects",
+      "condition": "II",
+      "mean": 83.16666666666667,
+      "sd": 9.596449173246002,
+      "sem": 1.3571428571428572
+    }
+  ]
+}

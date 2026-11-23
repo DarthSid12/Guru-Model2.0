@@ -1,0 +1,270 @@
+{
+  "verified_utc": "2026-11-09T17:43:47.405215+00:00",
+  "status": "DELTA_COMPLETED_ANVIL_LP_CNN_RUNNING",
+  "spec_sha256": "2bb375dead9dd958379140556e142e7b14e0c40ffa40aaabbd27438c825c5ab6",
+  "generic_house_images": 0,
+  "generic_house_classes": 0,
+  "final_classes": 2240,
+  "epochs": 124,
+  "sites": {
+    "delta": {
+      "root": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109",
+      "seed": 46,
+      "jobs": [
+        {
+          "kind": "prepare",
+          "variant": "both",
+          "seed": 0,
+          "chunk": 0,
+          "job_id": "23684223",
+          "dependency": null
+        },
+        {
+          "kind": "train",
+          "variant": "lp",
+          "seed": 46,
+          "chunk": 1,
+          "job_id": "23684224",
+          "dependency": "afterok:23684223"
+        },
+        {
+          "kind": "train",
+          "variant": "lp",
+          "seed": 46,
+          "chunk": 2,
+          "job_id": "23684225",
+          "dependency": "afterok:23684223,afterany:23684224"
+        },
+        {
+          "kind": "train",
+          "variant": "cnn",
+          "seed": 46,
+          "chunk": 1,
+          "job_id": "23684226",
+          "dependency": "afterok:23684223"
+        },
+        {
+          "kind": "train",
+          "variant": "cnn",
+          "seed": 46,
+          "chunk": 2,
+          "job_id": "23684227",
+          "dependency": "afterok:23684223,afterany:23684226"
+        }
+      ],
+      "all_jobs_verified_pending_JobHeldUser": false,
+      "training_started": true,
+      "cli_preflight_passed": true,
+      "registration_sha256": "ff9c6ae05032fad7ced2807ffdfc2d2d94f6be9acb8b4ea74f286ab1fb771f05",
+      "jobs_released": true,
+      "released_utc": "2026-11-09T23:03:21.732513+00:00",
+      "prepare_state": "COMPLETED",
+      "scheduler_start_estimate_pacific": null,
+      "prepare_job_id": "23684223",
+      "last_verified_utc": "2026-11-12T02:40:09.921968+00:00",
+      "job_states": {
+        "23684223": "PENDING",
+        "23684224": "PENDING_DEPENDENCY",
+        "23684225": "PENDING_DEPENDENCY",
+        "23684226": "PENDING_DEPENDENCY",
+        "23684227": "PENDING_DEPENDENCY"
+      },
+      "log_files_present": false,
+      "failures_observed": false,
+      "prepare_elapsed": "00:02:11",
+      "training_state": "COMPLETED",
+      "models": {
+        "lp": {
+          "state": "COMPLETED",
+          "epochs": 124,
+          "training_seed": 46,
+          "checkpoint_sha256": "cf516526e48eed6b6769fef3faf85b94cf3192527b29c38a988d36a3825a05ea",
+          "remote_checkpoint_hash_verified": true,
+          "summary_sha256": "7b2f3505748be0b4b9d5785dc297049601a1a8dda82309d155c9729a0817412c",
+          "epoch_history_verified_1_to_124": true,
+          "results": {
+            "epochs_run": 124,
+            "best_epoch": 124,
+            "best_valid_acc": 0.6693029835390947,
+            "test_acc_at_best_epoch": 0.19737011316872427,
+            "final_train_acc": 0.7647734375,
+            "final_valid_acc": 0.6693029835390947,
+            "final_test_acc": 0.19737011316872427,
+            "valid_acc_by_category": {
+              "faces_vgg2k": 0.7057698567708334,
+              "objects_wordbank64": 0.5228125,
+              "houses_synthetic128": 0.9921875
+            },
+            "test_acc_by_category": {
+              "faces_vgg2k": 0.15181477864583334,
+              "objects_wordbank64": 0.369375,
+              "houses_synthetic128": 0.34375
+            },
+            "wall_time_sec": 29408.6,
+            "sec_per_epoch": 237.2
+          }
+        },
+        "cnn": {
+          "state": "COMPLETED",
+          "epochs": 124,
+          "training_seed": 46,
+          "checkpoint_sha256": "e39d54ad778c50df1c0a4820836762916c73f2bac702f13c3ef50321f50b90ad",
+          "remote_checkpoint_hash_verified": true,
+          "summary_sha256": "dabc1ad21086d5c2efdf3ffad77c27b80f457b60d5a5b281f7dce196bac9d5e6",
+          "epoch_history_verified_1_to_124": true,
+          "results": {
+            "epochs_run": 124,
+            "best_epoch": 124,
+            "best_valid_acc": 0.8289930555555556,
+            "test_acc_at_best_epoch": 0.07796424897119342,
+            "final_train_acc": 0.9265859375,
+            "final_valid_acc": 0.8289930555555556,
+            "final_test_acc": 0.07796424897119342,
+            "valid_acc_by_category": {
+              "faces_vgg2k": 0.8819986979166666,
+              "objects_wordbank64": 0.6221875,
+              "houses_synthetic128": 0.9921875
+            },
+            "test_acc_by_category": {
+              "faces_vgg2k": 0.006998697916666667,
+              "objects_wordbank64": 0.351875,
+              "houses_synthetic128": 0.0078125
+            },
+            "wall_time_sec": 27945.3,
+            "sec_per_epoch": 225.4
+          }
+        }
+      },
+      "training_job_states": {
+        "23684224": "COMPLETED",
+        "23684226": "COMPLETED"
+      },
+      "continuation_job_states": {
+        "23684225": "PENDING_PRIORITY",
+        "23684227": "PENDING_PRIORITY"
+      }
+    },
+    "anvil": {
+      "root": "/anvil/projects/x-cis260738/x-sagrawal5/guru-resnet18-no-generic-20261109",
+      "seed": 45,
+      "jobs": [
+        {
+          "kind": "prepare",
+          "variant": "both",
+          "seed": 0,
+          "chunk": 0,
+          "job_id": "22111363",
+          "dependency": null
+        },
+        {
+          "kind": "train",
+          "variant": "lp",
+          "seed": 45,
+          "chunk": 1,
+          "job_id": "22111364",
+          "dependency": "afterok:22111363"
+        },
+        {
+          "kind": "train",
+          "variant": "lp",
+          "seed": 45,
+          "chunk": 2,
+          "job_id": "22111365",
+          "dependency": "afterok:22111363,afterany:22111364"
+        },
+        {
+          "kind": "train",
+          "variant": "cnn",
+          "seed": 45,
+          "chunk": 1,
+          "job_id": "22111366",
+          "dependency": "afterok:22111363"
+        },
+        {
+          "kind": "train",
+          "variant": "cnn",
+          "seed": 45,
+          "chunk": 2,
+          "job_id": "22111367",
+          "dependency": "afterok:22111363,afterany:22111366"
+        }
+      ],
+      "all_jobs_verified_pending_JobHeldUser": false,
+      "training_started": true,
+      "cli_preflight_passed": true,
+      "registration_sha256": "5263bb69f854d692207266a333fb1a7724ec4816373a376b312807187b1abae9",
+      "jobs_released": true,
+      "prepare_state": "COMPLETED",
+      "scheduler_start_estimate": null,
+      "release_reason": "Diet preview delivered; carry out original authorized requeue request",
+      "released_utc": "2026-11-09T22:59:02.201624+00:00",
+      "scheduler_start_estimate_pacific": null,
+      "prepare_elapsed": "00:04:57",
+      "prepare_receipts_verified": true,
+      "training_jobs_state": "RUNNING",
+      "last_verified_utc": "2026-11-13T09:14:57.894556+00:00",
+      "training_state": "RUNNING",
+      "ssh_control_path": "/tmp/guru-anvil-status-20261113.sock",
+      "job_states": {
+        "22111363": "COMPLETED",
+        "22111364": "RUNNING",
+        "22111365": "PENDING_DEPENDENCY",
+        "22111366": "RUNNING",
+        "22111367": "PENDING_DEPENDENCY"
+      },
+      "models": {
+        "lp": {
+          "state": "RUNNING",
+          "training_seed": 45,
+          "job_id": "22111364",
+          "current_epoch": 46,
+          "curriculum_stage": 8,
+          "target_epochs": 124,
+          "last_completed_epoch_summary": "-> Epoch 45: train 64.37% | valid 50.10% | test(inv) 24.71% | loss 1.6878 | lr 7.09e-04 | valid by cat: faces_vgg2k 53.0% houses_synthetic128 100.0% objects_wordbank64 46.8%",
+          "checkpoint_last_exists": true,
+          "latest_progress": "Epoch 46/124 [stage 8]: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 512000/512000 [00:55<00:00, 9150.09img/s, acc=69.78%, ce=1.364]",
+          "log_mtime_utc": "2026-11-13T09:14:56.872435+00:00"
+        },
+        "cnn": {
+          "state": "RUNNING",
+          "training_seed": 45,
+          "job_id": "22111366",
+          "current_epoch": 38,
+          "curriculum_stage": 7,
+          "target_epochs": 124,
+          "last_completed_epoch_summary": "-> Epoch 37: train 92.27% | valid 63.86% | test(inv) 19.88% | loss 0.2818 | lr 7.96e-04 | valid by cat: faces_vgg2k 86.6% houses_synthetic128 100.0% objects_wordbank64 52.8%",
+          "checkpoint_last_exists": true,
+          "latest_progress": "Epoch 38/124 [stage 7]:  96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 492544/512000 [00:49<00:02, 9555.89img/s, acc=92.65%, ce=0.206]",
+          "log_mtime_utc": "2026-11-13T09:14:58.552455+00:00"
+        }
+      }
+    }
+  },
+  "anvil_object_pack": {
+    "archive_sha256": "08056863d51db2a0ddf99e7fee4eee3b78327e2d8be9f77c4e5645ea8645cf44",
+    "transferred_directly_from_delta": true,
+    "sha256sum_verified_on_anvil": true
+  },
+  "training_and_gpu_smoke_started": false,
+  "training_or_model_initialized_in_cli_preflight": false,
+  "gpu_smokes": "Preparation jobs will run full data and GPU smoke checks before training; jobs were released after diet preview",
+  "temporary_agent_and_forwarding_removed": true,
+  "latest_check_utc": "2026-11-13T09:14:57.894556+00:00",
+  "delta_latest_check_attempt_utc": "2026-11-10T17:50:11.623863+00:00",
+  "delta_access_status": "Authenticated; completed model records and checkpoint hashes verified",
+  "delta_login_exec_session": 74096,
+  "delta_ssh_control_path": "/tmp/guru-delta-status-20261111-retry.sock",
+  "delta_last_verified_utc": "2026-11-10T17:50:48.588245+00:00",
+  "sdsc_yin": {
+    "status": "COMPLETED_DOWNLOADED_INDEPENDENTLY_VERIFIED",
+    "models": [
+      "lp",
+      "cnn"
+    ],
+    "training_seed": 46,
+    "epoch": 124,
+    "rows": 14400,
+    "simulation_seeds_per_cell": 50,
+    "report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/sdsc-yin-no-generic-s46-20261111/RESULTS_ERROR_POINTS.md"
+  }
+}

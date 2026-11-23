@@ -1,0 +1,16 @@
+{
+  "registration_complete": true,
+  "spec_sha256": "73fc1ccecc0600eada6568d5a6b6c1a33b4d959aa66f395a306ac8d95514b799",
+  "jobs": {
+    "smoke": [
+      "55690839"
+    ],
+    "production": [
+      "55690840"
+    ]
+  },
+  "created_utc": "2026-11-12T03:12:24.698584+00:00",
+  "scope": "Completed Delta no-generic-house ResNet18 LP/CNN training-seed46 final epoch124; inherited fixed image-bank Yin suite, seven designs, three freshly fitted noise protocols,50simulation seeds101-150; no retraining",
+  "maximum_gpu_hours": 0.5,
+  "maximum_cpu_core_hours": 16
+}

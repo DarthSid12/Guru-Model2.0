@@ -1,0 +1,8 @@
+{
+  "registration_complete": true,
+  "job_id": "55694699",
+  "spec_sha256": "957700c77e1e1f2e6d1639ee5dac92cbd8367c08aec0628cb3056bdb50e627c8",
+  "created_utc": "2026-11-12T05:23:37.173380+00:00",
+  "maximum_cpu_core_hours": 1,
+  "scope": "Authorized CPU-only distance-scaled sigma exploration; frozen LP/CNN codes and study/test plans; no retraining"
+}

@@ -1,0 +1,20 @@
+{
+  "status": "SOURCE_BANK_UPDATED_VERIFIED",
+  "classes": 64,
+  "active_images": 44800,
+  "new_photos_downloaded": 4045,
+  "parent_photos_superseded": 2445,
+  "reserve_photos": 1600,
+  "counts_per_class": {
+    "train": 500,
+    "valid": 100,
+    "test": 100
+  },
+  "unresolved_animal_annotation_flags": 0,
+  "physical_toy_overrides": 6,
+  "orientation_filter": false,
+  "exhaustive_manual_review": false,
+  "training_or_yin_run": false,
+  "gallery": "/Users/darthsid/Documents/ChatGPT/GURU/output/wordbank-object-curation-20261106/index.html",
+  "verification": "/Users/darthsid/Documents/ChatGPT/GURU/operations/wordbank-object-curation-20261106/VERIFIED.json"
+}

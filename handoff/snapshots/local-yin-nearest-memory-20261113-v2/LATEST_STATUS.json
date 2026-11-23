@@ -1,0 +1,82 @@
+{
+  "status": "COMPLETED_LOCAL_INDEPENDENTLY_VERIFIED",
+  "checked_utc": "2026-11-13T17:59:31.168719+00:00",
+  "previous_operation": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-yin-nearest-memory-20261113",
+  "same_scientific_settings": true,
+  "exact_integer_distance_numerators": true,
+  "execution_id": "local-yin-nearest-memory-20261113-v2",
+  "spec_sha256": "26a9860e6e941138576b977affe32e6bda2091cd5f07833683ea0d61fdf0a941",
+  "results_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-yin-nearest-memory-20261113-v2/RESULTS.md",
+  "face_calibration": {
+    "lp_faces_houses": {
+      "noise": 0.38,
+      "calibration_faceUU": 0.92
+    },
+    "lp_faces_houses_objects": {
+      "noise": 0.37,
+      "calibration_faceUU": 0.935
+    },
+    "cnn_faces_houses": {
+      "noise": 0.37,
+      "calibration_faceUU": 0.9383333333333334
+    },
+    "cnn_faces_houses_objects": {
+      "noise": 0.38,
+      "calibration_faceUU": 0.9225
+    }
+  },
+  "independent_verification": {
+    "passed": true,
+    "rows": 6000,
+    "trial_rows": 57600,
+    "cells": 120,
+    "validation_seeds_per_cell": 50,
+    "original_KDE_calibration_UU_category_records_replayed": 500,
+    "independent_integer_numpy_primary_trial_decisions_verified": 19200,
+    "independent_selected_calibration_seed_decisions_verified": 200,
+    "calibration_grid_and_face_only_selection_verified": true,
+    "all_counts_noise_provenance_and_sample_moments_verified": true,
+    "normalized_error_scale_verified": true,
+    "source_and_cache_hashes_verified": true,
+    "spec_sha256": "26a9860e6e941138576b977affe32e6bda2091cd5f07833683ea0d61fdf0a941",
+    "results_sha256": "0320954cb9350df985fd3e455cbf1058c55f02706673f5fa27d5737e3bccfe3d"
+  },
+  "house_inversion_contrasts": [
+    {
+      "variant": "lp",
+      "design": "faces_houses",
+      "contrast": "houseUU minus houseII errors on12pointscale;negative means upright advantage",
+      "mean": 0.16,
+      "sd": 1.962505686979931,
+      "sem": 0.27754021587613464
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses",
+      "contrast": "houseUU minus houseII errors on12pointscale;negative means upright advantage",
+      "mean": 0.56,
+      "sd": 2.3574458679698593,
+      "sem": 0.33339319190433875
+    },
+    {
+      "variant": "lp",
+      "design": "faces_houses_objects",
+      "contrast": "houseUU minus houseII errors on12pointscale;negative means upright advantage",
+      "mean": 0.39,
+      "sd": 2.3041444470026313,
+      "sem": 0.3258552326617776
+    },
+    {
+      "variant": "cnn",
+      "design": "faces_houses_objects",
+      "contrast": "houseUU minus houseII errors on12pointscale;negative means upright advantage",
+      "mean": -0.42,
+      "sd": 3.1933604588909414,
+      "sem": 0.45160936705095395
+    }
+  ],
+  "disposition": "ARCHIVED_NOT_SELECTED",
+  "selected_for_future_use": false,
+  "archived_by_user_utc": "2026-11-13T18:05:29.838817+00:00",
+  "active_readout_file": "/Users/darthsid/Documents/ChatGPT/GURU/operations/ACTIVE_YIN_READOUT.json"
+}

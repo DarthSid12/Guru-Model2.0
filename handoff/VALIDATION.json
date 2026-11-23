@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "category_records": 2400,
+  "all_decision_masks_match": true,
+  "all_summary_statistics_verified": true,
+  "noise_refit_verified": true,
+  "rows_sha256": "9f168b7493ec40613a841b0fd82341b2def9f62f115d6059c7748b93ee332a11"
+}

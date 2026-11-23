@@ -1,0 +1,62 @@
+{
+  "spec_sha256": "29927ffc3c84e92f098ff7787e7cc7225c9a29a8e9e6db6726e1356e6c7ab84a",
+  "cells": [
+    {
+      "variant": "lp",
+      "condition": "Upright",
+      "noise": 0.31,
+      "n": 50,
+      "accuracy_mean_pct": 87.36367948717948,
+      "accuracy_sd_pct": 0.39423094174501544,
+      "error_mean_pct": 12.636320512820513,
+      "error_sd_pct": 0.39423094174501544,
+      "sem_pct": 0.05575267445229184
+    },
+    {
+      "variant": "lp",
+      "condition": "Inverted",
+      "noise": 0.31,
+      "n": 50,
+      "accuracy_mean_pct": 76.58642307692308,
+      "accuracy_sd_pct": 0.939486540107302,
+      "error_mean_pct": 23.413576923076924,
+      "error_sd_pct": 0.9394865401073019,
+      "sem_pct": 0.13286346066867213
+    },
+    {
+      "variant": "cnn",
+      "condition": "Upright",
+      "noise": 0.37,
+      "n": 50,
+      "accuracy_mean_pct": 89.09615384615385,
+      "accuracy_sd_pct": 0.7426333981669865,
+      "error_mean_pct": 10.903846153846153,
+      "error_sd_pct": 0.7426333981669861,
+      "sem_pct": 0.1050242223558971
+    },
+    {
+      "variant": "cnn",
+      "condition": "Inverted",
+      "noise": 0.37,
+      "n": 50,
+      "accuracy_mean_pct": 60.85224358974359,
+      "accuracy_sd_pct": 1.057237436480136,
+      "error_mean_pct": 39.14775641025641,
+      "error_sd_pct": 1.057237436480136,
+      "sem_pct": 0.14951595213187718
+    }
+  ],
+  "paired_inversion_effects": [
+    {
+      "variant": "lp",
+      "upright_minus_inverted_accuracy_pp": 10.77725641025641,
+      "sd_pp": 0.929626076704047
+    },
+    {
+      "variant": "cnn",
+      "upright_minus_inverted_accuracy_pp": 28.243910256410256,
+      "sd_pp": 1.2249092002430413
+    }
+  ],
+  "uncertainty": "sample SD across 50 Monte Carlo seeds, conditional on fixed training seed45 checkpoints"
+}

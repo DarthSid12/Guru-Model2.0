@@ -1,0 +1,12 @@
+{
+  "build_gallery.py": "a9381ea378ab21f4671ed0062f7f8d14999383eb9bd27b114d45280bb885bed1",
+  "build_plan.py": "257aa11a01d32147b8c9958da20b192281fdd988c5a12523c0d11f40f56e1ef6",
+  "extend_plan.py": "e3840d157c71f082f6db790785b57b9917869bd58b979cc1633c1dc5a4b1592c",
+  "fetch_new_sources.py": "fade07b458b6f3c1007796af2db708ea7aaf1f0e939a8a6d45228564dbc1e568",
+  "finalize_bank.py": "296d00a4060a1cc431dc2bcd57589dec5b03cc5cd5ce8094a6e9b5f82ddb4078",
+  "index_animal_flags.py": "c356df0137bac1aea294fb9d6100626b37dc8ace97c4e1a06e1a576c6e318a0f",
+  "index_glass_sources.py": "6aa0e4580122bb4111fb40a77a69cbaaf54fa6fb7aea0e3d06709db9963a6099",
+  "review_glass.py": "46c66329ff4019832239d5d4047bcb9fba0a08ea68de8b6fa70fbd2350f94e34",
+  "review_toys.py": "6aaabb8552c488b38a8996e2839a1f82347f7d578b5a31d6771cd420e16d1373",
+  "verify_bank.py": "d42501488a39577490282c5e6933cc2ce5605f9ba56d30055ba7e472c97bf661"
+}

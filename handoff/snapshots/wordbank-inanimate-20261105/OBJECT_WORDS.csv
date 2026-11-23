@@ -1,0 +1,65 @@
+item_id,word,category,age,n_responses,n_administrations,n_understands,proportion,class_name,open_images_id,open_images_name,human_positive_source_photos,introduced_age_months,semantic_type,toy_category_override
+item_91,ball,toys,8,255,255,94,0.3686274509803922,ball,/m/018xm,Ball (Object),9112,8,inanimate_physical_object,False
+item_193,bottle,household,8,255,255,94,0.3686274509803922,bottle,/m/04dr76w,Bottle,102963,8,inanimate_physical_object,False
+item_94,book,toys,8,255,255,77,0.30196078431372547,book,/m/0bt_c3,Book,74809,8,inanimate_physical_object,False
+item_85,car,vehicles,8,255,255,65,0.2549019607843137,car,/m/0k4j,Car,504175,8,inanimate_physical_object,False
+item_100,banana,food_drink,10,279,279,96,0.34408602150537637,banana,/m/09qck,Banana,1382,10,inanimate_physical_object,False
+item_200,cup,household,10,279,279,84,0.3010752688172043,cup,/m/07ptj3n,Cup,1391,10,inanimate_physical_object,False
+item_170,bed,furniture_rooms,10,279,279,78,0.27956989247311825,bed,/m/03ssj5,Bed,4417,10,inanimate_physical_object,False
+item_222,telephone,household,10,279,279,74,0.26523297491039427,telephone,/m/07cx4,Telephone,1870,10,inanimate_physical_object,False
+item_143,shoe,clothing,12,615,615,279,0.45365853658536587,shoe,/m/06rrc,Shoe,59498,12,inanimate_physical_object,False
+item_169,bathtub,furniture_rooms,12,615,615,257,0.41788617886178864,bathtub,/m/03dnzn,Bathtub,2667,12,inanimate_physical_object,False
+item_145,sock,clothing,12,615,615,240,0.3902439024390244,sock,/m/01nq26,Sock,2199,12,inanimate_physical_object,False
+item_92,balloon,toys,12,615,615,222,0.36097560975609755,balloon,/m/01j51,Balloon,4367,12,inanimate_physical_object,False
+item_136,hat,clothing,12,615,615,200,0.3252032520325203,hat,/m/02dl1y,Hat,19606,12,inanimate_physical_object,False
+item_192,blanket,household,12,615,615,197,0.3203252032520325,blanket,/m/03mcpy,Blanket,1086,12,inanimate_physical_object,False
+item_175,door,furniture_rooms,12,615,615,193,0.31382113821138213,door,/m/02dgv,Door,24936,12,inanimate_physical_object,False
+item_221,spoon,household,12,615,615,186,0.3024390243902439,spoon,/m/0cmx8,Spoon,2703,12,inanimate_physical_object,False
+item_111,cookie,food_drink,15,284,284,160,0.5633802816901409,cookie,/m/021mn,Cookie,1485,15,inanimate_physical_object,False
+item_99,apple,food_drink,15,284,284,158,0.5563380281690141,apple,/m/014j1m,Apple,1605,15,inanimate_physical_object,False
+item_190,TV,furniture_rooms,15,284,284,151,0.5316901408450704,tv,/m/07c52,Television,5137,15,inanimate_physical_object,False
+item_172,chair,furniture_rooms,15,284,284,149,0.5246478873239436,chair,/m/01mzpv,Chair,51841,15,inanimate_physical_object,False
+item_101,bread,food_drink,15,284,284,143,0.5035211267605634,bread,/m/09728,Bread,2561,15,inanimate_physical_object,False
+item_78,teddybear,animals,15,284,284,143,0.5035211267605634,teddybear,/m/0kmg4,Teddy bear,1338,15,inanimate_physical_object,True
+item_141,pants,clothing,15,284,284,132,0.4647887323943662,pants,/m/07mhn,Trousers,20675,15,inanimate_physical_object,False
+item_142,shirt,clothing,15,284,284,131,0.4612676056338028,shirt,/m/01n4qj,Shirt,17084,15,inanimate_physical_object,False
+item_187,stairs,furniture_rooms,15,284,284,130,0.45774647887323944,stairs,/m/01lynh,Stairs,9369,15,inanimate_physical_object,False
+item_96,doll,toys,15,284,284,129,0.45422535211267606,doll,/m/0167gd,Doll,4348,15,inanimate_physical_object,False
+item_90,truck,vehicles,15,284,284,127,0.4471830985915493,truck,/m/07r04,Truck,9757,15,inanimate_physical_object,False
+item_82,airplane,vehicles,15,284,284,124,0.43661971830985913,airplane,/m/05czz6l,Airplane,2383,15,inanimate_physical_object,False
+item_184,refrigerator,furniture_rooms,15,284,284,117,0.4119718309859155,refrigerator,/m/040b_t,Refrigerator,1213,15,inanimate_physical_object,False
+item_204,glasses,household,15,284,284,116,0.4084507042253521,glasses,/m/0jyfg,Glasses,55081,15,inanimate_physical_object,False
+item_89,train,vehicles,15,284,284,116,0.4084507042253521,train,/m/07jdr,Train,53673,15,inanimate_physical_object,False
+item_173,couch,furniture_rooms,15,284,284,115,0.40492957746478875,couch,/m/02crq1,Couch,9512,15,inanimate_physical_object,False
+item_202,fork,household,18,423,423,282,0.6666666666666666,fork,/m/0dt3t,Fork,2162,18,inanimate_physical_object,False
+item_133,coat,clothing,18,423,423,275,0.6501182033096927,coat,/m/01xygc,Coat,7430,18,inanimate_physical_object,False
+item_194,bowl,household,18,423,423,265,0.6264775413711584,bowl,/m/04kkgm,Bowl,5251,18,inanimate_physical_object,False
+item_189,table,furniture_rooms,18,423,423,251,0.5933806146572104,table,/m/04bcr3,Table,151608,18,inanimate_physical_object,False
+item_84,bus,vehicles,18,423,423,250,0.5910165484633569,bus,/m/01bjv,Bus,44458,18,inanimate_physical_object,False
+item_83,bicycle,vehicles,18,423,423,248,0.5862884160756501,bicycle,/m/0199g,Bicycle,94287,18,inanimate_physical_object,False
+item_131,boots,clothing,18,423,423,245,0.5791962174940898,boots,/m/01b638,Boot,2230,18,inanimate_physical_object,False
+item_114,egg,food_drink,18,423,423,238,0.5626477541371159,egg,/m/033cnk,Egg,1533,18,inanimate_physical_object,False
+item_191,window,furniture_rooms,18,423,423,236,0.557919621749409,window,/m/0d4v4,Window,86303,18,inanimate_physical_object,False
+item_214,pillow,household,18,423,423,231,0.5460992907801419,pillow,/m/034c16,Pillow,2615,18,inanimate_physical_object,False
+item_195,box,household,18,423,423,224,0.5295508274231678,box,/m/025dyy,Box,5864,18,inanimate_physical_object,False
+item_105,carrots,food_drink,18,423,423,216,0.5106382978723404,carrots,/m/0fj52s,Carrot,1064,18,inanimate_physical_object,False
+item_97,pen,toys,18,423,423,215,0.508274231678487,pen,/m/0k1tl,Pen,2189,18,inanimate_physical_object,False
+item_122,orange (food),food_drink,18,423,423,214,0.5059101654846335,orange_food,/m/0cyhj_,Orange (fruit),1832,18,inanimate_physical_object,False
+item_216,plate,household,18,423,423,205,0.4846335697399527,plate,/m/050gv4,Plate,8475,18,inanimate_physical_object,False
+item_124,pizza,food_drink,18,423,423,200,0.4728132387706856,pizza,/m/0663v,Pizza,1991,18,inanimate_physical_object,False
+item_121,noodles,food_drink,18,423,423,199,0.47044917257683216,noodles,/m/0mfnf,Noodle,919,18,inanimate_physical_object,False
+item_176,drawer,furniture_rooms,18,423,423,192,0.45390070921985815,drawer,/m/0fqfqc,Drawer,2288,18,inanimate_physical_object,False
+item_117,ice cream,food_drink,18,423,423,185,0.4373522458628842,ice_cream,/m/0cxn2,Ice cream,2018,18,inanimate_physical_object,False
+item_186,sink,furniture_rooms,18,423,423,165,0.3900709219858156,sink,/m/0130jx,Sink,11701,18,inanimate_physical_object,False
+item_87,motorcycle,vehicles,18,423,423,161,0.3806146572104019,motorcycle,/m/04_sv,Motorcycle,8363,18,inanimate_physical_object,False
+item_203,glass,household,18,423,423,160,0.37825059101654845,glass,/m/050h26,Drinkware,1018,18,inanimate_physical_object,False
+item_198,clock,household,18,423,423,158,0.3735224586288416,clock,/m/01x3z,Clock,27687,18,inanimate_physical_object,False
+item_146,sweater,clothing,18,423,423,156,0.36879432624113473,sweater,/m/019b80,Sweater,6531,18,inanimate_physical_object,False
+item_217,purse,household,18,423,423,154,0.3640661938534279,purse,/m/080hkjn,Handbag,3127,18,inanimate_physical_object,False
+item_227,watch (object),household,18,423,423,141,0.3333333333333333,watch_object,/m/0gjkl,Watch,20078,18,inanimate_physical_object,False
+item_103,cake,food_drink,18,423,423,136,0.3215130023640662,cake,/m/0fszt,Cake,4756,18,inanimate_physical_object,False
+item_135,dress (object),clothing,18,423,423,131,0.30969267139479906,dress_object,/m/01d40f,Dress,43170,18,inanimate_physical_object,False
+item_139,necklace,clothing,18,423,423,125,0.29550827423167847,necklace,/m/01llwg,Necklace,3151,18,inanimate_physical_object,False
+item_104,candy,food_drink,18,423,423,114,0.2695035460992908,candy,/m/0gm28,Candy,1086,18,inanimate_physical_object,False
+item_207,lamp,household,18,423,423,113,0.26713947990543735,lamp,/m/0dtln,Lamp,2321,18,inanimate_physical_object,False
+item_144,shorts,clothing,18,423,423,109,0.2576832151300236,shorts,/m/01bfm9,Shorts,9518,18,inanimate_physical_object,False

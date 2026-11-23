@@ -1,0 +1,48 @@
+{
+  "status": "COMPLETED_LOCAL_INDEPENDENTLY_VERIFIED",
+  "checked_utc": "2026-11-17T03:31:44.945597+00:00",
+  "sigma": {
+    "lp": 4.509564323062932,
+    "cnn": 6.753987849071428
+  },
+  "noise_protocol": "study_only_fitted",
+  "model_training_seed": 46,
+  "calibration_seeds": "101-150",
+  "evaluation_seeds": "201-250",
+  "execution_id": "local-yin-new-sigma-two-noise-20261116",
+  "spec_sha256": "ea22b2ff2ff7968b67ae414ed19e850a1b7a57d1b5d375e9277c51923e575111",
+  "results_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-yin-new-sigma-two-noise-20261116/RESULTS.md",
+  "fitted_noise": {
+    "lp": {
+      "p1": 0.377,
+      "p2": 0.378,
+      "sigma": 4.509564323062932
+    },
+    "cnn": {
+      "p1": 0.366,
+      "p2": 0.365,
+      "sigma": 6.753987849071428
+    }
+  },
+  "independent_verification": {
+    "passed": true,
+    "category_seed_rows": 6400,
+    "trial_rows": 76800,
+    "cells": 128,
+    "simulation_seeds_per_cell": 50,
+    "validation_seeds": "201-250,disjointfromsigma-selection",
+    "original_parent_control_records_replayed": 400,
+    "primary_trial_scores_replayed_exactly_through_original_engine": 19200,
+    "selected_calibration_seed_results_replayed_full_batch": 200,
+    "all_calibration_grids_and_face_only_fit_selection_verified": true,
+    "all_noise_rules_and_object_transfer_verified": true,
+    "all_counts_means_sample_SD_SEM_and_paired_effects_verified": true,
+    "source_and_checkpoint_cache_provenance_hashes_verified": true,
+    "spec_sha256": "ea22b2ff2ff7968b67ae414ed19e850a1b7a57d1b5d375e9277c51923e575111",
+    "results_sha256": "ccb55493480fd5656139873c6f436551d1e7df0af5f2ec9de0468e99e6175eb0"
+  },
+  "outcome": "Two fitted rates nearly equal;houseUU unchanged versus sigma2two-noise and meaninverted-houseadvantage persists;CNNobjects slightlyflatter",
+  "active_baseline_unchanged": true,
+  "anchored_comparison_report": "/Users/darthsid/Documents/ChatGPT/GURU/operations/local-yin-new-sigma-two-noise-20261116/ANCHORED_COMPARISON.md",
+  "reporting_clarification": "For the user-requested anchored comparison,show fitting seeds101-150;keep fresh201-250evaluation clearly separate. No parameter or result changes."
+}

@@ -1,0 +1,234 @@
+{
+  "config": {
+    "categories": [
+      "faces_vgg2k",
+      "objects_wordbank64",
+      "houses_synthetic128"
+    ],
+    "variant": "cnn",
+    "data_mode": "packed",
+    "fixation_root": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/data/fixation_data",
+    "processed_root": "processed_data",
+    "num_fixations": 16,
+    "random_fixations": true,
+    "max_images_per_class": [],
+    "max_classes_per_category": [],
+    "lr": 0.001,
+    "lr_schedule": "cosine",
+    "weight_decay": 0.05,
+    "label_smoothing": 0.0,
+    "amp": true,
+    "channels_last": true,
+    "epochs": 124,
+    "curriculum": true,
+    "curriculum_stages": [
+      "faces_vgg2k=4,objects_wordbank64=0,houses_synthetic128=0",
+      "faces_vgg2k=8,objects_wordbank64=0,houses_synthetic128=0",
+      "faces_vgg2k=16,objects_wordbank64=4,houses_synthetic128=0",
+      "faces_vgg2k=32,objects_wordbank64=8,houses_synthetic128=4",
+      "faces_vgg2k=64,objects_wordbank64=16,houses_synthetic128=8",
+      "faces_vgg2k=128,objects_wordbank64=32,houses_synthetic128=16",
+      "faces_vgg2k=256,objects_wordbank64=64,houses_synthetic128=32",
+      "faces_vgg2k=512,objects_wordbank64=64,houses_synthetic128=64",
+      "faces_vgg2k=1024,objects_wordbank64=64,houses_synthetic128=128",
+      "faces_vgg2k=2048,objects_wordbank64=64,houses_synthetic128=128"
+    ],
+    "curriculum_epochs": [
+      2,
+      2,
+      4,
+      4,
+      8,
+      8,
+      16,
+      16,
+      32,
+      32
+    ],
+    "category_weights": [],
+    "category_weighting": "sqrt",
+    "weight_domains": [],
+    "curriculum_seed": 0,
+    "curriculum_image_caps": [
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "curriculum_pin": [
+      "faces_vgg2k=@/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/data/faces_vgg2k_order.txt",
+      "objects_wordbank64=@/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/incoming/class_order.txt",
+      "houses_synthetic128=@/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/data/house_identity_order.txt"
+    ],
+    "steps_per_epoch": 2000,
+    "curriculum_warmup_steps": 500,
+    "batch_size": 256,
+    "num_workers": 8,
+    "dataloader_sharing": "file_system",
+    "temperature": 2.0,
+    "dropout": 0.3,
+    "aug": true,
+    "patience": 20,
+    "seed": 46,
+    "backbone": "resnet18",
+    "resume": "auto",
+    "checkpoint_every": 1,
+    "pretrained": false,
+    "output_dir": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46",
+    "run_tag": "resnet18_cnn_objects64clean_h128_nogeneric_s46",
+    "device": "cuda:0"
+  },
+  "hostname": "gpua024.delta.ncsa.illinois.edu",
+  "num_classes": 2240,
+  "dataset_sizes": {
+    "train": 7071744,
+    "valid": 31104,
+    "test": 31104
+  },
+  "curriculum": [
+    {
+      "stage": 1,
+      "spec": "faces_vgg2k=4,objects_wordbank64=0,houses_synthetic128=0",
+      "epochs": 2,
+      "num_classes": 4,
+      "classes_per_category": {
+        "faces_vgg2k": 4,
+        "objects_wordbank64": 0,
+        "houses_synthetic128": 0
+      }
+    },
+    {
+      "stage": 2,
+      "spec": "faces_vgg2k=8,objects_wordbank64=0,houses_synthetic128=0",
+      "epochs": 2,
+      "num_classes": 8,
+      "classes_per_category": {
+        "faces_vgg2k": 8,
+        "objects_wordbank64": 0,
+        "houses_synthetic128": 0
+      }
+    },
+    {
+      "stage": 3,
+      "spec": "faces_vgg2k=16,objects_wordbank64=4,houses_synthetic128=0",
+      "epochs": 4,
+      "num_classes": 20,
+      "classes_per_category": {
+        "faces_vgg2k": 16,
+        "objects_wordbank64": 4,
+        "houses_synthetic128": 0
+      }
+    },
+    {
+      "stage": 4,
+      "spec": "faces_vgg2k=32,objects_wordbank64=8,houses_synthetic128=4",
+      "epochs": 4,
+      "num_classes": 44,
+      "classes_per_category": {
+        "faces_vgg2k": 32,
+        "objects_wordbank64": 8,
+        "houses_synthetic128": 4
+      }
+    },
+    {
+      "stage": 5,
+      "spec": "faces_vgg2k=64,objects_wordbank64=16,houses_synthetic128=8",
+      "epochs": 8,
+      "num_classes": 88,
+      "classes_per_category": {
+        "faces_vgg2k": 64,
+        "objects_wordbank64": 16,
+        "houses_synthetic128": 8
+      }
+    },
+    {
+      "stage": 6,
+      "spec": "faces_vgg2k=128,objects_wordbank64=32,houses_synthetic128=16",
+      "epochs": 8,
+      "num_classes": 176,
+      "classes_per_category": {
+        "faces_vgg2k": 128,
+        "objects_wordbank64": 32,
+        "houses_synthetic128": 16
+      }
+    },
+    {
+      "stage": 7,
+      "spec": "faces_vgg2k=256,objects_wordbank64=64,houses_synthetic128=32",
+      "epochs": 16,
+      "num_classes": 352,
+      "classes_per_category": {
+        "faces_vgg2k": 256,
+        "objects_wordbank64": 64,
+        "houses_synthetic128": 32
+      }
+    },
+    {
+      "stage": 8,
+      "spec": "faces_vgg2k=512,objects_wordbank64=64,houses_synthetic128=64",
+      "epochs": 16,
+      "num_classes": 640,
+      "classes_per_category": {
+        "faces_vgg2k": 512,
+        "objects_wordbank64": 64,
+        "houses_synthetic128": 64
+      }
+    },
+    {
+      "stage": 9,
+      "spec": "faces_vgg2k=1024,objects_wordbank64=64,houses_synthetic128=128",
+      "epochs": 32,
+      "num_classes": 1216,
+      "classes_per_category": {
+        "faces_vgg2k": 1024,
+        "objects_wordbank64": 64,
+        "houses_synthetic128": 128
+      }
+    },
+    {
+      "stage": 10,
+      "spec": "faces_vgg2k=2048,objects_wordbank64=64,houses_synthetic128=128",
+      "epochs": 32,
+      "num_classes": 2240,
+      "classes_per_category": {
+        "faces_vgg2k": 2048,
+        "objects_wordbank64": 64,
+        "houses_synthetic128": 128
+      }
+    }
+  ],
+  "results": {
+    "epochs_run": 124,
+    "best_epoch": 124,
+    "best_valid_acc": 0.8289930555555556,
+    "test_acc_at_best_epoch": 0.07796424897119342,
+    "final_train_acc": 0.9265859375,
+    "final_valid_acc": 0.8289930555555556,
+    "final_test_acc": 0.07796424897119342,
+    "valid_acc_by_category": {
+      "faces_vgg2k": 0.8819986979166666,
+      "objects_wordbank64": 0.6221875,
+      "houses_synthetic128": 0.9921875
+    },
+    "test_acc_by_category": {
+      "faces_vgg2k": 0.006998697916666667,
+      "objects_wordbank64": 0.351875,
+      "houses_synthetic128": 0.0078125
+    },
+    "wall_time_sec": 27945.3,
+    "sec_per_epoch": 225.4
+  },
+  "artifacts": {
+    "best_model": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46/best_model.pth",
+    "history_csv": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46/training_history_20261111_071727.csv",
+    "label_map": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46/label_map.json",
+    "per_class_csv": "/projects/bjaa/sagrawal5/guru-resnet18-no-generic-20261109/runs/resnet18_cnn_objects64clean_h128_nogeneric_s46/per_class_accuracy.csv"
+  },
+  "finished": "2026-11-11T07:19:03"
+}
