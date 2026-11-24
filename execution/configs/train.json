@@ -1,0 +1,122 @@
+{
+  "fixation_root": "data/packed",
+  "output": "runs/resnet18_lp",
+  "categories": [
+    "faces_vgg2k",
+    "objects_wordbank64",
+    "houses_synthetic128"
+  ],
+  "variant": "lp",
+  "backbone": "resnet18",
+  "pretrained": false,
+  "temperature": 2.0,
+  "dropout": 0.3,
+  "lr": 0.001,
+  "lr_schedule": "cosine",
+  "weight_decay": 0.05,
+  "label_smoothing": 0.0,
+  "batch_size": 256,
+  "steps_per_epoch": 2000,
+  "epochs": 124,
+  "curriculum": true,
+  "curriculum_stages": [
+    {
+      "faces_vgg2k": 4,
+      "objects_wordbank64": 0,
+      "houses_synthetic128": 0
+    },
+    {
+      "faces_vgg2k": 8,
+      "objects_wordbank64": 0,
+      "houses_synthetic128": 0
+    },
+    {
+      "faces_vgg2k": 16,
+      "objects_wordbank64": 4,
+      "houses_synthetic128": 0
+    },
+    {
+      "faces_vgg2k": 32,
+      "objects_wordbank64": 8,
+      "houses_synthetic128": 4
+    },
+    {
+      "faces_vgg2k": 64,
+      "objects_wordbank64": 16,
+      "houses_synthetic128": 8
+    },
+    {
+      "faces_vgg2k": 128,
+      "objects_wordbank64": 32,
+      "houses_synthetic128": 16
+    },
+    {
+      "faces_vgg2k": 256,
+      "objects_wordbank64": 64,
+      "houses_synthetic128": 32
+    },
+    {
+      "faces_vgg2k": 512,
+      "objects_wordbank64": 64,
+      "houses_synthetic128": 64
+    },
+    {
+      "faces_vgg2k": 1024,
+      "objects_wordbank64": 64,
+      "houses_synthetic128": 128
+    },
+    {
+      "faces_vgg2k": 2048,
+      "objects_wordbank64": 64,
+      "houses_synthetic128": 128
+    }
+  ],
+  "curriculum_epochs": [
+    2,
+    2,
+    4,
+    4,
+    8,
+    8,
+    16,
+    16,
+    32,
+    32
+  ],
+  "curriculum_pin": {
+    "faces_vgg2k": "handoff/snapshots/resnet18-no-generic-20261109/faces_vgg2k_order.txt",
+    "objects_wordbank64": "handoff/snapshots/wordbank-inanimate-20261105/class_order.txt",
+    "houses_synthetic128": "handoff/snapshots/resnet18-no-generic-20261109/house_identity_order.txt"
+  },
+  "curriculum_image_caps": [
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none"
+  ],
+  "curriculum_warmup_steps": 500,
+  "curriculum_seed": 0,
+  "category_weighting": "sqrt",
+  "category_weights": [],
+  "num_fixations": 16,
+  "random_fixations": true,
+  "num_workers": 8,
+  "amp": true,
+  "channels_last": true,
+  "aug": true,
+  "patience": 20,
+  "seed": 46,
+  "device": "cuda:0",
+  "resume": null,
+  "checkpoint_every": 1,
+  "dataloader_sharing": "file_system",
+  "max_images_per_class": [],
+  "max_classes_per_category": [],
+  "weight_domains": []
+}

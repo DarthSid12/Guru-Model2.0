@@ -1,0 +1,21 @@
+{
+  "packed_root": "data/packed-images",
+  "output": "data/packed",
+  "categories": [
+    "faces_vgg2k",
+    "objects_wordbank64",
+    "houses_synthetic128"
+  ],
+  "splits": [
+    "train",
+    "valid",
+    "test"
+  ],
+  "method": "gabor",
+  "num_points": 32,
+  "edge_margin": 0.15,
+  "attention_center": null,
+  "seed": 42,
+  "batch_size": 16,
+  "device": "cpu"
+}

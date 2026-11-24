@@ -1,5 +1,15 @@
 # Instructions for agents working in combined_lpnet
 
+## Modular execution branch
+
+For new work use `execution/` and read `execution/README.md`. The six entry points
+delegate to `execution/components/`; reusable I/O, configuration, transforms and
+feature inference live in `execution/common/`. The existing `training/` library
+remains checkpoint-compatible. Never substitute the older VGG launcher for the
+current default recipe. Preserve exact noise assignments and seed provenance
+when changing behavior. Run `python -m unittest discover -s execution/tests -v`
+and relevant replay/smoke checks. Historical snapshots stay immutable.
+
 ## Current handoff branch
 
 Read the root README first. As of November 23, 2026 this branch concerns the

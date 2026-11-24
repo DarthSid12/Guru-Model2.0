@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-24",
+  "repository": "DarthSid12/Guru-Model2.0",
+  "deleted": [
+    {
+      "branch": "fast-process",
+      "sha": "6be140d749810f91e47b1f4c717d522a3ab6fbfc",
+      "archive_tag": "archive/20261124/fast-process",
+      "reason": "No unique commits beyond the preserved handoff branch",
+      "deleted": true
+    },
+    {
+      "branch": "yin-sid",
+      "sha": "6be140d749810f91e47b1f4c717d522a3ab6fbfc",
+      "archive_tag": "archive/20261124/yin-sid",
+      "reason": "No unique commits beyond the preserved handoff branch",
+      "deleted": true
+    },
+    {
+      "branch": "houses-individualised",
+      "sha": "f5103faaa0b2ca192605bee79581ce72b5c5553a",
+      "archive_tag": "archive/20261124/houses-individualised",
+      "reason": "No unique commits beyond the preserved handoff branch",
+      "deleted": true
+    }
+  ],
+  "preserved": [
+    "master",
+    "crop-coord-input",
+    "developmental",
+    "kanwisher",
+    "thatcherization-pipeline",
+    "biggerDatasets",
+    "handoff/resnet18-yin-single-noise-20261123"
+  ],
+  "policy": "Preserve all branches with unique ddeightmore commits; delete only redundant personal branches after archival tags. No commits erased."
+}

@@ -1,0 +1,35 @@
+{
+  "raw_root": "data/raw",
+  "output": "data/packed",
+  "categories": [
+    "faces_vgg2k",
+    "objects_wordbank64",
+    "houses_synthetic128"
+  ],
+  "splits": [
+    "train",
+    "valid",
+    "test"
+  ],
+  "input_size": 224,
+  "limit_per_class": 0,
+  "salience": {
+    "method": "gabor",
+    "num_points": 32,
+    "edge_margin": 0.15,
+    "attention_center": null,
+    "seed": 42,
+    "batch_size": 16,
+    "device": "cpu"
+  },
+  "render_fixations": false,
+  "render_variants": [
+    "lp",
+    "cnn"
+  ],
+  "render_orientations": [
+    "U",
+    "I"
+  ],
+  "crop_size": 180
+}

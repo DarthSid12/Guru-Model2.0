@@ -1,0 +1,25 @@
+{
+  "datasets": [
+    "faces_vgg2k",
+    "objects_wordbank64",
+    "houses_synthetic128"
+  ],
+  "output": "data/raw",
+  "sources": {
+    "faces_vgg2k": {
+      "provider": "directory",
+      "location": "data/assets/faces_vgg2k",
+      "description": "Authorized, pre-split source bank. Set location or replace this entry with an archive or image manifest."
+    },
+    "objects_wordbank64": {
+      "provider": "directory",
+      "location": "data/assets/objects_wordbank64",
+      "description": "Authorized, pre-split source bank. Set location or replace this entry with an archive or image manifest."
+    },
+    "houses_synthetic128": {
+      "provider": "directory",
+      "location": "data/assets/houses_synthetic128",
+      "description": "Authorized, pre-split source bank. Set location or replace this entry with an archive or image manifest."
+    }
+  }
+}

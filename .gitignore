@@ -17,3 +17,6 @@ logs/
 *.npz
 *.pt
 *.tar
+
+# Outputs of the modular execution entry points
+/results/

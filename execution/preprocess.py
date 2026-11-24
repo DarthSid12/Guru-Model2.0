@@ -1,0 +1,8 @@
+"""Normalize, pack and compute image fixation coordinates."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from execution.common.cli import launch
+
+if __name__ == "__main__":
+    launch("preprocess", "preprocessing", __doc__)

@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "yin_records": 1600,
+  "kanwisher_records": 200,
+  "decision_counts_match": true,
+  "noise_match": true,
+  "means_sample_SD_SEM_verified": true,
+  "unit_contract_tests": 8,
+  "six_stage_end_to_end_smoke": true,
+  "tiny_training_optimizer_steps": 1,
+  "standalone_gabor_and_uniform_sampling": true,
+  "full_fixation_rendering": [
+    "lp_U",
+    "lp_I",
+    "cnn_U",
+    "cnn_I",
+    "plain_U",
+    "plain_I"
+  ],
+  "all_six_help_and_dry_runs": true,
+  "historical_snapshots_unchanged": true,
+  "production_training_launched": false,
+  "legacy_suite": {
+    "passed": 6,
+    "failed": 1,
+    "test": "test_training_barrier_and_pid_reuse",
+    "reason": "Existing Linux /proc process-token check returns None on macOS; queue code and legacy test unchanged by this refactor."
+  }
+}

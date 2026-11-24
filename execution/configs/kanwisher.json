@@ -1,0 +1,31 @@
+{
+  "cache_root": "data/cache/kanwisher",
+  "packed_root": "data/packed",
+  "output": "results/kanwisher",
+  "category": "faces_setA",
+  "models": [
+    {
+      "name": "lp",
+      "cache_subdir": "lp",
+      "run_dir": null,
+      "variant": "lp",
+      "noise": null
+    },
+    {
+      "name": "cnn",
+      "cache_subdir": "cnn",
+      "run_dir": null,
+      "variant": "cnn",
+      "noise": null
+    }
+  ],
+  "num_identities": 40,
+  "images_per_identity": 5,
+  "num_fixations": 16,
+  "seeds": "101-150",
+  "calibration_seed": 42,
+  "calibration_target": 0.875,
+  "device": "cpu",
+  "crop_size": 180,
+  "threads": 1
+}

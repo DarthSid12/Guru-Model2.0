@@ -1,0 +1,79 @@
+{
+  "cache_root": "data/cache/yin",
+  "packed_root": "data/packed",
+  "output": "results/yin",
+  "models": [
+    {
+      "name": "lp",
+      "cache_subdir": "resnet18_lp_nogeneric_e124_s46",
+      "run_dir": null,
+      "variant": "lp",
+      "noise": 0.373,
+      "noise2": null
+    },
+    {
+      "name": "cnn",
+      "cache_subdir": "resnet18_cnn_nogeneric_e124_s46",
+      "run_dir": null,
+      "variant": "cnn",
+      "noise": 0.364,
+      "noise2": null
+    }
+  ],
+  "banks": {
+    "faces": "faces_cfdWM64",
+    "houses": "houses_dal64",
+    "objects": "objects_wordbank64"
+  },
+  "designs": {
+    "faces_houses": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "houses": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    },
+    "faces_objects": {
+      "faces": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      },
+      "objects": {
+        "pool": 32,
+        "study": 20,
+        "trials": 12
+      }
+    }
+  },
+  "conditions": [
+    "UU",
+    "UI",
+    "IU",
+    "II"
+  ],
+  "seeds": "101-150",
+  "calibration_seeds": "101-150",
+  "calibration_design": "faces_houses",
+  "calibration_category": "faces",
+  "calibrate": false,
+  "targets": {
+    "UU": 0.9258333333333333,
+    "II": 0.6375,
+    "UI": 0.6825
+  },
+  "noise_protocol": "single_uu",
+  "sigma": 2.0,
+  "readout": "identity_max",
+  "study_fixations": 10,
+  "test_fixations": 32,
+  "verify_registry": true,
+  "device": "cpu",
+  "crop_size": 180,
+  "threads": 1
+}

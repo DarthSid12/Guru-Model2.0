@@ -1,4 +1,22 @@
-# Guru Model 2.0: ResNet18 and Yin agent handoff
+# Guru Model 2.0: modular execution pipeline
+
+## Run or change one part of the pipeline
+
+The [execution folder](execution/README.md) contains six entry points, editable default configs, domain modules and shared utilities:
+
+```text
+execution/download.py     selected dataset downloads/imports
+execution/salience.py     fixation location and sampling controls
+execution/preprocess.py   complete image/fixation preprocessing
+execution/train.py        curriculum, architecture and optimizer controls
+execution/yin.py          composition, noise calibration and KDE readouts
+execution/kanwisher.py    face target matching
+```
+
+Start with `python execution/train.py --dry-run` or `python execution/yin.py --help`.
+Full settings and examples are in [execution/README.md](execution/README.md).
+The defaults retain our current datasets; authorized source files/URLs must be supplied for downloads.
+The scientific handoff below remains the reference for the existing models and results.
 
 **Handoff date: November 23, 2026.** This branch captures the code and verified results behind the latest conversation. Start here instead of treating an older launcher, report, or snapshot status as current.
 
